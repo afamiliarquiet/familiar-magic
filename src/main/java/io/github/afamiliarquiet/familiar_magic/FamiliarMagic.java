@@ -1,6 +1,8 @@
 package io.github.afamiliarquiet.familiar_magic;
 
 import com.mojang.logging.LogUtils;
+import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
+import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.IEventBus;
@@ -21,6 +23,9 @@ public class FamiliarMagic {
     public FamiliarMagic(IEventBus modEventBus, ModContainer modContainer) {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
+
+        FamiliarItems.register(modEventBus);
+        FamiliarBlocks.register(modEventBus);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);

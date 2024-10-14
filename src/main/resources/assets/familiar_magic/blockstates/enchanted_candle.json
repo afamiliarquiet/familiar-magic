@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "candles=1,lit=false": {
+      "model": "familiar_magic:block/one_enchanted_candle"
+    },
+    "candles=1,lit=true": {
+      "model": "familiar_magic:block/one_lit_enchanted_candle"
+    },
+    "candles=2,lit=false": {
+      "model": "familiar_magic:block/two_enchanted_candles"
+    },
+    "candles=2,lit=true": {
+      "model": "familiar_magic:block/two_lit_enchanted_candles"
+    },
+    "candles=3,lit=false": {
+      "model": "familiar_magic:block/three_enchanted_candles"
+    },
+    "candles=3,lit=true": {
+      "model": "familiar_magic:block/three_lit_enchanted_candles"
+    },
+    "candles=4,lit=false": {
+      "model": "familiar_magic:block/four_enchanted_candles"
+    },
+    "candles=4,lit=true": {
+      "model": "familiar_magic:block/four_lit_enchanted_candles"
+    }
+  }
+}
