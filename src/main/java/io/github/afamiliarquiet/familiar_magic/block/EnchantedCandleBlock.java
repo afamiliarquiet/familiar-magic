@@ -2,8 +2,11 @@ package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CandleBlock;
@@ -18,12 +21,20 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class EnchantedCandleBlock extends CandleBlock {
-    private static final List<List<Vec3>> PARTICLE_OFFSETS = ImmutableList.of(
+    private static final List<List<Vec3>> FLAME_OFFSETS = ImmutableList.of(
             ImmutableList.of(new Vec3(0.46875, 0.875, 0.46875)),
             ImmutableList.of(new Vec3(0.40625, 0.9375, 0.34375), new Vec3(0.59375, 0.75, 0.65625)),
             ImmutableList.of(new Vec3(0.46875, 0.875, 0.40625), new Vec3(0.65625, 0.9375, 0.71875), new Vec3(0.34375, 0.75, 0.65625)),
             ImmutableList.of(new Vec3(0.28125, 0.875, 0.34375), new Vec3(0.59375, 1, 0.40625), new Vec3(0.65625, 0.6875, 0.65625), new Vec3(0.34375, 0.8125, 0.59375))
     );
+
+    private static final List<List<Vec3>> ENCHANT_OFFSETS = ImmutableList.of(
+            ImmutableList.of(new Vec3(0.46875, 0.375, 0.46875)),
+            ImmutableList.of(new Vec3(0.40625, 0.4375, 0.34375), new Vec3(0.59375, 0.3125, 0.65625)),
+            ImmutableList.of(new Vec3(0.46875, 0.375, 0.40625), new Vec3(0.65625, 0.5, 0.71875), new Vec3(0.34375, 0.5, 0.65625)),
+            ImmutableList.of(new Vec3(0.28125, 0.375, 0.34375), new Vec3(0.59375, 0.5625, 0.40625), new Vec3(0.65625, 0.4375, 0.65625), new Vec3(0.34375, 0.4375, 0.59375))
+    );
+
     private static final List<VoxelShape> SHAPES = ImmutableList.of(
             Block.box(6, 4, 6, 9, 12, 9),
             Block.box(5, 4, 4, 11, 13, 12),
@@ -52,14 +63,33 @@ public class EnchantedCandleBlock extends CandleBlock {
     }
 
     @Override
-    protected Iterable<Vec3> getParticleOffsets(BlockState state) {
+    protected List<Vec3> getParticleOffsets(BlockState state) {
         // unlike getShape, this is perfectly safe even with 5 candles!
         // haha got you!! you totally tried it and kersploded. yeah, this also kersplodes.
-        return PARTICLE_OFFSETS.get(state.getValue(CANDLES) - 1);
+        return FLAME_OFFSETS.get(state.getValue(CANDLES) - 1);
+    }
+
+    protected List<Vec3> getEnchantOffsets(BlockState state) {
+        return ENCHANT_OFFSETS.get(state.getValue(CANDLES) - 1);
     }
 
     @Override
     protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return true;
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        super.animateTick(state, level, pos, random);
+
+        // this is kinda funky because i don't want to make another offsets list for the bottoms of the candles
+        List<Vec3> offsets = getEnchantOffsets(state);
+        Vec3 chosenOffset = offsets.get(random.nextInt(offsets.size()));
+        if (random.nextFloat() < (0.031f * state.getValue(CANDLES))) {
+            level.addParticle(
+                    ParticleTypes.ENCHANT,
+                    pos.getX() + chosenOffset.x, pos.getY() + chosenOffset.y, pos.getZ() + chosenOffset.z,
+                    0, 0, 0);
+        }
     }
 }
