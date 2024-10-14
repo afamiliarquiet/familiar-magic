@@ -1,6 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
@@ -18,8 +19,11 @@ import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
+@MethodsReturnNonnullByDefault
+@ParametersAreNonnullByDefault
 public class EnchantedCandleBlock extends CandleBlock {
     private static final List<List<Vec3>> FLAME_OFFSETS = ImmutableList.of(
             ImmutableList.of(new Vec3(0.46875, 0.875, 0.46875)),
