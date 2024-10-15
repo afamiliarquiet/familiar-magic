@@ -5,12 +5,14 @@ import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -20,25 +22,22 @@ import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 @ParametersAreNonnullByDefault
 public class SummoningTableMenu extends AbstractContainerMenu {
     static final ResourceLocation EMPTY_SLOT_TRUE_NAME = ResourceLocation.fromNamespaceAndPath(MOD_ID, "item/empty_slot_true_name");
-    private final Container tableSlots = new SimpleContainer(1) {
-        @Override
-        public void setChanged() {
-            super.setChanged();
-            slotsChanged(this);
-        }
-    };
 
     private final ContainerLevelAccess levelAccess;
+    private final ContainerData tableData;
+    private final SlotItemHandler trueNameSlot;
 
     public SummoningTableMenu(int containerId, Inventory playerInv) {
-        this(containerId,  playerInv, ContainerLevelAccess.NULL);
+        this(containerId,  playerInv, new ItemStackHandler(1), new SimpleContainerData(4), ContainerLevelAccess.NULL);
     }
-    public SummoningTableMenu(int containerId, Inventory playerInventory, ContainerLevelAccess levelAccess) {
+    public SummoningTableMenu(int containerId, Inventory playerInventory, IItemHandler tableInventory, ContainerData tableData, ContainerLevelAccess levelAccess) {
         super(FamiliarGUIStuffs.SUMMONING_TABLE_MENU.get(), containerId);
+        checkContainerDataCount(tableData, 4);
         this.levelAccess = levelAccess;
+        this.tableData = tableData;
 
         // table inv
-        this.addSlot(new Slot(this.tableSlots, 0, 26, 31) {
+        this.trueNameSlot = new SlotItemHandler(tableInventory, 0, 26, 31) {
             @Override
             public boolean mayPlace(ItemStack itemStack) {
                 return itemStack.is(Items.NAME_TAG);
@@ -53,7 +52,8 @@ public class SummoningTableMenu extends AbstractContainerMenu {
             public int getMaxStackSize() {
                 return 1;
             }
-        });
+        };
+        this.addSlot(this.trueNameSlot);
 
         // player inv
         for (int i = 0; i < 3; i++) {
@@ -66,14 +66,15 @@ public class SummoningTableMenu extends AbstractContainerMenu {
         }
 
         // table data
-        // idk if i need this right now. will come back to this
+        this.addDataSlots(tableData);
     }
 
-    @Override
-    public void removed(Player player) {
-        super.removed(player);
-        this.levelAccess.execute((level, blockPos) -> this.clearContainer(player, this.tableSlots));
-    }
+    // in theory i don't want this. because it's an inventory. it should keep it
+//    @Override
+//    public void removed(Player player) {
+//        super.removed(player);
+//        this.levelAccess.execute((level, blockPos) -> this.clearContainer(player, this.tableSlots));
+//    }
 
     @Override
     public void slotsChanged(Container container) {

@@ -2,30 +2,26 @@ package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
-import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableMenu;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.Nameable;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @MethodsReturnNonnullByDefault
@@ -62,32 +58,21 @@ public class SummoningTableBlock extends BaseEntityBlock {
         return new SummoningTableBlockEntity(pos, state);
     }
 
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+        return createTickerHelper(blockEntityType, FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY.get(), SummoningTableBlockEntity::tick);
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.openMenu(state.getMenuProvider(level, pos));
+        if (!level.isClientSide
+                && player instanceof ServerPlayer serverPlayer
+                && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity zeraxos) {
+            serverPlayer.openMenu(zeraxos);
         }
 
         return InteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    @Nullable
-    @Override
-    protected MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
-        BlockEntity summoningTableEntity = level.getBlockEntity(pos);
-        if (summoningTableEntity instanceof SummoningTableBlockEntity) {
-            Component name = ((Nameable)summoningTableEntity).getDisplayName();
-            return new SimpleMenuProvider(
-                    (containerId, playerInventory, player) -> new SummoningTableMenu(
-                            containerId,
-                            playerInventory,
-                            ContainerLevelAccess.create(level, pos)
-                    ),
-                    name
-            );
-        } else {
-            return null;
-        }
     }
 
     @Override
