@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic;
 
 import com.mojang.logging.LogUtils;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
+import io.github.afamiliarquiet.familiar_magic.gooey.FamiliarGUIStuffs;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
@@ -26,6 +27,7 @@ public class FamiliarMagic {
 
         FamiliarItems.register(modEventBus);
         FamiliarBlocks.register(modEventBus);
+        FamiliarGUIStuffs.register(modEventBus);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
