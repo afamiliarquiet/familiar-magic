@@ -119,20 +119,16 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
                 }
 
                 byte nybble = nybbleFromCandleColumn(level, new BlockPos(x, pos.getY(), z));
-                if (nybble == (byte) 0xff) {
-                    // search failed, no enchanted candles in column
-                    return null;
+
+                // store nybble
+                if (nybblesTaken < 16) {
+                    uuidMost <<= 4;
+                    uuidMost |= nybble;
                 } else {
-                    // store nybble
-                    if (nybblesTaken < 16) {
-                        uuidMost <<= 4;
-                        uuidMost |= nybble;
-                    } else {
-                        uuidLeast <<= 4;
-                        uuidLeast |= nybble;
-                    }
-                    nybblesTaken++;
+                    uuidLeast <<= 4;
+                    uuidLeast |= nybble;
                 }
+                nybblesTaken++;
             }
         }
 
@@ -148,7 +144,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
 
         // failed to find any candle
-        return (byte) 0xff;
+        return (byte) 0x00;
     }
 
     @Override

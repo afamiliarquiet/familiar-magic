@@ -83,6 +83,7 @@ public class SummoningTableMenu extends AbstractContainerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
+        // todo - make it more same as vanilla. shouldn't replace clicked stack?
         ItemStack copyOfOriginalStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         if (slot.hasItem()) {
