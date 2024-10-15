@@ -1,6 +1,5 @@
 package io.github.afamiliarquiet.familiar_magic.block.entity;
 
-import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableMenu;
@@ -12,9 +11,12 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -49,7 +51,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0, 1, 2, 3 -> UUIDUtil.uuidToIntArray(target)[index];
+                case 0, 1, 2, 3 -> target == null ? 0 : UUIDUtil.uuidToIntArray(target)[index];
                 default -> 0;
             };
         }
@@ -82,11 +84,22 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         super(FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY.get(), pos, blockState);
     }
 
+    public boolean tryActivate() {
+        if (this.target != null && this.level instanceof ServerLevel serverLevel) {
+            Entity targetEntity = serverLevel.getEntity(this.target);
+            if (targetEntity instanceof LivingEntity livingTarget) {
+                BlockPos destination = this.getBlockPos();
+                livingTarget.teleportTo(destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void tick(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thisish) {
         UUID oldTarget = thisish.target;
         if (level.getGameTime() % 80L == 0L) {
             thisish.target = processCandles(level, pos);
-            FamiliarMagic.LOGGER.debug("New target processed: " + (thisish.target == null ? "null" : thisish.target.toString()));
         }
     }
 
@@ -130,7 +143,6 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         for (int yOffset = 4; yOffset > 0; yOffset--) {
             BlockState curiousBlockState = level.getBlockState(pos.offset(0, yOffset, 0));
             if (curiousBlockState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK)) {
-                //FamiliarMagic.LOGGER.debug("Found " + curiousBlockState.getValue(EnchantedCandleBlock.CANDLES) + " candles " + yOffset + " blocks up")
                 return (byte) ((yOffset - 1) << 2 | (curiousBlockState.getValue(EnchantedCandleBlock.CANDLES) - 1));
             }
         }

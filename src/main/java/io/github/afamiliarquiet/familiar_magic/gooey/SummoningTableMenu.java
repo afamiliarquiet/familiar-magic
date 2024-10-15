@@ -24,7 +24,7 @@ public class SummoningTableMenu extends AbstractContainerMenu {
     static final ResourceLocation EMPTY_SLOT_TRUE_NAME = ResourceLocation.fromNamespaceAndPath(MOD_ID, "item/empty_slot_true_name");
 
     private final ContainerLevelAccess levelAccess;
-    private final ContainerData tableData;
+    protected final ContainerData tableData;
     private final SlotItemHandler trueNameSlot;
 
     public SummoningTableMenu(int containerId, Inventory playerInv) {

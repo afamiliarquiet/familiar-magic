@@ -69,7 +69,11 @@ public class SummoningTableBlock extends BaseEntityBlock {
         if (!level.isClientSide
                 && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity zeraxos) {
-            serverPlayer.openMenu(zeraxos);
+            if (serverPlayer.isCrouching() && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
+                tableEntity.tryActivate();
+            } else {
+                serverPlayer.openMenu(zeraxos);
+            }
         }
 
         return InteractionResult.sidedSuccess(level.isClientSide);
