@@ -1,5 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.gooey;
 
+import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -23,6 +24,7 @@ public class SummoningTableScreen extends AbstractContainerScreen<SummoningTable
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        // todo - corners don't seem to be transparenting. annoying.
         graphics.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
     }
 
@@ -38,12 +40,12 @@ public class SummoningTableScreen extends AbstractContainerScreen<SummoningTable
 
         guiGraphics.drawString(
                 this.font,
-                Component.literal(UUIDUtil.uuidFromIntArray(new int[]{
+                Component.literal(FamiliarTricks.uuidToTrueName(UUIDUtil.uuidFromIntArray(new int[]{
                         menu.tableData.get(0),
                         menu.tableData.get(1),
                         menu.tableData.get(2),
                         menu.tableData.get(3)
-                }).toString()),
+                }))),
                 52,
                 31,
                 4210752,

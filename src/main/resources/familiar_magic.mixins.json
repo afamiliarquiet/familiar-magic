@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "io.github.afamiliarquiet.familiar_magic.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "TrueNameTagMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

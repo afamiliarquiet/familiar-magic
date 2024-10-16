@@ -3,6 +3,7 @@ package io.github.afamiliarquiet.familiar_magic.block.entity;
 import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableMenu;
+import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -23,7 +24,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
@@ -39,6 +39,9 @@ import java.util.UUID;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class SummoningTableBlockEntity extends BlockEntity implements IItemHandlerModifiable, MenuProvider, Nameable {
+    // i'm really not feeling great about implementing IItemHandlerModifiable. feels like i should be doing something else.
+    // but it works for now so whatever. i'm tryin my best to be neoforgey!!
+
     @Nullable
     private Component name;
     private LockCode lockKey = LockCode.NO_LOCK;
@@ -104,7 +107,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     // written with the aid of our lady luna :innocent:
-    @Nullable
+    //@Nullable
     private static UUID processCandles(Level level, BlockPos pos) {
         long uuidMost = 0, uuidLeast = 0;
         int nybblesTaken = 0;
@@ -237,10 +240,11 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-        if (slot == 0 && this.item.isEmpty() && stack.is(Items.NAME_TAG)) {
+        if (slot == 0 && this.item.isEmpty() && stack.is(FamiliarItems.TRUE_NAME_ITEM)) {
             if (!simulate) {
                 this.item = stack.copyWithCount(1);
             }
+
             return stack.copyWithCount(stack.getCount() - 1);
         } else {
             return stack;
@@ -250,10 +254,11 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         if (slot == 0) {
+            ItemStack toReturn = this.item.copy();
             if (!simulate) {
                 this.item = ItemStack.EMPTY;
             }
-            return this.item.copy();
+            return toReturn;
         } else {
             return ItemStack.EMPTY;
         }
@@ -266,7 +271,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
-        return slot == 0 && stack.is(Items.NAME_TAG);
+        return slot == 0 && stack.is(FamiliarItems.TRUE_NAME_ITEM);
     }
 
     @Override
