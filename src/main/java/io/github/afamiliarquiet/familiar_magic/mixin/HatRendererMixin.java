@@ -2,37 +2,26 @@ package io.github.afamiliarquiet.familiar_magic.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
-
 @Mixin(ItemRenderer.class)
 public abstract class HatRendererMixin {
-    @Unique
-    private static final ModelResourceLocation familiar_magic$BIG_HAT = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(MOD_ID, "big_hat_on_head"));
 
     @Shadow
     private ItemModelShaper itemModelShaper;
-
-    @Shadow
-    private static boolean hasAnimatedTexture(ItemStack stack) {
-        return false;
-    }
 
     @Shadow
     public static VertexConsumer getFoilBufferDirect(MultiBufferSource bufferSource, RenderType renderType, boolean noEntity, boolean withGlint) {
@@ -51,7 +40,7 @@ public abstract class HatRendererMixin {
             //LOGGER.debug("rendering hat on head");
             if (!itemStack.isEmpty()) {
                 poseStack.pushPose();
-                p_model = this.itemModelShaper.getModelManager().getModel(FamiliarItems.BIG_HAT_ON_HEAD_MODEL);
+                p_model = this.itemModelShaper.getModelManager().getModel(FamiliarMagicClient.BIG_HAT_ON_HEAD_MODEL);
 
                 p_model = net.neoforged.neoforge.client.ClientHooks.handleCameraTransforms(poseStack, p_model, displayContext, leftHand);
                 poseStack.translate(-0.5F, -0.5F, -0.5F);

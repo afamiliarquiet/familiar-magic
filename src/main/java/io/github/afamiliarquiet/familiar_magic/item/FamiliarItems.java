@@ -2,10 +2,8 @@ package io.github.afamiliarquiet.familiar_magic.item;
 
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import net.minecraft.Util;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.*;
@@ -64,7 +62,6 @@ public class FamiliarItems {
                     new Item.Properties().durability(1031)
             )
     );
-    public static final ModelResourceLocation BIG_HAT_ON_HEAD_MODEL = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(MOD_ID, "big_hat_on_head"));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

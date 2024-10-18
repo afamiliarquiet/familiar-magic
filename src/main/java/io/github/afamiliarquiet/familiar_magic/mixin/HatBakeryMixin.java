@@ -1,6 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin;
 
-import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.resources.model.BlockStateModelLoader;
@@ -28,6 +28,6 @@ public abstract class HatBakeryMixin {
                                Map<ResourceLocation, BlockModel> modelResources,
                                Map<ResourceLocation, List<BlockStateModelLoader.LoadedJson>> blockStateResources,
                                CallbackInfo ci) {
-        this.loadSpecialItemModelAndDependencies(FamiliarItems.BIG_HAT_ON_HEAD_MODEL);
+        this.loadSpecialItemModelAndDependencies(FamiliarMagicClient.BIG_HAT_ON_HEAD_MODEL);
     }
 }
