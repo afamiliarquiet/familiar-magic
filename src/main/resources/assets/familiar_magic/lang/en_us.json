@@ -3,5 +3,7 @@
   "item.familiar_magic.big_hat": "Big Hat",
   "block.familiar_magic.enchanted_candle": "Enchanted Candle",
   "block.familiar_magic.summoning_table":  "Summoning Table",
-  "container.familiar_magic.summon": "Summon"
+  "container.familiar_magic.summon": "Summon",
+  "category.familiar_magic.familiar_magic": "Familiar Magic",
+  "key.familiar_magic.focus": "Focus"
 }

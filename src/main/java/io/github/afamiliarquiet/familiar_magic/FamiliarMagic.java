@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.gooey.FamiliarGUIStuffs;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
+import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.IEventBus;
@@ -24,6 +25,7 @@ public class FamiliarMagic {
     public FamiliarMagic(IEventBus modEventBus, ModContainer modContainer) {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(FamiliarPacketeering::mrwRegisterPayloadHandlersEvent);
 
         FamiliarItems.register(modEventBus);
         FamiliarBlocks.register(modEventBus);
