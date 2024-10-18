@@ -4,11 +4,20 @@ import com.mojang.serialization.MapCodec;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -16,10 +25,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -28,6 +43,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class SummoningTableBlock extends BaseEntityBlock {
     public static final MapCodec<SummoningTableBlock> CODEC = simpleCodec(SummoningTableBlock::new);
+
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
+
     protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
 
     @Override
@@ -37,6 +55,23 @@ public class SummoningTableBlock extends BaseEntityBlock {
 
     public SummoningTableBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(
+                this.stateDefinition
+                        .any()
+                        .setValue(LIT, Boolean.FALSE)
+        );
+    }
+
+    @Override
+    public @Nullable BlockState getToolModifiedState(BlockState state, UseOnContext context, ItemAbility itemAbility, boolean simulate) {
+        if (itemAbility == ItemAbilities.FIRESTARTER_LIGHT && !state.getValue(LIT)) {
+            // neoforge docs say calling state#setValue without saving it back into state does nothing, so..
+            // hopefully simulate is happy :)
+            // actually this shouldn't directly set lit - probably need to hand off to the blockentity here. but that's later
+            return state.setValue(LIT, Boolean.TRUE);
+        } else {
+            return super.getToolModifiedState(state, context, itemAbility, simulate);
+        }
     }
 
     protected boolean useShapeForLightOcclusion(BlockState state) {
@@ -80,7 +115,56 @@ public class SummoningTableBlock extends BaseEntityBlock {
     }
 
     @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (stack.isEmpty() && player.getAbilities().mayBuild && state.getValue(LIT)) {
+            extinguish(player, state, level, pos);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        } else {
+            return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
+        }
+    }
+
+    public static void extinguish(Player player, BlockState state, LevelAccessor level, BlockPos pos) {
+        level.setBlock(pos, state.setValue(LIT, false), UPDATE_ALL_IMMEDIATE);
+
+        level.addParticle(
+                ParticleTypes.SMOKE,
+                (double) pos.getX() + 0.5,
+                (double) pos.getY() + 0.75,
+                (double) pos.getZ() + 0.5,
+                0.0,
+                0.1F,
+                0.0
+        );
+
+        // using glass break to copy nether portal break for now. maybe will change later
+        level.playSound(null, pos, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
+        level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (state.getValue(LIT)) {
+            if (random.nextInt(100) == 0) {
+                // truly just ripping this whole thing from respawn anchor. as usual, might change sound later. unlikely
+                level.playLocalSound(pos, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            }
+
+            double d0 = (double)pos.getX() + 0.5 + (0.5 - random.nextDouble());
+            double d1 = (double)pos.getY() + 0.75;
+            double d2 = (double)pos.getZ() + 0.5 + (0.5 - random.nextDouble());
+            double d3 = (double)random.nextFloat() * 0.04;
+            level.addParticle(ParticleTypes.REVERSE_PORTAL, d0, d1, d2, 0.0, d3, 0.0);
+        }
+    }
+
+    @Override
     protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
         return false;
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(LIT);
     }
 }

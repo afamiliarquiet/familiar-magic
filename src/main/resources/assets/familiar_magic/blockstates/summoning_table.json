@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "lit=false": {
       "model": "familiar_magic:block/summoning_table"
+    },
+    "lit=true": {
+      "model": "familiar_magic:block/summoning_table_lit"
     }
   }
 }
