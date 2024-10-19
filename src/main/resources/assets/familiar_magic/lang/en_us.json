@@ -5,5 +5,6 @@
   "block.familiar_magic.summoning_table":  "Summoning Table",
   "container.familiar_magic.summon": "Summon",
   "category.familiar_magic.familiar_magic": "Familiar Magic",
-  "key.familiar_magic.focus": "Focus"
+  "key.familiar_magic.focus": "Focus",
+  "key.familiar_magic.focus_toggle": "Toggle Focus"
 }

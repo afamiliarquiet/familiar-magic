@@ -35,30 +35,59 @@ public class FamiliarMagicClient {
             )
     );
 
-    private static final AtomicBoolean focusedLastTick = new AtomicBoolean(false);
+    public static final Lazy<KeyMapping> FOCUS_TOGGLE_MAPPING = Lazy.of(() ->
+            new KeyMapping(
+                    "key.familiar_magic.focus_toggle",
+                    KeyConflictContext.IN_GAME,
+                    InputConstants.Type.KEYSYM,
+                    InputConstants.UNKNOWN.getValue(),
+                    "category.familiar_magic.familiar_magic"
+            )
+    );
+
+    private static final AtomicBoolean FOCUSED_LAST_TICK = new AtomicBoolean(false);
+    private static final AtomicBoolean FOCUS_HELD_LAST_TICK = new AtomicBoolean(false);
 
     public FamiliarMagicClient(IEventBus modClientEventBus) {
         modClientEventBus.addListener(FamiliarMagicClient::mrwRegisterKeyMappingsEvent);
         //modClientEventBus.addListener(FamiliarMagicClient::mrwClientTickEventPost);
 
-        focusedLastTick.set(false); // does this matter? idk, whatever
+        FOCUS_HELD_LAST_TICK.set(false); // does this matter? idk, whatever
     }
 
     private static void mrwRegisterKeyMappingsEvent(RegisterKeyMappingsEvent event) {
         // zoinks! a RegisterKeyMappingsEvent!
         event.register(FOCUS_MAPPING.get());
+        event.register(FOCUS_TOGGLE_MAPPING.get());
     }
 
     @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MOD_ID, value = Dist.CLIENT)
     public static class ArghImGoingToBlowUp {
         @SubscribeEvent
         private static void mrwClientTickEventPost(ClientTickEvent.Pre event) {
-            boolean focusedNow = FOCUS_MAPPING.get().isDown();
+            boolean shouldUpdate = false;
+            boolean focusedNow = FOCUSED_LAST_TICK.get();
+            boolean buttonHeldNow = FOCUS_MAPPING.get().isDown();
 
-            if (focusedNow != focusedLastTick.get()) {
+            // process the togglizer (may be out of date, so less precedence)
+            while (FOCUS_TOGGLE_MAPPING.get().consumeClick()) {
+                shouldUpdate = true;
+                focusedNow = !focusedNow;
+            }
+
+            // process the pressulator (should be the latest news. it gets final say)
+            if (buttonHeldNow != FOCUS_HELD_LAST_TICK.get()) {
+                if (buttonHeldNow != FOCUSED_LAST_TICK.get()) {
+                    shouldUpdate = true;
+                    focusedNow = buttonHeldNow;
+                }
+
+                FOCUS_HELD_LAST_TICK.set(buttonHeldNow);
+            }
+
+            if (shouldUpdate) {
+                FOCUSED_LAST_TICK.set(focusedNow);
                 PacketDistributor.sendToServer(new FamiliarPacketeering.FocusPayload(focusedNow));
-
-                focusedLastTick.set(focusedNow);
             }
         }
     }
