@@ -24,6 +24,7 @@ import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 @Mod(value = "familiar_magic", dist = Dist.CLIENT)
 public class FamiliarMagicClient {
     public static final ModelResourceLocation BIG_HAT_ON_HEAD_MODEL = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(MOD_ID, "big_hat_on_head"));
+    public static final ResourceLocation FOCUS_OVERLAY = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/misc/focus.png");
 
     public static final Lazy<KeyMapping> FOCUS_MAPPING = Lazy.of(() ->
             new KeyMapping(
@@ -45,8 +46,8 @@ public class FamiliarMagicClient {
             )
     );
 
-    private static final AtomicBoolean FOCUSED_LAST_TICK = new AtomicBoolean(false);
-    private static final AtomicBoolean FOCUS_HELD_LAST_TICK = new AtomicBoolean(false);
+    public static final AtomicBoolean FOCUSED_LAST_TICK = new AtomicBoolean(false);
+    public static final AtomicBoolean FOCUS_HELD_LAST_TICK = new AtomicBoolean(false);
 
     public FamiliarMagicClient(IEventBus modClientEventBus) {
         modClientEventBus.addListener(FamiliarMagicClient::mrwRegisterKeyMappingsEvent);
