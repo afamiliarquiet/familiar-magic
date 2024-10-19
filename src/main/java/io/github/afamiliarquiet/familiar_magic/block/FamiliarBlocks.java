@@ -8,8 +8,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CandleBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -32,6 +35,19 @@ public class FamiliarBlocks {
     public static final DeferredBlock<SummoningTableBlock> SUMMONING_TABLE_BLOCK = registerBlockWithItem(
             "summoning_table",
             () -> new SummoningTableBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.ENCHANTING_TABLE))
+    );
+
+    @SuppressWarnings("unused") // because it IS USED >:( it is NOT safe to delete
+    public static final DeferredBlock<SmokeWispBlock> SMOKE_WISP_BLOCK = BLOCKS.register(
+            "smoke_wisp",
+            () -> new SmokeWispBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GRAY)
+                    .replaceable()
+                    .noCollission()
+                    .instabreak()
+                    .sound(SoundType.WOOL)
+                    .pushReaction(PushReaction.DESTROY)
+            )
     );
 
     @SuppressWarnings("DataFlowIssue") // totally get it. yeah. it says notnull. but neoforge docs say it's fine so it's fine

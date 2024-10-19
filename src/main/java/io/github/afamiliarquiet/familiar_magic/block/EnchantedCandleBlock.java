@@ -1,6 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -25,6 +26,8 @@ import java.util.List;
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
 public class EnchantedCandleBlock extends CandleBlock {
+    public static final MapCodec<CandleBlock> CODEC = simpleCodec(EnchantedCandleBlock::new);
+
     private static final List<List<Vec3>> FLAME_OFFSETS = ImmutableList.of(
             ImmutableList.of(new Vec3(0.46875, 0.875, 0.46875)),
             ImmutableList.of(new Vec3(0.40625, 0.9375, 0.34375), new Vec3(0.59375, 0.75, 0.65625)),
@@ -45,6 +48,11 @@ public class EnchantedCandleBlock extends CandleBlock {
             Block.box(4, 4, 5, 12, 13, 13),
             Block.box(3, 3, 4, 12, 14, 12)
     );
+
+    @Override
+    public MapCodec<CandleBlock> codec() {
+        return CODEC; // idk about this. But It's Fine
+    }
 
     public EnchantedCandleBlock(Properties properties) {
         super(properties);
