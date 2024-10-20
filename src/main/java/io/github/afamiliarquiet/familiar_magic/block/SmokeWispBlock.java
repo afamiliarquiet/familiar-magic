@@ -1,8 +1,10 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
@@ -52,6 +54,11 @@ public class SmokeWispBlock extends Block {
             double d2 = (double)pos.getZ() + 0.3125 + 0.375 * random.nextDouble();
             level.addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0, 0.0, 0.0);
         //}
+
+        // i wonder........ can i get away with accessing client info from here?
+        if (FamiliarMagicClient.FOCUSED_LAST_TICK.get()) {
+            level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, state), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
+        }
     }
 
     @Override

@@ -1,7 +1,16 @@
 {
   "variants": {
-    "": {
-      "model": "familiar_magic:block/smoke_wisp"
+    "candles=1": {
+      "model": "familiar_magic:block/one_smoke_wisp"
+    },
+    "candles=2": {
+      "model": "familiar_magic:block/two_smoke_wisps"
+    },
+    "candles=3": {
+      "model": "familiar_magic:block/three_smoke_wisps"
+    },
+    "candles=4": {
+      "model": "familiar_magic:block/four_smoke_wisps"
     }
   }
 }
