@@ -22,6 +22,8 @@ public abstract class HatBakeryMixin {
     @Shadow
     protected abstract void loadSpecialItemModelAndDependencies(ModelResourceLocation modelLocation);
 
+    // it kinda sounds like this could be replaced with ModelEvent.RegisterAdditional but. ehhhh...
+    // this works and that might not. hey u reading this, if that'd work then tell me n i'll try it
     @Inject(at = @At("TAIL"), method = "<init>")
     private void mmFreshHotHat(BlockColors blockColors,
                                ProfilerFiller profilerFiller,
