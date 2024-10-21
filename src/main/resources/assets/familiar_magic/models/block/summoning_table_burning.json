@@ -1,0 +1,6 @@
+{
+  "parent": "familiar_magic:block/summoning_table",
+  "textures": {
+    "top": "familiar_magic:block/summoning_table_top"
+  }
+}

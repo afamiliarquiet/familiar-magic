@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
+import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableState;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -27,8 +28,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
@@ -45,7 +45,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class SummoningTableBlock extends BaseEntityBlock {
     public static final MapCodec<SummoningTableBlock> CODEC = simpleCodec(SummoningTableBlock::new);
 
-    public static final BooleanProperty LIT = BlockStateProperties.LIT;
+    public static final EnumProperty<SummoningTableState> SUMMONING_TABLE_STATE = EnumProperty.create("summoning_table_state", SummoningTableState.class);
 
     protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
 
@@ -59,14 +59,14 @@ public class SummoningTableBlock extends BaseEntityBlock {
         this.registerDefaultState(
                 this.stateDefinition
                         .any()
-                        .setValue(LIT, Boolean.FALSE)
+                        .setValue(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE)
         );
     }
 
     @Override
     public @Nullable BlockState getToolModifiedState(BlockState state, UseOnContext context, ItemAbility itemAbility, boolean simulate) {
         BlockEntity blockerizer = context.getLevel().getBlockEntity(context.getClickedPos());
-        if (itemAbility == ItemAbilities.FIRESTARTER_LIGHT && !state.getValue(LIT) && blockerizer instanceof SummoningTableBlockEntity summonizer) {
+        if (itemAbility == ItemAbilities.FIRESTARTER_LIGHT && state.getValue(SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE && blockerizer instanceof SummoningTableBlockEntity summonizer) {
             // neoforge docs say calling state#setValue without saving it back into state does nothing, so..
             // hopefully simulate is happy :)
             // actually this shouldn't directly set lit - probably need to hand off to the blockentity here. but that's later
@@ -129,7 +129,7 @@ public class SummoningTableBlock extends BaseEntityBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (stack.isEmpty() && player.getAbilities().mayBuild && state.getValue(LIT)) {
+        if (stack.isEmpty() && player.getAbilities().mayBuild && state.getValue(SUMMONING_TABLE_STATE) != SummoningTableState.INACTIVE) {
             extinguish(player, state, level, pos);
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         } else {
@@ -138,7 +138,7 @@ public class SummoningTableBlock extends BaseEntityBlock {
     }
 
     public static void extinguish(Player player, BlockState state, LevelAccessor level, BlockPos pos) {
-        level.setBlock(pos, state.setValue(LIT, false), UPDATE_ALL_IMMEDIATE);
+        level.setBlock(pos, state.setValue(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE), UPDATE_ALL_IMMEDIATE);
 
         level.addParticle(
                 ParticleTypes.SMOKE,
@@ -157,7 +157,7 @@ public class SummoningTableBlock extends BaseEntityBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (state.getValue(LIT)) {
+        if (state.getValue(SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
             if (random.nextInt(100) == 0) {
                 // truly just ripping this whole thing from respawn anchor. as usual, might change sound later. unlikely
                 level.playLocalSound(pos, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
@@ -178,6 +178,6 @@ public class SummoningTableBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(LIT);
+        builder.add(SUMMONING_TABLE_STATE);
     }
 }

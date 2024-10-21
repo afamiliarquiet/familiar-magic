@@ -49,6 +49,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     @Nullable
     private UUID target = null;
     private ItemStack item = ItemStack.EMPTY;
+    private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
 
     private final ContainerData dataAccess = new ContainerData() {
         // lady luna guide me once more orz
@@ -94,24 +95,34 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             if (targetEntity instanceof LivingEntity livingTarget) {
                 BlockPos destination = this.getBlockPos();
                 livingTarget.teleportTo(destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5);
-                return state.setValue(SummoningTableBlock.LIT, true);
+                return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.SUMMONING);
             }
         }
         return state;
     }
 
     public BlockState tryBurnName(BlockState state, boolean simulate) {
+        if (!this.item.isEmpty()) {
+            if (!simulate) {
+                this.burningPhase = 8;
+            }
+
+        }
         return state;
     }
 
-    public boolean tryDesignate(BlockState state) {
-        return false;
+    public void tryDesignate(BlockState state) {
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thisish) {
-        UUID oldTarget = thisish.target;
+    public static void tick(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
+        // update target
         if (level.getGameTime() % 80L == 0L) {
-            thisish.target = processCandles(level, pos);
+            thys.target = processCandles(level, pos);
+        }
+
+        // process burning
+        if (thys.burningPhase > 0 && level.getGameTime() % 5L == 0L) {
+
         }
     }
 

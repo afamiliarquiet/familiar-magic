@@ -1,10 +1,13 @@
 {
   "variants": {
-    "lit=false": {
+    "summoning_table_state=inactive": {
       "model": "familiar_magic:block/summoning_table"
     },
-    "lit=true": {
-      "model": "familiar_magic:block/summoning_table_lit"
+    "summoning_table_state=burning": {
+      "model": "familiar_magic:block/summoning_table_burning"
+    },
+    "summoning_table_state=summoning": {
+      "model": "familiar_magic:block/summoning_table_summoning"
     }
   }
 }

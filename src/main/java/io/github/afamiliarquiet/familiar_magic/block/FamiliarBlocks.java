@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
@@ -34,7 +35,13 @@ public class FamiliarBlocks {
 
     public static final DeferredBlock<SummoningTableBlock> SUMMONING_TABLE_BLOCK = registerBlockWithItem(
             "summoning_table",
-            () -> new SummoningTableBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.ENCHANTING_TABLE))
+            () -> new SummoningTableBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE)
+                    .instrument(NoteBlockInstrument.BASEDRUM)
+                    .requiresCorrectToolForDrops() // hmm good point. i should fix this by adding this to stone pick tag or whatever
+                    .lightLevel(state -> state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE).lightLevel())
+                    .strength(5.0F, 1200.0F)
+            )
     );
 
     @SuppressWarnings("unused") // because it IS USED >:( it is NOT safe to delete
