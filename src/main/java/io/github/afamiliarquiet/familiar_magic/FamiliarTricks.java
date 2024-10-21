@@ -12,42 +12,42 @@ import java.util.UUID;
 public class FamiliarTricks {
     // yea ill uhhh kill a quarter byte
     public static final char[] I_TAKE_A_BYTE = { // todo - for fun maybe make this configurable
-            's', // 0
+            'd', // 0
             'o', // 1
-            'f', // 2
-            't', // 3
-            'l', // 4
-            'y', // 5
-            'd', // 6
-            'r', // 7
-            'e', // 8
-            'a', // 9
-            'm', // a
+            'c', // 2
+            'u', // 3
+            'm', // 4
+            'e', // 5
+            'n', // 6
+            't', // 7
+            'a', // 8
+            'w', // 9
+            'r', // a
             'i', // b
-            'n', // c
-            'g', // d
-            'u', // e
+            'l', // c
+            'y', // d
+            's', // e
             'h', // f
     };
 
     public static final byte[] OW_IVE_BEEN_BYTTEN = new byte[256];
     static {
         Arrays.fill(OW_IVE_BEEN_BYTTEN, (byte) -1);
-        OW_IVE_BEEN_BYTTEN['s'] = 0;
+        OW_IVE_BEEN_BYTTEN['d'] = 0;
         OW_IVE_BEEN_BYTTEN['o'] = 1;
-        OW_IVE_BEEN_BYTTEN['f'] = 2;
-        OW_IVE_BEEN_BYTTEN['t'] = 3;
-        OW_IVE_BEEN_BYTTEN['l'] = 4;
-        OW_IVE_BEEN_BYTTEN['y'] = 5;
-        OW_IVE_BEEN_BYTTEN['d'] = 6;
-        OW_IVE_BEEN_BYTTEN['r'] = 7;
-        OW_IVE_BEEN_BYTTEN['e'] = 8;
-        OW_IVE_BEEN_BYTTEN['a'] = 9;
-        OW_IVE_BEEN_BYTTEN['m'] = 10;
+        OW_IVE_BEEN_BYTTEN['c'] = 2;
+        OW_IVE_BEEN_BYTTEN['u'] = 3;
+        OW_IVE_BEEN_BYTTEN['m'] = 4;
+        OW_IVE_BEEN_BYTTEN['e'] = 5;
+        OW_IVE_BEEN_BYTTEN['n'] = 6;
+        OW_IVE_BEEN_BYTTEN['t'] = 7;
+        OW_IVE_BEEN_BYTTEN['a'] = 8;
+        OW_IVE_BEEN_BYTTEN['w'] = 9;
+        OW_IVE_BEEN_BYTTEN['r'] = 10;
         OW_IVE_BEEN_BYTTEN['i'] = 11;
-        OW_IVE_BEEN_BYTTEN['n'] = 12;
-        OW_IVE_BEEN_BYTTEN['g'] = 13;
-        OW_IVE_BEEN_BYTTEN['u'] = 14;
+        OW_IVE_BEEN_BYTTEN['l'] = 12;
+        OW_IVE_BEEN_BYTTEN['y'] = 13;
+        OW_IVE_BEEN_BYTTEN['s'] = 14;
         OW_IVE_BEEN_BYTTEN['h'] = 15;
     }
 
