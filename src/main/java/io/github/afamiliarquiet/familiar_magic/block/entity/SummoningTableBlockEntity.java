@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.block.entity;
 
 import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
+import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
 import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableMenu;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -87,15 +88,23 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         super(FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY.get(), pos, blockState);
     }
 
-    public boolean tryActivate() {
+    public BlockState tryActivate(BlockState state, boolean simulate) {
         if (this.target != null && this.level instanceof ServerLevel serverLevel) {
             Entity targetEntity = serverLevel.getEntity(this.target);
             if (targetEntity instanceof LivingEntity livingTarget) {
                 BlockPos destination = this.getBlockPos();
                 livingTarget.teleportTo(destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5);
-                return true;
+                return state.setValue(SummoningTableBlock.LIT, true);
             }
         }
+        return state;
+    }
+
+    public BlockState tryBurnName(BlockState state, boolean simulate) {
+        return state;
+    }
+
+    public boolean tryDesignate(BlockState state) {
         return false;
     }
 

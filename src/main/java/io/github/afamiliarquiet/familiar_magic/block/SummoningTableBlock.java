@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -64,11 +65,17 @@ public class SummoningTableBlock extends BaseEntityBlock {
 
     @Override
     public @Nullable BlockState getToolModifiedState(BlockState state, UseOnContext context, ItemAbility itemAbility, boolean simulate) {
-        if (itemAbility == ItemAbilities.FIRESTARTER_LIGHT && !state.getValue(LIT)) {
+        BlockEntity blockerizer = context.getLevel().getBlockEntity(context.getClickedPos());
+        if (itemAbility == ItemAbilities.FIRESTARTER_LIGHT && !state.getValue(LIT) && blockerizer instanceof SummoningTableBlockEntity summonizer) {
             // neoforge docs say calling state#setValue without saving it back into state does nothing, so..
             // hopefully simulate is happy :)
             // actually this shouldn't directly set lit - probably need to hand off to the blockentity here. but that's later
-            return state.setValue(LIT, Boolean.TRUE);
+
+            if (context.getPlayer() != null && context.getPlayer().getData(FamiliarAttachments.FOCUSED)) {
+                return summonizer.tryActivate(state, simulate);
+            } else {
+                return summonizer.tryBurnName(state, simulate);
+            }
         } else {
             return super.getToolModifiedState(state, context, itemAbility, simulate);
         }
@@ -101,11 +108,17 @@ public class SummoningTableBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        // this should really be called use regardless of item from the way it seems to work
+        if (player.getMainHandItem().canPerformAction(ItemAbilities.FIRESTARTER_LIGHT)) {
+            return InteractionResult.PASS;
+        }
+
         if (!level.isClientSide
                 && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity zeraxos) {
-            if (serverPlayer.isCrouching() && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
-                tableEntity.tryActivate();
+            if (serverPlayer.getData(FamiliarAttachments.FOCUSED) && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
+                // and i'll make an even longer line too!! fear me
+                tableEntity.tryDesignate(state);
             } else {
                 serverPlayer.openMenu(zeraxos);
             }
