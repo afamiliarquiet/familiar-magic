@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.UUIDUtil;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
@@ -62,28 +63,26 @@ public class FamiliarTricks {
         return trueName.substring(0, 1).toUpperCase() + trueName.substring(1);
     }
 
-    public static String uuidStringToTrueName(String uuidString) {
-        return uuidToTrueName(UUID.fromString(uuidString));
-    }
+    public static byte @Nullable [] trueNameToNybbles(String trueName) {
+        FamiliarMagic.LOGGER.debug("so the name we're working with is this: " + trueName);
+        if (trueName.length() != 32) {
+            FamiliarMagic.LOGGER.debug("bad length, i say - " + trueName.length());
+            return null;
+        }
 
-    public static String trueNameToUuidString(String trueName) {
-        return trueNameToUUID(trueName).toString();
-    }
-
-    public static UUID trueNameToUUID(String trueName) {
-        long uuidMost = 0, uuidLeast = 0;
+        byte[] nybbles = new byte[32];
         char[] trueNameArr = trueName.toLowerCase().toCharArray();
 
         for (int i = 0; i < 32; i++) {
-            if (i < 16) {
-                uuidMost <<= 4;
-                uuidMost |= OW_IVE_BEEN_BYTTEN[trueNameArr[i]];
+            byte nybble = OW_IVE_BEEN_BYTTEN[trueNameArr[i]];
+            if (nybble == -1) { // if not one of the 16 defined values, bad string
+                FamiliarMagic.LOGGER.debug("bad nybble at index " + i + ", i say: " + nybble);
+                return null;
             } else {
-                uuidLeast <<= 4;
-                uuidLeast |= OW_IVE_BEEN_BYTTEN[trueNameArr[i]];
+                nybbles[i] = nybble;
             }
         }
 
-        return new UUID(uuidMost, uuidLeast);
+        return nybbles;
     }
 }

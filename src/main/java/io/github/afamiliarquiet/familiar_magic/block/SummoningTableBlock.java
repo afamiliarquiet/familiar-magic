@@ -1,6 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableState;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
@@ -74,6 +75,7 @@ public class SummoningTableBlock extends BaseEntityBlock {
             if (context.getPlayer() != null && context.getPlayer().getData(FamiliarAttachments.FOCUSED)) {
                 return summonizer.tryActivate(state, simulate);
             } else {
+                FamiliarMagic.LOGGER.debug("toolModifiedState reporting in - let's try to burn this thing! oh and for the record, simulate is " + simulate);
                 return summonizer.tryBurnName(state, simulate);
             }
         } else {

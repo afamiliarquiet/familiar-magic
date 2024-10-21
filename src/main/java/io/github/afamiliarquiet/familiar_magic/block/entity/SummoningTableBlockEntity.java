@@ -1,7 +1,10 @@
 package io.github.afamiliarquiet.familiar_magic.block.entity;
 
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
+import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
+import io.github.afamiliarquiet.familiar_magic.block.SmokeWispBlock;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
 import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableMenu;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
@@ -12,6 +15,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.LockCode;
@@ -43,11 +47,34 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     // i'm really not feeling great about implementing IItemHandlerModifiable. feels like i should be doing something else.
     // but it works for now so whatever. i'm tryin my best to be neoforgey!!
 
+    // spread out for easier reference (instead of computed)
+    // as for the other choices on display, no comment
+    private static final int[] CANDLE_COLUMN_OFFSETS = {
+            -5,-5,  -3,-5,  -1,-5,  1,-5,  3,-5,  5,-5,
+            -5,-3,  -3,-3,  -1,-3,  1,-3,  3,-3,  5,-3,
+            -5,-1,  -3,-1,                 3,-1,  5,-1,
+            -5, 1,  -3, 1,                 3, 1,  5, 1,
+            -5, 3,  -3, 3,  -1, 3,  1, 3,  3, 3,  5, 3,
+            -5, 5,  -3, 5,  -1, 5,  1, 5,  3, 5,  5, 5
+    };
+    private static final int[][] PHASE_INDICES = {
+            {0,  5, 26, 31}, // phase 1 (final phase)
+            {1, 11, 20, 30}, // phase 2
+            {4,  6, 25, 27}, // phase 3
+            {3, 12, 19, 28}, // phase 4
+            {2, 15, 16, 29}, // phase 5
+            {7, 10, 21, 24}, // phase 6
+            {8, 14, 17, 23}, // phase 7
+            {9, 13, 18, 22}, // phase 8 (first phase)
+    };
+
     @Nullable
     private Component name;
     private LockCode lockKey = LockCode.NO_LOCK;
     @Nullable
-    private UUID target = null;
+    private UUID targetFromCandles = null;
+    @Nullable
+    private byte[] targetFromTrueNameInNybbles = null;
     private ItemStack item = ItemStack.EMPTY;
     private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
 
@@ -56,7 +83,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0, 1, 2, 3 -> target == null ? 0 : UUIDUtil.uuidToIntArray(target)[index];
+                case 0, 1, 2, 3 -> targetFromCandles == null ? 0 : UUIDUtil.uuidToIntArray(targetFromCandles)[index];
                 default -> 0;
             };
         }
@@ -90,8 +117,8 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     public BlockState tryActivate(BlockState state, boolean simulate) {
-        if (this.target != null && this.level instanceof ServerLevel serverLevel) {
-            Entity targetEntity = serverLevel.getEntity(this.target);
+        if (this.targetFromCandles != null && this.level instanceof ServerLevel serverLevel) {
+            Entity targetEntity = serverLevel.getEntity(this.targetFromCandles);
             if (targetEntity instanceof LivingEntity livingTarget) {
                 BlockPos destination = this.getBlockPos();
                 livingTarget.teleportTo(destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5);
@@ -102,12 +129,27 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     public BlockState tryBurnName(BlockState state, boolean simulate) {
-        if (!this.item.isEmpty()) {
-            if (!simulate) {
-                this.burningPhase = 8;
-            }
+        // this fails on client because client can't see the true name. maybe that's a problem to deal with? idk
 
+        if (!this.item.isEmpty()) {
+            byte[] parsedTargetFromItem = FamiliarTricks.trueNameToNybbles(this.item.getHoverName().getString());
+
+            if (parsedTargetFromItem != null) {
+                if (!simulate) {
+                    FamiliarMagic.LOGGER.debug("we're burning up in here!!");
+                    this.targetFromTrueNameInNybbles = parsedTargetFromItem;
+                    this.burningPhase = 8;
+                }
+                return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.BURNING);
+            } else {
+                // failed due to bad true name
+                FamiliarMagic.LOGGER.debug("failed burning due to bad true name");
+                return state;
+            }
         }
+
+        // failed due to no true name
+        FamiliarMagic.LOGGER.debug("failed burning due to no true name");
         return state;
     }
 
@@ -115,14 +157,19 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
+        if (level.isClientSide) {
+            // idk if client needs to do any of this tick stuff. we shall see
+            return;
+        }
+
         // update target
         if (level.getGameTime() % 80L == 0L) {
-            thys.target = processCandles(level, pos);
+            thys.targetFromCandles = processCandles(level, pos);
         }
 
         // process burning
-        if (thys.burningPhase > 0 && level.getGameTime() % 5L == 0L) {
-
+        if (level.getGameTime() % 5L == 0L && state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.BURNING) {
+            doBurning(level, pos, state, thys);
         }
     }
 
@@ -158,9 +205,9 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         return new UUID(uuidMost, uuidLeast);
     }
 
-    private static byte nybbleFromCandleColumn(Level level, BlockPos pos) {
+    private static byte nybbleFromCandleColumn(Level level, BlockPos bottomPos) {
         for (int yOffset = 4; yOffset > 0; yOffset--) {
-            BlockState curiousBlockState = level.getBlockState(pos.offset(0, yOffset, 0));
+            BlockState curiousBlockState = level.getBlockState(bottomPos.offset(0, yOffset, 0));
             if (curiousBlockState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK)) {
                 return (byte) ((yOffset - 1) << 2 | (curiousBlockState.getValue(EnchantedCandleBlock.CANDLES) - 1));
             }
@@ -170,11 +217,60 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         return (byte) 0x00;
     }
 
+    private static void doBurning(Level level, BlockPos tablePos, BlockState state, SummoningTableBlockEntity thys) {
+        FamiliarMagic.LOGGER.debug("doing some burning over here");
+        if (thys.targetFromTrueNameInNybbles == null) {
+            // i reserve the right to explode your base if this happens
+            thys.burningPhase = 0;
+        }
+
+        if (thys.burningPhase > 0) {
+            thys.burningPhase--;
+            int[] targetIndices = PHASE_INDICES[thys.burningPhase];
+            for (int targetIndex : targetIndices) {
+                burnColumn(
+                        level,
+                        tablePos.offset(CANDLE_COLUMN_OFFSETS[2 * targetIndex], 0, CANDLE_COLUMN_OFFSETS[2 * targetIndex + 1]),
+                        thys.targetFromTrueNameInNybbles[targetIndex]
+                );
+            }
+        }
+
+        if (thys.burningPhase <= 0) {
+            if (state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.BURNING) {
+                level.setBlockAndUpdate(tablePos, state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE));
+            }
+        }
+    }
+
+    private static void burnColumn(Level level, BlockPos bottomPos, byte nybbleDigit) {
+        FamiliarMagic.LOGGER.debug("burning up a column now");
+        // wahaha i was right java does smear the bits (i think), this was a justified &
+        int desiredHeight = ((nybbleDigit >> 2) & 0b11) + 1;
+        int desiredCandles = (nybbleDigit & 0b11) + 1;
+
+        BlockPos targetPos = bottomPos.offset(0, desiredHeight, 0);
+        BlockState targetState = level.getBlockState(targetPos);
+
+        if (targetState.canBeReplaced()) {
+            // maybe sound/particle?
+            level.setBlockAndUpdate(targetPos, FamiliarBlocks.SMOKE_WISP_BLOCK.get().defaultBlockState().setValue(SmokeWispBlock.CANDLES, desiredCandles));
+        } else if (targetState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK) && targetState.getValue(EnchantedCandleBlock.CANDLES) == desiredCandles && !targetState.getValue(EnchantedCandleBlock.LIT)) {
+            // maybe happy sound/particle?
+            level.setBlockAndUpdate(targetPos, targetState.setValue(EnchantedCandleBlock.LIT, true));
+        } else {
+            // maybe sad sound/particle? can't make smoke here but would quite like to
+        }
+    }
+
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         if (this.name != null) {
             tag.putString("CustomName", Component.Serializer.toJson(this.name, registries));
+        }
+        if (!this.item.isEmpty()) {
+            tag.put("Item", this.item.save(registries));
         }
 
         this.lockKey.addToTag(tag);
@@ -185,6 +281,10 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         super.loadAdditional(tag, registries);
         if (tag.contains("CustomName", 8)) {
             this.name = parseCustomNameSafe(tag.getString("CustomName"), registries);
+        }
+        if (tag.contains("Items", Tag.TAG_COMPOUND)) {
+            // ok this isn't really quite right here but. i'll deal with that later when i get to offerings
+            this.item = ItemStack.parse(registries, tag.getCompound("Items")).orElse(ItemStack.EMPTY);
         }
 
         this.lockKey = LockCode.fromTag(tag);
