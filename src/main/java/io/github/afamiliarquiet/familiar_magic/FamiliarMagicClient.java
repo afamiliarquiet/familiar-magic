@@ -14,6 +14,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
@@ -89,6 +90,14 @@ public class FamiliarMagicClient {
             if (shouldUpdate) {
                 FOCUSED_LAST_TICK.set(focusedNow);
                 PacketDistributor.sendToServer(new FamiliarPacketeering.FocusPayload(focusedNow));
+            }
+        }
+
+        @SubscribeEvent
+        private static void mrwPlayerEventClone(PlayerEvent.Clone event) {
+            if (event.isWasDeath() && FOCUSED_LAST_TICK.get()) {
+                FOCUSED_LAST_TICK.set(false);
+                // don't need to send update packet because it will have reset on its own
             }
         }
     }

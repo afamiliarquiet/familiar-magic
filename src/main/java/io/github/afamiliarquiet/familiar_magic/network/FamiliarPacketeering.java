@@ -1,5 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.network;
 
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -10,7 +11,6 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.jetbrains.annotations.NotNull;
 
-import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.LOGGER;
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 
 public class FamiliarPacketeering {
@@ -26,7 +26,9 @@ public class FamiliarPacketeering {
     public static void focusEater(final FocusPayload focusPayload, final IPayloadContext context) {
         // do Somethin. prolly. heck, i may not even need this packet stuff, but it's nice to have it set up if i do.
         // like actually i kinda just want the key press stuff on client.. ah well. whatever.
-        LOGGER.info("packet received: " + focusPayload.iAmHereToAnnounceThatThePlayerHasBegunToBelieve);
+        //LOGGER.info("packet received: " + focusPayload.iAmHereToAnnounceThatThePlayerHasBegunToBelieve);
+        // that day has come!
+        context.player().setData(FamiliarAttachments.FOCUSED, focusPayload.iAmHereToAnnounceThatThePlayerHasBegunToBelieve);
     }
 
     public record FocusPayload(boolean iAmHereToAnnounceThatThePlayerHasBegunToBelieve) implements CustomPacketPayload {

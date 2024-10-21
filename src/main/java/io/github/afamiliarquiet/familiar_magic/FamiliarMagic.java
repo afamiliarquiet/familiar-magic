@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic;
 
 import com.mojang.logging.LogUtils;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.gooey.FamiliarGUIStuffs;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
@@ -23,13 +24,14 @@ public class FamiliarMagic {
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public FamiliarMagic(IEventBus modEventBus, ModContainer modContainer) {
-        // Register the commonSetup method for modloading
+        // woah!! i just mined a registrite ore and got a ton of registries!
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(FamiliarPacketeering::mrwRegisterPayloadHandlersEvent);
 
         FamiliarItems.register(modEventBus);
         FamiliarBlocks.register(modEventBus);
         FamiliarGUIStuffs.register(modEventBus);
+        FamiliarAttachments.register(modEventBus);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
