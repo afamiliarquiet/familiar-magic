@@ -26,7 +26,6 @@ public class FamiliarPacketeering {
     public static void focusEater(final FocusPayload focusPayload, final IPayloadContext context) {
         // do Somethin. prolly. heck, i may not even need this packet stuff, but it's nice to have it set up if i do.
         // like actually i kinda just want the key press stuff on client.. ah well. whatever.
-        //LOGGER.info("packet received: " + focusPayload.iAmHereToAnnounceThatThePlayerHasBegunToBelieve);
         // that day has come!
         context.player().setData(FamiliarAttachments.FOCUSED, focusPayload.iAmHereToAnnounceThatThePlayerHasBegunToBelieve);
     }

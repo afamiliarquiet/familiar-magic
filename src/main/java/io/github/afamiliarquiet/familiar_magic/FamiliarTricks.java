@@ -64,9 +64,7 @@ public class FamiliarTricks {
     }
 
     public static byte @Nullable [] trueNameToNybbles(String trueName) {
-        FamiliarMagic.LOGGER.debug("so the name we're working with is this: " + trueName);
         if (trueName.length() != 32) {
-            FamiliarMagic.LOGGER.debug("bad length, i say - " + trueName.length());
             return null;
         }
 
@@ -76,7 +74,6 @@ public class FamiliarTricks {
         for (int i = 0; i < 32; i++) {
             byte nybble = OW_IVE_BEEN_BYTTEN[trueNameArr[i]];
             if (nybble == -1) { // if not one of the 16 defined values, bad string
-                FamiliarMagic.LOGGER.debug("bad nybble at index " + i + ", i say: " + nybble);
                 return null;
             } else {
                 nybbles[i] = nybble;

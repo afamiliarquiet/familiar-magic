@@ -1,6 +1,5 @@
 package io.github.afamiliarquiet.familiar_magic.block.entity;
 
-import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
@@ -136,20 +135,17 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
             if (parsedTargetFromItem != null) {
                 if (!simulate) {
-                    FamiliarMagic.LOGGER.debug("we're burning up in here!!");
                     this.targetFromTrueNameInNybbles = parsedTargetFromItem;
                     this.burningPhase = 8;
                 }
                 return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.BURNING);
             } else {
                 // failed due to bad true name
-                FamiliarMagic.LOGGER.debug("failed burning due to bad true name");
                 return state;
             }
         }
 
         // failed due to no true name
-        FamiliarMagic.LOGGER.debug("failed burning due to no true name");
         return state;
     }
 
@@ -218,7 +214,6 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     private static void doBurning(Level level, BlockPos tablePos, BlockState state, SummoningTableBlockEntity thys) {
-        FamiliarMagic.LOGGER.debug("doing some burning over here");
         if (thys.targetFromTrueNameInNybbles == null) {
             // i reserve the right to explode your base if this happens
             thys.burningPhase = 0;
@@ -244,7 +239,6 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     private static void burnColumn(Level level, BlockPos bottomPos, byte nybbleDigit) {
-        FamiliarMagic.LOGGER.debug("burning up a column now");
         // wahaha i was right java does smear the bits (i think), this was a justified &
         int desiredHeight = ((nybbleDigit >> 2) & 0b11) + 1;
         int desiredCandles = (nybbleDigit & 0b11) + 1;

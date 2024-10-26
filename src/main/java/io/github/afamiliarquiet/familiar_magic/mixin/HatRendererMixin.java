@@ -36,9 +36,7 @@ public abstract class HatRendererMixin {
     // could maybe replace this with a @modifyvariable n grab itemstack n display context via @local? might try later
     @Inject(at = @At("HEAD"), method = "render", cancellable = true)
     private void render(ItemStack itemStack, ItemDisplayContext displayContext, boolean leftHand, PoseStack poseStack, MultiBufferSource bufferSource, int combinedLight, int combinedOverlay, BakedModel p_model, CallbackInfo ci) {
-        //LOGGER.debug("rendering item");
         if (itemStack.is(FamiliarItems.BIG_HAT) && displayContext == ItemDisplayContext.HEAD) {
-            //LOGGER.debug("rendering hat on head");
             if (!itemStack.isEmpty()) {
                 poseStack.pushPose();
                 p_model = this.itemModelShaper.getModelManager().getModel(FamiliarMagicClient.BIG_HAT_ON_HEAD_MODEL);
