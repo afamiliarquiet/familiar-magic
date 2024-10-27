@@ -25,7 +25,7 @@ public abstract class WolfHatEquipAndWearMixin extends TamableAnimal implements 
     @Inject(at = @At("HEAD"), method = "mobInteract", cancellable = true)
     private void mobInteract(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         // there's some nonsense going on in wolf's mobinteract. let's just skip that if we've got hat business
-        if (player.isCrouching() && (player.getItemInHand(hand).is(FamiliarItems.BIG_HAT) || hasHat(this))) {
+        if (player.isSecondaryUseActive() && (player.getItemInHand(hand).is(FamiliarItems.BIG_HAT) || hasHat(this))) {
             cir.setReturnValue(super.mobInteract(player, hand));
         }
     }

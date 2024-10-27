@@ -31,7 +31,7 @@ public abstract class MobHatEquipMixin extends LivingEntity {
     private void mobInteract(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         if (this instanceof HatWearer) {
             boolean isClient = this.level().isClientSide;
-            if (player.isCrouching()) {
+            if (player.isSecondaryUseActive()) {
                 if (player.getItemInHand(hand).is(FamiliarItems.BIG_HAT)) {
                     if (!isClient) {
                         this.getData(FamiliarAttachments.HAT).setStackInSlot(0, player.getItemInHand(hand));

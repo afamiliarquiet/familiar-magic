@@ -21,7 +21,7 @@ public class FamiliarAttachments {
     );
 
     public static final Supplier<AttachmentType<ItemStackHandler>> HAT = ATTACHMENT_TYPES.register(
-            "hatted", () -> AttachmentType.serializable(() -> new ItemStackHandler(1)).build()
+            "hat", () -> AttachmentType.serializable(() -> new ItemStackHandler(1)).build()
     );
 
     public static void register(IEventBus modEventBus) {
