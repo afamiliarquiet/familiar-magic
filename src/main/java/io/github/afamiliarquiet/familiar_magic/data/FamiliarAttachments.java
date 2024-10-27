@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.data;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
@@ -17,6 +18,10 @@ public class FamiliarAttachments {
     // no serialization because focus shouldn't be a persistent thing
     public static final Supplier<AttachmentType<Boolean>> FOCUSED = ATTACHMENT_TYPES.register(
             "focused", () -> AttachmentType.builder(() -> false).build()
+    );
+
+    public static final Supplier<AttachmentType<ItemStackHandler>> HAT = ATTACHMENT_TYPES.register(
+            "hatted", () -> AttachmentType.serializable(() -> new ItemStackHandler(1)).build()
     );
 
     public static void register(IEventBus modEventBus) {

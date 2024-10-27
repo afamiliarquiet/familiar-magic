@@ -1,7 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
+import io.github.afamiliarquiet.familiar_magic.network.FocusPayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
@@ -89,7 +89,7 @@ public class FamiliarMagicClient {
 
             if (shouldUpdate) {
                 FOCUSED_LAST_TICK.set(focusedNow);
-                PacketDistributor.sendToServer(new FamiliarPacketeering.FocusPayload(focusedNow));
+                PacketDistributor.sendToServer(new FocusPayload(focusedNow));
             }
         }
 

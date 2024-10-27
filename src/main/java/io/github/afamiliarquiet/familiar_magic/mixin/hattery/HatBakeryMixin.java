@@ -1,4 +1,4 @@
-package io.github.afamiliarquiet.familiar_magic.mixin;
+package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
 import net.minecraft.client.color.block.BlockColors;

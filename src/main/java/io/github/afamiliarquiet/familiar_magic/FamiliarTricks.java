@@ -1,7 +1,10 @@
 package io.github.afamiliarquiet.familiar_magic;
 
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -81,5 +84,13 @@ public class FamiliarTricks {
         }
 
         return nybbles;
+    }
+
+    public static boolean hasHat(Entity entity) {
+        return !getHat(entity).isEmpty();
+    }
+
+    public static ItemStack getHat(Entity entity) {
+        return entity.getData(FamiliarAttachments.HAT).getStackInSlot(0);
     }
 }

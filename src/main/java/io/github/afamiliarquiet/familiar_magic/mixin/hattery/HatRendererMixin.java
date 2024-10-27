@@ -1,4 +1,4 @@
-package io.github.afamiliarquiet.familiar_magic.mixin;
+package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

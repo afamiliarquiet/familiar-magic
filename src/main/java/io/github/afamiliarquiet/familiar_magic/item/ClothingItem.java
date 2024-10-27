@@ -21,14 +21,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
-
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class ClothingItem extends Item implements Equipable {
     // can't just make an armor item, nooo, because that's an armor and it has trims and is rendered by the armor layer.
     // no no, can't have strange creatures on the internet adding their own shapes to armor items. would hate for that.
     // WELL TOO BAD AHAHAHA
+    // (there is kinda sorta vaguely an idea to add other weird clothing things for fun which would use this.
 
     protected final ArmorItem.Type type;
     protected final Holder<ArmorMaterial> material;

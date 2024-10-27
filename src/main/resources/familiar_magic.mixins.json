@@ -3,14 +3,25 @@
   "package": "io.github.afamiliarquiet.familiar_magic.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "TrueNameTagMixin"
+    "TrueNameTagMixin",
+    "hattery.CatHatWearerMixin",
+    "hattery.FoxHatWearerMixin",
+    "hattery.MobHatEquipMixin",
+    "hattery.ParrotHatWearerMixin",
+    "hattery.SilverfishHatWearerMixin",
+    "hattery.WolfHatEquipAndWearMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
     "FocusOverlayMixin",
-    "HatBakeryMixin",
-    "HatRendererMixin"
+    "hattery.CatHatRendererMixin",
+    "hattery.FoxHatRendererMixin",
+    "hattery.HatBakeryMixin",
+    "hattery.HatRendererMixin",
+    "hattery.ParrotHatRendererMixin",
+    "hattery.SilverfishHatRendererMixin",
+    "hattery.WolfHatRendererMixin"
   ]
 }
