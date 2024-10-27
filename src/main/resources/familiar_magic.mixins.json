@@ -16,7 +16,6 @@
     "defaultRequire": 1
   },
   "client": [
-    "FocusOverlayMixin",
     "hattery.CatHatRendererMixin",
     "hattery.FoxHatRendererMixin",
     "hattery.FrogHatRendererMixin",
