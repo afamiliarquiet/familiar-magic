@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -179,5 +180,17 @@ public class SummoningTableBlock extends BaseEntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(SUMMONING_TABLE_STATE);
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        // tell the stuff in the inventory to bounce
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof SummoningTableBlockEntity summoningTableInventory) {
+            for (int i = 0; i < summoningTableInventory.getSlots(); i++) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), summoningTableInventory.getStackInSlot(i));
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 }

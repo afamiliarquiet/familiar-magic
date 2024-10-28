@@ -33,18 +33,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
-public class SummoningTableBlockEntity extends BlockEntity implements IItemHandlerModifiable, MenuProvider, Nameable {
+public class SummoningTableBlockEntity extends BlockEntity implements IItemHandler, IItemHandlerModifiable, MenuProvider, Nameable {
     // i'm really not feeling great about implementing IItemHandlerModifiable. feels like i should be doing something else.
     // but it works for now so whatever. i'm tryin my best to be neoforgey!!
+    // this is.. fine. this is great. this feels so perfect. this is a place of honor! y'know why? because it works well enough!!
 
     // spread out for easier reference (instead of computed)
     // as for the other choices on display, no comment
@@ -74,7 +78,8 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     private UUID targetFromCandles = null;
     @Nullable
     private byte[] targetFromTrueNameInNybbles = null;
-    private ItemStack item = ItemStack.EMPTY;
+    private ItemStack trueName = ItemStack.EMPTY;
+    private final ItemStackHandler offerings = new ItemStackHandler(4);
     private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
 
     private final ContainerData dataAccess = new ContainerData() {
@@ -130,8 +135,8 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     public BlockState tryBurnName(BlockState state, boolean simulate) {
         // this fails on client because client can't see the true name. maybe that's a problem to deal with? idk
 
-        if (!this.item.isEmpty()) {
-            byte[] parsedTargetFromItem = FamiliarTricks.trueNameToNybbles(this.item.getHoverName().getString());
+        if (!this.trueName.isEmpty()) {
+            byte[] parsedTargetFromItem = FamiliarTricks.trueNameToNybbles(this.trueName.getHoverName().getString());
 
             if (parsedTargetFromItem != null) {
                 if (!simulate) {
@@ -260,12 +265,16 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
+
         if (this.name != null) {
             tag.putString("CustomName", Component.Serializer.toJson(this.name, registries));
         }
-        if (!this.item.isEmpty()) {
-            tag.put("Item", this.item.save(registries));
+
+        if (!this.trueName.isEmpty()) {
+            tag.put("TrueNameItem", this.trueName.save(registries));
         }
+        tag.put("OfferingItems", this.offerings.serializeNBT(registries));
+
 
         this.lockKey.addToTag(tag);
     }
@@ -273,12 +282,17 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+
         if (tag.contains("CustomName", 8)) {
             this.name = parseCustomNameSafe(tag.getString("CustomName"), registries);
         }
-        if (tag.contains("Items", Tag.TAG_COMPOUND)) {
+
+        if (tag.contains("TrueNameItem", Tag.TAG_COMPOUND)) {
             // ok this isn't really quite right here but. i'll deal with that later when i get to offerings
-            this.item = ItemStack.parse(registries, tag.getCompound("Items")).orElse(ItemStack.EMPTY);
+            this.trueName = ItemStack.parse(registries, tag.getCompound("TrueNameItem")).orElse(ItemStack.EMPTY);
+        }
+        if (tag.contains("OfferingItems", Tag.TAG_COMPOUND)) {
+            this.offerings.deserializeNBT(registries, tag.getCompound("OfferingItems"));
         }
 
         this.lockKey = LockCode.fromTag(tag);
@@ -290,7 +304,13 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         this.name = componentInput.get(DataComponents.CUSTOM_NAME);
         this.lockKey = componentInput.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);
 
-        this.item = componentInput.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyOne();
+        List<ItemStack> allItems = componentInput.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).stream().toList();
+        if (!allItems.isEmpty()) {
+            this.trueName = allItems.getFirst();
+        }
+        for (int i = 1; i < allItems.size() && i < 1+offerings.getSlots(); i++) {
+            offerings.setStackInSlot(i - 1, allItems.get(i));
+        }
     }
 
     @Override
@@ -301,7 +321,12 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             components.set(DataComponents.LOCK, this.lockKey);
         }
 
-        components.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(this.item)));
+        ArrayList<ItemStack> allItems = new ArrayList<>(1 + this.offerings.getSlots());
+        allItems.add(this.trueName);
+        for (int i = 0; i < this.offerings.getSlots(); i++) {
+            allItems.add(this.offerings.getStackInSlot(i));
+        }
+        components.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(allItems));
     }
 
     @Override
@@ -320,7 +345,8 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     public void removeComponentsFromTag(CompoundTag tag) {
         tag.remove("CustomName");
         tag.remove("Lock");
-        tag.remove("Items");
+        tag.remove("TrueNameItem");
+        tag.remove("OfferingItems");
     }
 
     @Override
@@ -340,58 +366,85 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     @Override
     public int getSlots() {
-        return 1;
+        return 5;
     }
 
     @Override
     public ItemStack getStackInSlot(int slot) {
         if (slot == 0) {
-            return this.item;
+            return this.trueName;
+        } else if (slot > 0 && slot < 5) {
+            return this.offerings.getStackInSlot(slot - 1);
         } else {
             return ItemStack.EMPTY;
         }
     }
 
+    // can you feel her guiding voice? our lady luna speaks these methods into my ears, i am but a vessel
     @Override
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-        if (slot == 0 && this.item.isEmpty() && stack.is(FamiliarItems.TRUE_NAME_ITEM)) {
+        ItemStack toReturn = stack;
+
+        if (slot == 0 && this.trueName.isEmpty() && stack.is(FamiliarItems.TRUE_NAME_ITEM)) {
             if (!simulate) {
-                this.item = stack.copyWithCount(1);
+                this.trueName = stack.copyWithCount(1);
             }
 
-            return stack.copyWithCount(stack.getCount() - 1);
-        } else {
-            return stack;
+            toReturn = stack.copyWithCount(stack.getCount() - 1);
+        } else if (slot > 0 && slot < 5) {
+            toReturn = offerings.insertItem(slot - 1, stack, simulate);
         }
+
+        if (toReturn.getCount() != stack.getCount() && !simulate) {
+            this.setChanged();
+        }
+
+        return toReturn;
     }
 
     @Override
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
+        ItemStack toReturn = ItemStack.EMPTY;
+
         if (slot == 0) {
-            ItemStack toReturn = this.item.copy();
+            toReturn = this.trueName.copy();
             if (!simulate) {
-                this.item = ItemStack.EMPTY;
+                this.trueName = ItemStack.EMPTY;
             }
-            return toReturn;
-        } else {
-            return ItemStack.EMPTY;
+        } else if (slot > 0 && slot < 5) {
+            toReturn = offerings.extractItem(slot - 1, amount, simulate);
         }
+
+        if (!toReturn.isEmpty() && !simulate) {
+            this.setChanged();
+        }
+
+        return toReturn;
     }
 
     @Override
     public int getSlotLimit(int slot) {
-        return slot == 0 ? 1 : 0;
+        switch(slot) {
+            case 0 -> {return 1;}
+            case 1,2,3,4 -> {return this.offerings.getSlotLimit(slot - 1);}
+            default -> {return 0;}
+        }
     }
 
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
-        return slot == 0 && stack.is(FamiliarItems.TRUE_NAME_ITEM);
+        return slot == 0 && stack.is(FamiliarItems.TRUE_NAME_ITEM) ||
+                slot > 0 && slot < 5 && offerings.isItemValid(slot - 1, stack);
     }
 
     @Override
     public void setStackInSlot(int slot, ItemStack stack) {
         if (slot == 0) {
-            this.item = stack;
+            this.trueName = stack;
+            this.setChanged();
+        } else if (slot > 0 && slot < 5) {
+            this.offerings.setStackInSlot(slot - 1, stack);
+            this.setChanged();
         }
     }
 }

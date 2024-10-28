@@ -28,7 +28,7 @@ public class SummoningTableMenu extends AbstractContainerMenu {
     private final SlotItemHandler trueNameSlot;
 
     public SummoningTableMenu(int containerId, Inventory playerInv) {
-        this(containerId,  playerInv, new ItemStackHandler(1), new SimpleContainerData(4), ContainerLevelAccess.NULL);
+        this(containerId,  playerInv, new ItemStackHandler(5), new SimpleContainerData(4), ContainerLevelAccess.NULL);
     }
     public SummoningTableMenu(int containerId, Inventory playerInventory, IItemHandler tableInventory, ContainerData tableData, ContainerLevelAccess levelAccess) {
         super(FamiliarGUIStuffs.SUMMONING_TABLE_MENU.get(), containerId);
@@ -37,7 +37,7 @@ public class SummoningTableMenu extends AbstractContainerMenu {
         this.tableData = tableData;
 
         // table inv
-        this.trueNameSlot = new SlotItemHandler(tableInventory, 0, 26, 31) {
+        this.trueNameSlot = new SlotItemHandler(tableInventory, 0, 44, 31) {
             @Override
             public boolean mayPlace(ItemStack itemStack) {
                 return itemStack.is(FamiliarItems.TRUE_NAME_ITEM);
@@ -53,7 +53,13 @@ public class SummoningTableMenu extends AbstractContainerMenu {
                 return 1;
             }
         };
+
         this.addSlot(this.trueNameSlot);
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                this.addSlot(new SlotItemHandler(tableInventory, j + i * 2 + 1, 116 + j * 18, 22 + i * 18));
+            }
+        }
 
         // player inv
         for (int i = 0; i < 3; i++) {
@@ -88,25 +94,25 @@ public class SummoningTableMenu extends AbstractContainerMenu {
         if (slot.hasItem()) {
             ItemStack clickedStack = slot.getItem();
             copyStack = clickedStack.copy();
-            if (index == 0) {
+            if (index >= 0 && index < 5) {
                  // move out of table
-                if (!this.moveItemStackTo(clickedStack, 1, 37, true)) {
+                if (!this.moveItemStackTo(clickedStack, 5, 41, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (this.moveItemStackTo(clickedStack, 0, 1, false)) { //Forge Fix Shift Clicking in beacons with stacks larger then 1.
+            } else if (this.moveItemStackTo(clickedStack, 0, 5, false)) { //Forge Fix Shift Clicking in beacons with stacks larger then 1.
                 // move into table
                 return ItemStack.EMPTY;
-            } else if (index >= 1 && index < 28) {
+            } else if (index >= 5 && index < 32) {
                 // move from inventory to hotbar
-                if (!this.moveItemStackTo(clickedStack, 28, 37, false)) {
+                if (!this.moveItemStackTo(clickedStack, 32, 41, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (index >= 28 && index < 37) {
+            } else if (index >= 32 && index < 41) {
                 // move from hotbar to inventory
-                if (!this.moveItemStackTo(clickedStack, 1, 28, false)) {
+                if (!this.moveItemStackTo(clickedStack, 5, 32, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.moveItemStackTo(clickedStack, 1, 37, false)) {
+            } else if (!this.moveItemStackTo(clickedStack, 5, 41, false)) {
                 // somehow, someway, move from somewhere else to hotbar or inventory
                 return ItemStack.EMPTY;
             }
