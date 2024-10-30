@@ -33,6 +33,7 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -315,14 +316,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
         if (thys.burningPhase > 0) {
             thys.burningPhase--;
-            int[] targetIndices = PHASE_INDICES[thys.burningPhase];
-            for (int targetIndex : targetIndices) {
-                burnColumn(
-                        level,
-                        tablePos.offset(CANDLE_COLUMN_OFFSETS[2 * targetIndex], 0, CANDLE_COLUMN_OFFSETS[2 * targetIndex + 1]),
-                        thys.targetFromTrueNameInNybbles[targetIndex]
-                );
-            }
+            burnPhase(level, tablePos, thys.targetFromTrueNameInNybbles, thys.burningPhase, FamiliarBlocks.SMOKE_WISP_BLOCK.get());
         }
 
         if (thys.burningPhase <= 0) {
@@ -332,7 +326,32 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
     }
 
-    private static void burnColumn(Level level, BlockPos bottomPos, byte nybbleDigit) {
+    public static boolean superburn(Level level, BlockPos tablePos, UUID target) {
+        byte[] nybbles = FamiliarTricks.trueNameToNybbles(FamiliarTricks.uuidToTrueName(target));
+        if (nybbles == null) {
+            return false;
+        }
+
+        for (int i = 7; i >= 0; i--) {
+            burnPhase(level, tablePos, nybbles, i, FamiliarBlocks.ENCHANTED_CANDLE_BLOCK.get());
+        }
+
+        return true;
+    }
+
+    private static void burnPhase(Level level, BlockPos tablePos, byte[] nybbles, int phase, Block blockToPlace) {
+        int[] targetIndices = PHASE_INDICES[phase];
+        for (int targetIndex : targetIndices) {
+            burnColumn(
+                    level,
+                    tablePos.offset(CANDLE_COLUMN_OFFSETS[2 * targetIndex], 0, CANDLE_COLUMN_OFFSETS[2 * targetIndex + 1]),
+                    nybbles[targetIndex],
+                    blockToPlace
+            );
+        }
+    }
+
+    private static void burnColumn(Level level, BlockPos bottomPos, byte nybbleDigit, Block blockToPlace) {
         // wahaha i was right java does smear the bits (i think), this was a justified &
         int desiredHeight = ((nybbleDigit >> 2) & 0b11) + 1;
         int desiredCandles = (nybbleDigit & 0b11) + 1;
@@ -342,7 +361,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
         if (targetState.canBeReplaced()) {
             // maybe sound/particle?
-            level.setBlockAndUpdate(targetPos, FamiliarBlocks.SMOKE_WISP_BLOCK.get().defaultBlockState().setValue(SmokeWispBlock.CANDLES, desiredCandles));
+            level.setBlockAndUpdate(targetPos, blockToPlace.defaultBlockState().setValue(SmokeWispBlock.CANDLES, desiredCandles));
         } else if (targetState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK) && targetState.getValue(EnchantedCandleBlock.CANDLES) == desiredCandles && !targetState.getValue(EnchantedCandleBlock.LIT)) {
             // maybe happy sound/particle?
             level.setBlockAndUpdate(targetPos, targetState.setValue(EnchantedCandleBlock.LIT, true));

@@ -2,9 +2,10 @@ package io.github.afamiliarquiet.familiar_magic;
 
 import com.mojang.logging.LogUtils;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
+import io.github.afamiliarquiet.familiar_magic.client.gooey.FamiliarGUIStuffs;
+import io.github.afamiliarquiet.familiar_magic.command.PlaceCandlesCommand;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
-import io.github.afamiliarquiet.familiar_magic.client.gooey.FamiliarGUIStuffs;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import io.github.afamiliarquiet.familiar_magic.network.HattedPayload;
@@ -20,6 +21,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -86,6 +88,11 @@ public class FamiliarMagic {
                 theEntity.spawnAtLocation(hat);
                 hat.shrink(1);
             }
+        }
+
+        @SubscribeEvent
+        private static void mrwRegisterCommandsEvent(RegisterCommandsEvent event) {
+            PlaceCandlesCommand.register(event.getDispatcher());
         }
     }
 }
