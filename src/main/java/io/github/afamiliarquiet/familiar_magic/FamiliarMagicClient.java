@@ -4,11 +4,13 @@ import com.mojang.blaze3d.platform.InputConstants;
 import io.github.afamiliarquiet.familiar_magic.client.*;
 import io.github.afamiliarquiet.familiar_magic.network.FocusPayload;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.*;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Cat;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.monster.Silverfish;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -33,6 +36,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
@@ -42,6 +46,7 @@ public class FamiliarMagicClient {
     public static final ModelResourceLocation BIG_HAT_ON_HEAD_MODEL = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(MOD_ID, "big_hat_on_head"));
     public static final ResourceLocation FOCUS_OVERLAY = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/misc/focus.png");
     public static final ResourceLocation FOCUS_LAYER = ResourceLocation.fromNamespaceAndPath(MOD_ID, "focus");
+    public static final ResourceLocation SUMMONING_REQUEST_LAYER = ResourceLocation.fromNamespaceAndPath(MOD_ID, "summoning_request");
 
     public static final Lazy<KeyMapping> FOCUS_MAPPING = Lazy.of(() ->
             new KeyMapping(
@@ -72,6 +77,7 @@ public class FamiliarMagicClient {
 //        modClientEventBus.addListener(FamiliarMagicClient::mrwEntityRenderersEventAddLayers);
 
         FOCUS_HELD_LAST_TICK.set(false); // does this matter? idk, whatever
+        // i really gotta figure out uhh leaving a server or something to reset summoning stuff. wurgh.
     }
 
     private static void mrwRegisterKeyMappingsEvent(RegisterKeyMappingsEvent event) {
@@ -82,6 +88,7 @@ public class FamiliarMagicClient {
 
     private static void mrwRegisterGuiLayersEvent(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, FOCUS_LAYER, new FocusRenderLayer());
+        event.registerBelow(VanillaGuiLayers.EFFECTS, SUMMONING_REQUEST_LAYER, new SummoningRequestLayer());
     }
 
     // i'd love to take the events route instead of mixin spam but it gets mad at the casting so idk how to add layers

@@ -24,7 +24,6 @@ public class SummoningTableScreen extends AbstractContainerScreen<SummoningTable
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        // todo - corners don't seem to be transparenting. annoying.
         graphics.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
     }
 

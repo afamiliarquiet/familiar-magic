@@ -11,15 +11,12 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getHat;
 
-@OnlyIn(Dist.CLIENT)
 @ParametersAreNonnullByDefault
 public class SilverfishHatLayer extends RenderLayer<Silverfish, SilverfishModel<Silverfish>> {
     private final ItemInHandRenderer actuallyItsAHatRenderer;

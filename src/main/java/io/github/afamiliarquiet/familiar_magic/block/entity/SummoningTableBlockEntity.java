@@ -7,6 +7,8 @@ import io.github.afamiliarquiet.familiar_magic.block.SmokeWispBlock;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
 import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableMenu;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
+import io.github.afamiliarquiet.familiar_magic.network.SomethingFamiliar;
+import io.github.afamiliarquiet.familiar_magic.network.SummoningCancelledPayload;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -17,6 +19,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
@@ -36,6 +39,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -74,13 +79,14 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     @Nullable
     private Component name;
     private LockCode lockKey = LockCode.NO_LOCK;
-    @Nullable
-    private UUID targetFromCandles = null;
+    @NotNull
+    private UUID targetFromCandles = new UUID(0, 0);
     @Nullable
     private byte[] targetFromTrueNameInNybbles = null;
     private ItemStack trueName = ItemStack.EMPTY;
     private final ItemStackHandler offerings = new ItemStackHandler(4);
     private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
+    private int summoningTimer = 0;
 
     private final ContainerData dataAccess = new ContainerData() {
         // lady luna guide me once more orz
@@ -120,16 +126,48 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         super(FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY.get(), pos, blockState);
     }
 
-    public BlockState tryActivate(BlockState state, boolean simulate) {
+    public BlockState startSummoning(BlockState state, boolean simulate) {
         if (this.targetFromCandles != null && this.level instanceof ServerLevel serverLevel) {
             Entity targetEntity = serverLevel.getEntity(this.targetFromCandles);
             if (targetEntity instanceof LivingEntity livingTarget) {
                 BlockPos destination = this.getBlockPos();
+                this.summoningTimer = 30;
+
+                if (livingTarget instanceof ServerPlayer player) {
+                    PacketDistributor.sendToPlayer(player, new SomethingFamiliar(
+                            this.getBlockPos(),
+                            List.of(
+                                    this.offerings.getStackInSlot(0),
+                                    this.offerings.getStackInSlot(1),
+                                    this.offerings.getStackInSlot(2),
+                                    this.offerings.getStackInSlot(3)
+                            )
+                    ));
+                } else {
+                    // worry about picky critters later
+                }
+
                 livingTarget.teleportTo(destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5);
                 return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.SUMMONING);
             }
         }
         return state;
+    }
+
+    public void cancelSummoning() {
+        if (!(level instanceof ServerLevel)) {
+            // this can't happen ever. hopefully.
+            return;
+        }
+
+        Entity target = ((ServerLevel)level).getEntity(this.targetFromCandles);
+        if (target instanceof ServerPlayer player) {
+            // could i in theory use a different packet for this? yeah. should i? iunno
+            // answer: YES because nulling the other one is NOT ALLOWED!!! i kinda figured :l
+            PacketDistributor.sendToPlayer(player, new SummoningCancelledPayload());
+        }
+
+        this.summoningTimer = 0;
     }
 
     public BlockState tryBurnName(BlockState state, boolean simulate) {
@@ -163,15 +201,32 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             return;
         }
 
-        // update target
-        if (level.getGameTime() % 80L == 0L) {
-            thys.targetFromCandles = processCandles(level, pos);
+        SummoningTableState tableState = state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE);
+
+        if (level.getGameTime() % 5L == 0L) {
+            if (tableState == SummoningTableState.BURNING) {
+                // process burning
+                tickBurning(level, pos, state, thys);
+            }
+
+
+            // is this once a second? yea seems so - check on summoning timer n maybe cancel it
+            if ((level.getGameTime() % 20L == 0L)) {
+                UUID newTarget = thys.targetFromCandles;
+                if (level.getGameTime() % 80L == 0L) {
+                    newTarget = processCandles(level, pos);
+                }
+
+                if (tableState == SummoningTableState.SUMMONING) {
+                    tickSummoning(level, pos, state, thys, !newTarget.equals(thys.targetFromCandles));
+                }
+
+                thys.targetFromCandles = newTarget;
+            }
         }
 
-        // process burning
-        if (level.getGameTime() % 5L == 0L && state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.BURNING) {
-            doBurning(level, pos, state, thys);
-        }
+
+
     }
 
     // written with the aid of our lady luna :innocent:
@@ -218,7 +273,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         return (byte) 0x00;
     }
 
-    private static void doBurning(Level level, BlockPos tablePos, BlockState state, SummoningTableBlockEntity thys) {
+    private static void tickBurning(Level level, BlockPos tablePos, BlockState state, SummoningTableBlockEntity thys) {
         if (thys.targetFromTrueNameInNybbles == null) {
             // i reserve the right to explode your base if this happens
             thys.burningPhase = 0;
@@ -261,6 +316,21 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             // maybe sad sound/particle? can't make smoke here but would quite like to
         }
     }
+
+    private static void tickSummoning(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thys, boolean targetChanged) {
+        if (thys.summoningTimer <= 0 || targetChanged) {
+            thys.cancelSummoning();
+            SummoningTableBlock.extinguish(null, state, level, pos);
+        }
+
+        if (thys.summoningTimer > 0) {
+            thys.summoningTimer--;
+        }
+    }
+
+
+
+    // ahead lies the containery part of this damnable thing. Good lird
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {

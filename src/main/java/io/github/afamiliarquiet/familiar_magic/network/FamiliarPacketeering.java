@@ -18,5 +18,16 @@ public class FamiliarPacketeering {
                 HattedPayload.STREAM_CODEC,
                 HattedPayload::hattedOhILoveHatted
         );
+
+        registrar.playToClient(
+                SomethingFamiliar.TYPE,
+                SomethingFamiliar.STREAM_CODEC,
+                SomethingFamiliar::hmHmYouWantToSummonMe
+        );
+        registrar.playToClient(
+                SummoningCancelledPayload.TYPE,
+                SummoningCancelledPayload.STREAM_CODEC,
+                SummoningCancelledPayload::sorry
+        );
     }
 }

@@ -73,7 +73,7 @@ public class SummoningTableBlock extends BaseEntityBlock {
             // actually this shouldn't directly set lit - probably need to hand off to the blockentity here. but that's later
 
             if (context.getPlayer() != null && context.getPlayer().getData(FamiliarAttachments.FOCUSED)) {
-                return summonizer.tryActivate(state, simulate);
+                return summonizer.startSummoning(state, simulate);
             } else {
                 return summonizer.tryBurnName(state, simulate);
             }
@@ -130,7 +130,14 @@ public class SummoningTableBlock extends BaseEntityBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        if (stack.isEmpty() && player.getAbilities().mayBuild && state.getValue(SUMMONING_TABLE_STATE) != SummoningTableState.INACTIVE) {
+        SummoningTableState tableState = state.getValue(SUMMONING_TABLE_STATE);
+
+        // i'm choosing to allow adventure mode players to cancel summoning because that's useful for modfest
+        if (stack.isEmpty() && player.isSecondaryUseActive() && tableState != SummoningTableState.INACTIVE) {
+            if (tableState == SummoningTableState.SUMMONING && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
+                tableEntity.cancelSummoning();
+            }
+
             extinguish(player, state, level, pos);
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         } else {
@@ -138,7 +145,7 @@ public class SummoningTableBlock extends BaseEntityBlock {
         }
     }
 
-    public static void extinguish(Player player, BlockState state, LevelAccessor level, BlockPos pos) {
+    public static void extinguish(@Nullable Player player, BlockState state, LevelAccessor level, BlockPos pos) {
         level.setBlock(pos, state.setValue(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE), UPDATE_ALL_IMMEDIATE);
 
         level.addParticle(
