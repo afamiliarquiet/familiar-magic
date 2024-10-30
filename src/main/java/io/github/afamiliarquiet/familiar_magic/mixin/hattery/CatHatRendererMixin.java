@@ -1,6 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
-import io.github.afamiliarquiet.familiar_magic.client.CatHatLayer;
+import io.github.afamiliarquiet.familiar_magic.client.hat.CatHatLayer;
 import net.minecraft.client.model.CatModel;
 import net.minecraft.client.renderer.entity.CatRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

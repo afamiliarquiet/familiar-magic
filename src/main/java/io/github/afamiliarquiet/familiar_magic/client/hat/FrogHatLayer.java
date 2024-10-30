@@ -1,14 +1,14 @@
-package io.github.afamiliarquiet.familiar_magic.client;
+package io.github.afamiliarquiet.familiar_magic.client.hat;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.ParrotModel;
+import net.minecraft.client.model.FrogModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
@@ -18,9 +18,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getHat;
 
 @ParametersAreNonnullByDefault
-public class ParrotHatLayer extends RenderLayer<Parrot, ParrotModel> {
+public class FrogHatLayer extends RenderLayer<Frog, FrogModel<Frog>> {
     private final ItemInHandRenderer actuallyItsAHatRenderer;
-    public ParrotHatLayer(RenderLayerParent<Parrot, ParrotModel> renderer, ItemInHandRenderer itemInHandRenderer) {
+
+    public FrogHatLayer(RenderLayerParent<Frog, FrogModel<Frog>> renderer, ItemInHandRenderer itemInHandRenderer) {
         super(renderer);
         this.actuallyItsAHatRenderer = itemInHandRenderer;
     }
@@ -30,7 +31,7 @@ public class ParrotHatLayer extends RenderLayer<Parrot, ParrotModel> {
             PoseStack poseStack,
             MultiBufferSource buffer,
             int packedLight,
-            Parrot parrot,
+            Frog frog,
             float limbSwing,
             float limbSwingAmount,
             float partialTick,
@@ -38,7 +39,7 @@ public class ParrotHatLayer extends RenderLayer<Parrot, ParrotModel> {
             float netHeadYaw,
             float headPitch
     ) {
-        ItemStack hat = getHat(parrot);
+        ItemStack hat = getHat(frog);
         if (hat.isEmpty()) {
             return;
         }
@@ -51,11 +52,11 @@ public class ParrotHatLayer extends RenderLayer<Parrot, ParrotModel> {
         poseStack.scale(littleFishyHead.xScale, littleFishyHead.yScale, littleFishyHead.zScale);
 
         poseStack.mulPose(Axis.ZP.rotationDegrees(180));
-        poseStack.translate(0f, 0.0625f, -0.0625f);
+        poseStack.translate(0f, -1.25f, 0f);
 
-        poseStack.scale(0.3125f, 0.3125f, 0.3125f);
+        poseStack.scale(0.5f, 0.5f, 0.5f);
 
-        this.actuallyItsAHatRenderer.renderItem(parrot, hat, ItemDisplayContext.HEAD, false, poseStack, buffer, packedLight);
+        this.actuallyItsAHatRenderer.renderItem(frog, hat, ItemDisplayContext.HEAD, false, poseStack, buffer, packedLight);
         poseStack.popPose();
     }
 }

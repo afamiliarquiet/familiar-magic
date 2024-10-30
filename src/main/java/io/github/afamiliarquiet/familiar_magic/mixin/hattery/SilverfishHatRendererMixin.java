@@ -1,6 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
-import io.github.afamiliarquiet.familiar_magic.client.SilverfishHatLayer;
+import io.github.afamiliarquiet.familiar_magic.client.hat.SilverfishHatLayer;
 import net.minecraft.client.model.SilverfishModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;

@@ -1,4 +1,4 @@
-package io.github.afamiliarquiet.familiar_magic.gooey;
+package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.flag.FeatureFlags;

@@ -1,4 +1,4 @@
-package io.github.afamiliarquiet.familiar_magic.client;
+package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;

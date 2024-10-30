@@ -1,14 +1,14 @@
-package io.github.afamiliarquiet.familiar_magic.client;
+package io.github.afamiliarquiet.familiar_magic.client.hat;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.FoxModel;
+import net.minecraft.client.model.WolfModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
@@ -18,30 +18,27 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getHat;
 
 @ParametersAreNonnullByDefault
-public class FoxHatLayer extends RenderLayer<Fox, FoxModel<Fox>> {
+public class WolfHatLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
     private final ItemInHandRenderer actuallyItsAHatRenderer;
-
-    public FoxHatLayer(RenderLayerParent<Fox, FoxModel<Fox>> renderer, ItemInHandRenderer itemInHandRenderer) {
+    public WolfHatLayer(RenderLayerParent<Wolf, WolfModel<Wolf>> renderer, ItemInHandRenderer itemInHandRenderer) {
         super(renderer);
         this.actuallyItsAHatRenderer = itemInHandRenderer;
     }
 
-    // do NOT copy from the fox held item layer i dont know WHAT they were cooking with all that translation and rotation
-    // just copy the head part's translation/rotation/scale(baby)
     @Override
     public void render(
             PoseStack poseStack,
             MultiBufferSource buffer,
             int packedLight,
-            Fox fox,
+            Wolf wolf,
             float limbSwing,
             float limbSwingAmount,
-            float partialTicks,
+            float partialTick,
             float ageInTicks,
             float netHeadYaw,
             float headPitch
     ) {
-        ItemStack hat = getHat(fox);
+        ItemStack hat = getHat(wolf);
         if (hat.isEmpty()) {
             return;
         }
@@ -54,11 +51,11 @@ public class FoxHatLayer extends RenderLayer<Fox, FoxModel<Fox>> {
         poseStack.scale(littleFishyHead.xScale, littleFishyHead.yScale, littleFishyHead.zScale);
 
         poseStack.mulPose(Axis.ZP.rotationDegrees(180));
-        poseStack.translate(-0.0625f, 0f, -0.125f);
+        poseStack.translate(-0.0625f, 0.09375f, 0f);
 
-        poseStack.scale(0.5625f, 0.5625f, 0.5625f);
+        poseStack.scale(0.46875f, 0.46875f, 0.46875f);
 
-        this.actuallyItsAHatRenderer.renderItem(fox, hat, ItemDisplayContext.HEAD, false, poseStack, buffer, packedLight);
+        this.actuallyItsAHatRenderer.renderItem(wolf, hat, ItemDisplayContext.HEAD, false, poseStack, buffer, packedLight);
         poseStack.popPose();
     }
 }

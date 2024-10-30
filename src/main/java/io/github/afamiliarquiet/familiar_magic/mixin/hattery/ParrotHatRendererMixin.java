@@ -1,6 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
-import io.github.afamiliarquiet.familiar_magic.client.ParrotHatLayer;
+import io.github.afamiliarquiet.familiar_magic.client.hat.ParrotHatLayer;
 import net.minecraft.client.model.ParrotModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;

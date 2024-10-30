@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
-import io.github.afamiliarquiet.familiar_magic.gooey.FamiliarGUIStuffs;
+import io.github.afamiliarquiet.familiar_magic.client.gooey.FamiliarGUIStuffs;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import io.github.afamiliarquiet.familiar_magic.network.HattedPayload;

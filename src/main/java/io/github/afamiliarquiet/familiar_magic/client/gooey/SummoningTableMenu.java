@@ -1,4 +1,4 @@
-package io.github.afamiliarquiet.familiar_magic.gooey;
+package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
 import com.mojang.datafixers.util.Pair;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;

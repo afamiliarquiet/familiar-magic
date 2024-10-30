@@ -1,4 +1,4 @@
-package io.github.afamiliarquiet.familiar_magic.client;
+package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.client.DeltaTracker;

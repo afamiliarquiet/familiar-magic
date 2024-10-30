@@ -1,6 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
-import io.github.afamiliarquiet.familiar_magic.client.FrogHatLayer;
+import io.github.afamiliarquiet.familiar_magic.client.hat.FrogHatLayer;
 import net.minecraft.client.model.FrogModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.FrogRenderer;

@@ -5,7 +5,7 @@ import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.block.SmokeWispBlock;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
-import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableMenu;
+import io.github.afamiliarquiet.familiar_magic.client.gooey.SummoningTableMenu;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.SomethingFamiliar;
 import io.github.afamiliarquiet.familiar_magic.network.SummoningCancelledPayload;

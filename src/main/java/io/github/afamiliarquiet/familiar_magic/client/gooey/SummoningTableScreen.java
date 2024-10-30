@@ -1,4 +1,4 @@
-package io.github.afamiliarquiet.familiar_magic.gooey;
+package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
 import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import net.minecraft.MethodsReturnNonnullByDefault;

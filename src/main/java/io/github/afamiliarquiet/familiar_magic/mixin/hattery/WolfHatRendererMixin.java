@@ -1,6 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
-import io.github.afamiliarquiet.familiar_magic.client.WolfHatLayer;
+import io.github.afamiliarquiet.familiar_magic.client.hat.WolfHatLayer;
 import net.minecraft.client.model.WolfModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;

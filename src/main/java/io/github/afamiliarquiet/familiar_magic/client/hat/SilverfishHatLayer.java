@@ -1,14 +1,14 @@
-package io.github.afamiliarquiet.familiar_magic.client;
+package io.github.afamiliarquiet.familiar_magic.client.hat;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.model.WolfModel;
+import net.minecraft.client.model.SilverfishModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
@@ -18,9 +18,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getHat;
 
 @ParametersAreNonnullByDefault
-public class WolfHatLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
+public class SilverfishHatLayer extends RenderLayer<Silverfish, SilverfishModel<Silverfish>> {
     private final ItemInHandRenderer actuallyItsAHatRenderer;
-    public WolfHatLayer(RenderLayerParent<Wolf, WolfModel<Wolf>> renderer, ItemInHandRenderer itemInHandRenderer) {
+
+    public SilverfishHatLayer(RenderLayerParent<Silverfish, SilverfishModel<Silverfish>> renderer, ItemInHandRenderer itemInHandRenderer) {
         super(renderer);
         this.actuallyItsAHatRenderer = itemInHandRenderer;
     }
@@ -30,7 +31,7 @@ public class WolfHatLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
             PoseStack poseStack,
             MultiBufferSource buffer,
             int packedLight,
-            Wolf wolf,
+            Silverfish silverfish,
             float limbSwing,
             float limbSwingAmount,
             float partialTick,
@@ -38,24 +39,27 @@ public class WolfHatLayer extends RenderLayer<Wolf, WolfModel<Wolf>> {
             float netHeadYaw,
             float headPitch
     ) {
-        ItemStack hat = getHat(wolf);
+        ItemStack hat = getHat(silverfish);
         if (hat.isEmpty()) {
             return;
         }
 
         poseStack.pushPose();
 
-        ModelPart littleFishyHead = this.getParentModel().head;
+        if (!this.getParentModel().root().hasChild("segment0")) {
+            return;
+        }
+        ModelPart littleFishyHead = this.getParentModel().root().getChild("segment0");
         poseStack.translate(littleFishyHead.x / 16.0f, littleFishyHead.y / 16.0f, littleFishyHead.z / 16.0f);
         poseStack.mulPose(new Quaternionf().rotationZYX(littleFishyHead.zRot, littleFishyHead.yRot, littleFishyHead.xRot));
-        poseStack.scale(littleFishyHead.xScale, littleFishyHead.yScale, littleFishyHead.zScale);
 
         poseStack.mulPose(Axis.ZP.rotationDegrees(180));
-        poseStack.translate(-0.0625f, 0.09375f, 0f);
 
-        poseStack.scale(0.46875f, 0.46875f, 0.46875f);
+        poseStack.translate(0f, -0.05f, 0f);
 
-        this.actuallyItsAHatRenderer.renderItem(wolf, hat, ItemDisplayContext.HEAD, false, poseStack, buffer, packedLight);
+        poseStack.scale(0.25f, 0.25f, 0.25f);
+
+        this.actuallyItsAHatRenderer.renderItem(silverfish, hat, ItemDisplayContext.HEAD, false, poseStack, buffer, packedLight);
         poseStack.popPose();
     }
 }

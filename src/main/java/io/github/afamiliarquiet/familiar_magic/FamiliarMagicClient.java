@@ -1,45 +1,28 @@
 package io.github.afamiliarquiet.familiar_magic;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import io.github.afamiliarquiet.familiar_magic.client.*;
+import io.github.afamiliarquiet.familiar_magic.client.gooey.FocusRenderLayer;
+import io.github.afamiliarquiet.familiar_magic.client.gooey.SummoningRequestLayer;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.network.FocusPayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.*;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Cat;
-import net.minecraft.world.entity.animal.Fox;
-import net.minecraft.world.entity.animal.Parrot;
-import net.minecraft.world.entity.animal.Wolf;
-import net.minecraft.world.entity.animal.frog.Frog;
-import net.minecraft.world.entity.monster.Silverfish;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 
