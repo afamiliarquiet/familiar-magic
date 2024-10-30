@@ -1,10 +1,8 @@
 package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
-import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -37,17 +35,18 @@ public class SummoningTableScreen extends AbstractContainerScreen<SummoningTable
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderLabels(guiGraphics, mouseX, mouseY);
 
-        guiGraphics.drawString(
-                this.font,
-                Component.literal(FamiliarTricks.uuidToTrueName(UUIDUtil.uuidFromIntArray(new int[]{
-                        menu.tableData.get(0),
-                        menu.tableData.get(1),
-                        menu.tableData.get(2),
-                        menu.tableData.get(3)
-                }))),
-                52,
-                31,
-                4210752,
-                false);
+//        guiGraphics.drawString(
+//                this.font,
+//                Component.literal(FamiliarTricks.uuidToTrueName(UUIDUtil.uuidFromIntArray(new int[]{
+//                        menu.tableData.get(0),
+//                        menu.tableData.get(1),
+//                        menu.tableData.get(2),
+//                        menu.tableData.get(3)
+//                }))),
+//                52,
+//                31,
+//                0x404040,
+//                false
+//        );
     }
 }

@@ -203,9 +203,10 @@ public class SummoningTableBlock extends BaseEntityBlock {
         if (!state.is(newState.getBlock())) {
             // tell the stuff in the inventory to bounce
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof SummoningTableBlockEntity summoningTableInventory) {
-                for (int i = 0; i < summoningTableInventory.getSlots(); i++) {
-                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), summoningTableInventory.getStackInSlot(i));
+            if (blockEntity instanceof SummoningTableBlockEntity summoningTableEntity) {
+                summoningTableEntity.cancelSummoning();
+                for (int i = 0; i < summoningTableEntity.getSlots(); i++) {
+                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), summoningTableEntity.getStackInSlot(i));
                 }
             }
             super.onRemove(state, level, pos, newState, movedByPiston);

@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 
+// todo - add blockpos to this so that you can't cancel other summonings on the target
 public record SummoningCancelledPayload() implements CustomPacketPayload {
     public static final Type<SummoningCancelledPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "summoning_cancelled_payload"));
 
