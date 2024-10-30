@@ -9,18 +9,14 @@ import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import io.github.afamiliarquiet.familiar_magic.network.HattedPayload;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -39,7 +35,7 @@ public class FamiliarMagic {
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public FamiliarMagic(IEventBus modEventBus, ModContainer modContainer) {
         // woah!! i just mined a registrite ore and got a ton of registries!
-        modEventBus.addListener(this::commonSetup);
+        //modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(FamiliarPacketeering::mrwRegisterPayloadHandlersEvent);
 
         FamiliarItems.register(modEventBus);
@@ -48,20 +44,20 @@ public class FamiliarMagic {
         FamiliarAttachments.register(modEventBus);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        //modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event) {
-        // Some common setup code
-        LOGGER.info("HELLO FROM COMMON SETUP");
-
-        if (Config.logDirtBlock)
-            LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));
-
-        LOGGER.info(Config.magicNumberIntroduction + Config.magicNumber);
-
-        Config.items.forEach((item) -> LOGGER.info("ITEM >> {}", item.toString()));
-    }
+//    private void commonSetup(final FMLCommonSetupEvent event) {
+//        // Some common setup code
+//        LOGGER.info("HELLO FROM COMMON SETUP");
+//
+//        if (Config.logDirtBlock)
+//            LOGGER.info("DIRT BLOCK >> {}", BuiltInRegistries.BLOCK.getKey(Blocks.DIRT));
+//
+//        LOGGER.info(Config.magicNumberIntroduction + Config.magicNumber);
+//
+//        Config.items.forEach((item) -> LOGGER.info("ITEM >> {}", item.toString()));
+//    }
 
     @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MOD_ID)
     public static class ImReallyGonnaDoItImGonnaExplode {
