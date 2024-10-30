@@ -43,6 +43,7 @@ public record SomethingFamiliar(BlockPos summoningPos, List<ItemStack> offerings
         // i feel like i should store it on local playerentity data attachment or something instead. that feels better.
         LocalPlayer hehehe = Minecraft.getInstance().player;
         if (hehehe != null) {
+            // also set like, request time? to 30? and fade screen in and out at the ends
             hehehe.setData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION, somethingFamiliar.summoningPos);
             hehehe.setData(FamiliarAttachments.FAMILIAR_SUMMONING_OFFERINGS, somethingFamiliar.offerings);
         }

@@ -29,5 +29,10 @@ public class FamiliarPacketeering {
                 SummoningCancelledPayload.STREAM_CODEC,
                 SummoningCancelledPayload::sorry
         );
+        registrar.playToServer(
+                SummoningResponsePayload.TYPE,
+                SummoningResponsePayload.STREAM_CODEC,
+                SummoningResponsePayload::atYourService
+        );
     }
 }

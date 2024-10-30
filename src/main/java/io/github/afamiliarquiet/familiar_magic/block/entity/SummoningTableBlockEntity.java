@@ -55,6 +55,8 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     // but it works for now so whatever. i'm tryin my best to be neoforgey!!
     // this is.. fine. this is great. this feels so perfect. this is a place of honor! y'know why? because it works well enough!!
 
+    // btw if you touch my public methods in here you will explode. i've cleverly hidden many explosives. don't do it.
+
     // spread out for easier reference (instead of computed)
     // as for the other choices on display, no comment
     private static final int[] CANDLE_COLUMN_OFFSETS = {
@@ -93,7 +95,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0, 1, 2, 3 -> targetFromCandles == null ? 0 : UUIDUtil.uuidToIntArray(targetFromCandles)[index];
+                case 0, 1, 2, 3 -> UUIDUtil.uuidToIntArray(targetFromCandles)[index];
                 default -> 0;
             };
         }
@@ -127,10 +129,9 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     public BlockState startSummoning(BlockState state, boolean simulate) {
-        if (this.targetFromCandles != null && this.level instanceof ServerLevel serverLevel) {
+        if (this.level instanceof ServerLevel serverLevel) {
             Entity targetEntity = serverLevel.getEntity(this.targetFromCandles);
             if (targetEntity instanceof LivingEntity livingTarget) {
-                BlockPos destination = this.getBlockPos();
                 this.summoningTimer = 30;
 
                 if (livingTarget instanceof ServerPlayer player) {
@@ -144,14 +145,35 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
                             )
                     ));
                 } else {
-                    // worry about picky critters later
+                    // todo - let picky critters be picky
+                    serverLevel.scheduleTick(this.getBlockPos(), state.getBlock(), level.random.nextInt(13, 62));
                 }
 
-                livingTarget.teleportTo(destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5);
                 return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.SUMMONING);
             }
         }
         return state;
+    }
+
+    // assistant to previous method
+    public void scheduledAccept() {
+        if (this.level instanceof ServerLevel serverLevel) {
+            Entity targetEntity = serverLevel.getEntity(this.targetFromCandles);
+            if (targetEntity instanceof LivingEntity livingTarget) {
+                acceptSummoning(livingTarget);
+            }
+        }
+    }
+
+    private static void tickSummoning(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thys, boolean targetChanged) {
+        if (thys.summoningTimer <= 0 || targetChanged) {
+            thys.cancelSummoning();
+            SummoningTableBlock.extinguish(null, state, level, pos);
+        }
+
+        if (thys.summoningTimer > 0) {
+            thys.summoningTimer--;
+        }
     }
 
     public void cancelSummoning() {
@@ -168,6 +190,21 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
 
         this.summoningTimer = 0;
+    }
+
+    public void acceptSummoning(LivingEntity livingTarget) {
+        if (this.level == null) {
+            // this really shouldn't ever be real
+            return;
+        }
+        if (livingTarget.getUUID().equals(this.targetFromCandles) && this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
+            BlockPos destination = this.getBlockPos();
+            livingTarget.teleportTo(destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5);
+
+            // todo - replace these with more happy variants, and also give offerings to accepting player
+            cancelSummoning();
+            SummoningTableBlock.extinguish(null, this.getBlockState(), this.level, this.getBlockPos());
+        }
     }
 
     public BlockState tryBurnName(BlockState state, boolean simulate) {
@@ -224,9 +261,6 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
                 thys.targetFromCandles = newTarget;
             }
         }
-
-
-
     }
 
     // written with the aid of our lady luna :innocent:
@@ -314,17 +348,6 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             level.setBlockAndUpdate(targetPos, targetState.setValue(EnchantedCandleBlock.LIT, true));
         } else {
             // maybe sad sound/particle? can't make smoke here but would quite like to
-        }
-    }
-
-    private static void tickSummoning(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thys, boolean targetChanged) {
-        if (thys.summoningTimer <= 0 || targetChanged) {
-            thys.cancelSummoning();
-            SummoningTableBlock.extinguish(null, state, level, pos);
-        }
-
-        if (thys.summoningTimer > 0) {
-            thys.summoningTimer--;
         }
     }
 

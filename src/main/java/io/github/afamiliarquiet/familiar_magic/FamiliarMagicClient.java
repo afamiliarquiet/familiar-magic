@@ -5,8 +5,10 @@ import io.github.afamiliarquiet.familiar_magic.client.gooey.FocusRenderLayer;
 import io.github.afamiliarquiet.familiar_magic.client.gooey.SummoningRequestLayer;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.network.FocusPayload;
+import io.github.afamiliarquiet.familiar_magic.network.SummoningResponsePayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
@@ -109,7 +111,9 @@ public class FamiliarMagicClient {
     public static class ArghImGoingToBlowUp {
         @SubscribeEvent
         private static void mrwClientTickEventPost(ClientTickEvent.Pre event) {
-            LocalPlayer player = Minecraft.getInstance().player;
+            Minecraft minceraft = Minecraft.getInstance();
+            LocalPlayer player = minceraft.player;
+            Options options = minceraft.options;
             if (player == null) {
                 // this shouldn't happen don't do this to me please
                 return;
@@ -135,10 +139,33 @@ public class FamiliarMagicClient {
                 player.setData(FamiliarAttachments.FOCUS_KEY_HELD, buttonHeldNow);
             }
 
+            // accept/reject summoning (a little bit weird to snag option keys isDown but..)
+            if (focusedNow && player.hasData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION)) {
+                if (options.keyShift.isDown()) {
+                    sendReply(player, false);
+                } else if (options.keyJump.isDown()) {
+                    sendReply(player, true);
+                }
+            }
+
             if (shouldUpdate) {
                 player.setData(FamiliarAttachments.FOCUSED, focusedNow);
                 PacketDistributor.sendToServer(new FocusPayload(focusedNow));
             }
         }
+
+        public static void sendReply(LocalPlayer player, boolean accepted) {
+            PacketDistributor.sendToServer(new SummoningResponsePayload(player.getData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION), accepted));
+        }
+
+//        @SubscribeEvent
+//        private static void mrwLivingEventLivingJumpEvent(LivingEvent.LivingJumpEvent event) {
+//            // i feel like i shouldn't need to look at every single entity jump event but whatever, if it works it works
+//            if (event.getEntity() instanceof LocalPlayer player) {
+//                if (player.getData(FamiliarAttachments.FOCUSED) && player.hasData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION)) {
+//                    PacketDistributor.sendToServer(new SummoningResponsePayload(player.getData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION)));
+//                }
+//            }
+//        }
     }
 }
