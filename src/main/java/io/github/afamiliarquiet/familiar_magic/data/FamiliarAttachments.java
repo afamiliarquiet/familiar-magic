@@ -18,16 +18,21 @@ public class FamiliarAttachments {
 
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
 
-    // no serialization because focus shouldn't be a persistent thing
+    // no serialization because focus shouldn't be a persistent thing - used on both client n server, but only c2s
     public static final Supplier<AttachmentType<Boolean>> FOCUSED = ATTACHMENT_TYPES.register(
             "focused", () -> AttachmentType.builder(() -> false).build()
+    );
+    // this one very client only don't worry about it. this is my solution to focus persisting when you disconnect from a server
+    // now that i think about it i should maybe look into registering these things only on client....... later problem
+    public static final Supplier<AttachmentType<Boolean>> FOCUS_KEY_HELD = ATTACHMENT_TYPES.register(
+            "focus_held", () -> AttachmentType.builder(() -> false).build()
     );
 
     public static final Supplier<AttachmentType<ItemStackHandler>> HAT = ATTACHMENT_TYPES.register(
             "hat", () -> AttachmentType.serializable(() -> new ItemStackHandler(1)).build()
     );
 
-    // also not persistent - these defaults shouldn't ever really be seen. if they are uhh.. report bug <3
+    // also not persistent - client only - these defaults shouldn't ever really be seen. if they are uhh.. report bug <3
     // todo - make summoning work cross dimensionally, and these not disappear when changing dimension
     // i feel like the serialization would help with that but. for now, not a big issue. bugfix maybe
     public static final Supplier<AttachmentType<BlockPos>> FAMILIAR_SUMMONING_DESTINATION = ATTACHMENT_TYPES.register(

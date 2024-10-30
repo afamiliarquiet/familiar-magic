@@ -2,9 +2,12 @@ package io.github.afamiliarquiet.familiar_magic.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.LayeredDraw;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -14,7 +17,8 @@ public class FocusRenderLayer implements LayeredDraw.Layer {
     private float focusIntensity = 0.0f;
     @Override
     public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-        if (FamiliarMagicClient.FOCUSED_LAST_TICK.get()) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && player.getData(FamiliarAttachments.FOCUSED)) {
             focusIntensity = Mth.lerp(
                     0.5F * deltaTracker.getGameTimeDeltaTicks(),
                     this.focusIntensity,

@@ -2,10 +2,12 @@ package io.github.afamiliarquiet.familiar_magic;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.afamiliarquiet.familiar_magic.client.*;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.network.FocusPayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.*;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -68,16 +70,10 @@ public class FamiliarMagicClient {
             )
     );
 
-    public static final AtomicBoolean FOCUSED_LAST_TICK = new AtomicBoolean(false);
-    public static final AtomicBoolean FOCUS_HELD_LAST_TICK = new AtomicBoolean(false);
-
     public FamiliarMagicClient(IEventBus modClientEventBus) {
         modClientEventBus.addListener(FamiliarMagicClient::mrwRegisterKeyMappingsEvent);
         modClientEventBus.addListener(FamiliarMagicClient::mrwRegisterGuiLayersEvent);
 //        modClientEventBus.addListener(FamiliarMagicClient::mrwEntityRenderersEventAddLayers);
-
-        FOCUS_HELD_LAST_TICK.set(false); // does this matter? idk, whatever
-        // i really gotta figure out uhh leaving a server or something to reset summoning stuff. wurgh.
     }
 
     private static void mrwRegisterKeyMappingsEvent(RegisterKeyMappingsEvent event) {
@@ -130,8 +126,14 @@ public class FamiliarMagicClient {
     public static class ArghImGoingToBlowUp {
         @SubscribeEvent
         private static void mrwClientTickEventPost(ClientTickEvent.Pre event) {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (player == null) {
+                // this shouldn't happen don't do this to me please
+                return;
+            }
+
             boolean shouldUpdate = false;
-            boolean focusedNow = FOCUSED_LAST_TICK.get();
+            boolean focusedNow = player.getData(FamiliarAttachments.FOCUSED);
             boolean buttonHeldNow = FOCUS_MAPPING.get().isDown();
 
             // process the togglizer (may be out of date, so less precedence)
@@ -141,26 +143,18 @@ public class FamiliarMagicClient {
             }
 
             // process the pressulator (should be the latest news. it gets final say)
-            if (buttonHeldNow != FOCUS_HELD_LAST_TICK.get()) {
-                if (buttonHeldNow != FOCUSED_LAST_TICK.get()) {
+            if (buttonHeldNow != player.getData(FamiliarAttachments.FOCUS_KEY_HELD)) {
+                if (buttonHeldNow != focusedNow) {
                     shouldUpdate = true;
                     focusedNow = buttonHeldNow;
                 }
 
-                FOCUS_HELD_LAST_TICK.set(buttonHeldNow);
+                player.setData(FamiliarAttachments.FOCUS_KEY_HELD, buttonHeldNow);
             }
 
             if (shouldUpdate) {
-                FOCUSED_LAST_TICK.set(focusedNow);
+                player.setData(FamiliarAttachments.FOCUSED, focusedNow);
                 PacketDistributor.sendToServer(new FocusPayload(focusedNow));
-            }
-        }
-
-        @SubscribeEvent
-        private static void mrwPlayerEventClone(PlayerEvent.Clone event) {
-            if (event.isWasDeath() && FOCUSED_LAST_TICK.get()) {
-                FOCUSED_LAST_TICK.set(false);
-                // don't need to send update packet because it will have reset on its own
             }
         }
     }

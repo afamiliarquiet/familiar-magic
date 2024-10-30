@@ -2,7 +2,10 @@ package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -48,15 +51,19 @@ public class SmokeWispBlock extends Block {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        //for (int i = 0; i < 3; i++) {
-            double d0 = (double)pos.getX() + 0.3125 + 0.375 * random.nextDouble();
-            double d1 = (double)pos.getY() + 0.3125 + 0.375 * random.nextDouble();
-            double d2 = (double)pos.getZ() + 0.3125 + 0.375 * random.nextDouble();
-            level.addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0, 0.0, 0.0);
-        //}
+        if (!level.isClientSide) {
+            // this should be impossible but just to be safe
+            return;
+        }
 
-        // i wonder........ can i get away with accessing client info from here?
-        if (FamiliarMagicClient.FOCUSED_LAST_TICK.get()) {
+        double d0 = (double)pos.getX() + 0.3125 + 0.375 * random.nextDouble();
+        double d1 = (double)pos.getY() + 0.3125 + 0.375 * random.nextDouble();
+        double d2 = (double)pos.getZ() + 0.3125 + 0.375 * random.nextDouble();
+        level.addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0, 0.0, 0.0);
+
+        // show candle ghost if focusing! just like barriers
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && player.getData(FamiliarAttachments.FOCUSED)) {
             level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, state), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
         }
     }
