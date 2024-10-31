@@ -47,7 +47,7 @@ public abstract class HatRendererMixin {
                 for (var model : p_model.getRenderPasses(itemStack, true)) {
                     for (var rendertype : model.getRenderTypes(itemStack, true)) {
                         VertexConsumer vertexconsumer;
-                        vertexconsumer = getFoilBufferDirect(bufferSource, rendertype, true, itemStack.hasFoil());
+                        vertexconsumer = getFoilBufferDirect(bufferSource, rendertype, false, itemStack.hasFoil());
 
                         this.renderModelLists(model, itemStack, combinedLight, combinedOverlay, poseStack, vertexconsumer);
                     }
