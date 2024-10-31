@@ -7,20 +7,40 @@ import io.github.afamiliarquiet.familiar_magic.command.PlaceCandlesCommand;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
+import io.github.afamiliarquiet.familiar_magic.item.NameTagDispenseItemBehavior;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import io.github.afamiliarquiet.familiar_magic.network.HattedPayload;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getHat;
@@ -35,7 +55,7 @@ public class FamiliarMagic {
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public FamiliarMagic(IEventBus modEventBus, ModContainer modContainer) {
         // woah!! i just mined a registrite ore and got a ton of registries!
-        //modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(FamiliarPacketeering::mrwRegisterPayloadHandlersEvent);
 
         FamiliarItems.register(modEventBus);
@@ -47,8 +67,9 @@ public class FamiliarMagic {
         //modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
-//    private void commonSetup(final FMLCommonSetupEvent event) {
-//        // Some common setup code
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> DispenserBlock.registerBehavior(Items.NAME_TAG, new NameTagDispenseItemBehavior()));
+
 //        LOGGER.info("HELLO FROM COMMON SETUP");
 //
 //        if (Config.logDirtBlock)
@@ -57,7 +78,7 @@ public class FamiliarMagic {
 //        LOGGER.info(Config.magicNumberIntroduction + Config.magicNumber);
 //
 //        Config.items.forEach((item) -> LOGGER.info("ITEM >> {}", item.toString()));
-//    }
+    }
 
     @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = MOD_ID)
     public static class ImReallyGonnaDoItImGonnaExplode {
