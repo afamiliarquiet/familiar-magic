@@ -1,7 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
-import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -57,7 +56,8 @@ public class SummoningRequestLayer implements LayeredDraw.Layer {
         );
 
         // i have a hunch this may not exist but we shall see! maybe neoforge is nice to me today
-        Component levelComponent = Component.translatable(requestData.tableLevelKey().location().toLanguageKey());
+        // ya didnt exist. so i make it my own and it's fine enough, compat with other mod dimensions should be easy enough
+        Component levelComponent = Component.translatable("familiar_magic.level_key." + requestData.tableLevelKey().location().toLanguageKey());
         BlockPos destinationPos = requestData.tablePos();
         Component positionComponent = Component.translatable(
                 "gui.familiar_magic.summoning_request.position",
@@ -68,8 +68,8 @@ public class SummoningRequestLayer implements LayeredDraw.Layer {
         List<ItemStack> offerings = requestData.offerings().orElse(List.of()); // *should* always be present but w/e
 
         this.drawCenteredStringAtHeight(guiGraphics, minecraft.font, top, left, titleComponent, 0);
-        guiGraphics.drawWordWrap(minecraft.font, blurb, left + this.spacing, top + 26, this.imageWidth - 2 * this.spacing, 0x492f5b);
-        this.drawCenteredStringAtHeight(guiGraphics, minecraft.font, top, left, levelComponent, 60);
+        guiGraphics.drawWordWrap(minecraft.font, blurb, left + this.spacing, top + 26, this.imageWidth - 2 * this.spacing, 0x382414);
+        this.drawCenteredStringAtHeight(guiGraphics, minecraft.font, top, left, levelComponent, 62);
         this.drawCenteredStringAtHeight(guiGraphics, minecraft.font, top, left, positionComponent, 72);
 
         this.drawItems(guiGraphics, minecraft.font, top, left, offerings);
