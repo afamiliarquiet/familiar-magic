@@ -23,10 +23,10 @@ public class SummoningTableScreen extends AbstractContainerScreen<SummoningTable
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        if (menu.feelingMoody()) {
-            graphics.blit(BACKGROUND_MOODY, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
-        } else {
+        if (this.menu.tableData.isModifiable()) {
             graphics.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        } else {
+            graphics.blit(BACKGROUND_MOODY, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         }
     }
 

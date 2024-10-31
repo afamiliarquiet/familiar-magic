@@ -28,7 +28,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -91,7 +90,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
     private int summoningTimer = 0;
 
-    private final ContainerData dataAccess = new ContainerData() {
+    private final TableContainerData dataAccess = new TableContainerData(5) {
         // lady luna guide me once more orz
         @Override
         public int get(int index) {
@@ -242,27 +241,24 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
         SummoningTableState tableState = state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE);
 
-        if (level.getGameTime() % 5L == 0L) {
-            if (tableState == SummoningTableState.BURNING) {
+        // is this once a second? yea seems so - check on summoning timer n maybe cancel it
+        if ((level.getGameTime() % 20L == 0L)) {
+
+            UUID newTarget = thys.targetFromCandles;
+            if (level.getGameTime() % 80L == 0L) {
+                newTarget = processCandles(level, pos);
+            }
+
+            if (tableState == SummoningTableState.SUMMONING) {
+                tickSummoning(level, pos, state, thys, !newTarget.equals(thys.targetFromCandles));
+            } else if (tableState == SummoningTableState.BURNING) {
                 // process burning
                 tickBurning(level, pos, state, thys);
             }
 
-
-            // is this once a second? yea seems so - check on summoning timer n maybe cancel it
-            if ((level.getGameTime() % 20L == 0L)) {
-                UUID newTarget = thys.targetFromCandles;
-                if (level.getGameTime() % 80L == 0L) {
-                    newTarget = processCandles(level, pos);
-                }
-
-                if (tableState == SummoningTableState.SUMMONING) {
-                    tickSummoning(level, pos, state, thys, !newTarget.equals(thys.targetFromCandles));
-                }
-
-                thys.targetFromCandles = newTarget;
-            }
+            thys.targetFromCandles = newTarget;
         }
+
     }
 
     // written with the aid of our lady luna :innocent:
@@ -478,7 +474,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     public boolean canChangeItems() {
-        return this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE;
+        return this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) != SummoningTableState.SUMMONING;
     }
 
     @Override

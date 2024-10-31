@@ -118,12 +118,12 @@ public class SummoningTableBlock extends BaseEntityBlock {
         if (!level.isClientSide
                 && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity zeraxos) {
-            if (serverPlayer.getData(FamiliarAttachments.FOCUSED) && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
-                // and i'll make an even longer line too!! fear me
-                tableEntity.tryDesignate(state);
-            } else {
+//            if (serverPlayer.getData(FamiliarAttachments.FOCUSED) && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
+//                // and i'll make an even longer line too!! fear me
+//                tableEntity.tryDesignate(state);
+//            } else {
                 serverPlayer.openMenu(zeraxos);
-            }
+//            }
         }
 
         return InteractionResult.sidedSuccess(level.isClientSide);

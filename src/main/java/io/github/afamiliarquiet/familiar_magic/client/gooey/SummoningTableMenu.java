@@ -2,21 +2,23 @@ package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
 import com.mojang.datafixers.util.Pair;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
+import io.github.afamiliarquiet.familiar_magic.block.entity.DummyTableItemHandler;
+import io.github.afamiliarquiet.familiar_magic.block.entity.TableContainerData;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.UUID;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 
@@ -26,17 +28,21 @@ public class SummoningTableMenu extends AbstractContainerMenu {
     static final ResourceLocation EMPTY_SLOT_TRUE_NAME = ResourceLocation.fromNamespaceAndPath(MOD_ID, "item/empty_slot_true_name");
 
     private final ContainerLevelAccess levelAccess;
-    protected final ContainerData tableData;
+    protected final TableContainerData tableData;
     private final SlotItemHandler trueNameSlot;
 
     public SummoningTableMenu(int containerId, Inventory playerInv) {
-        this(containerId,  playerInv, new ItemStackHandler(5), new SimpleContainerData(5), ContainerLevelAccess.NULL);
+        this(containerId,  playerInv, new DummyTableItemHandler(5), new TableContainerData(5), ContainerLevelAccess.NULL);
     }
-    public SummoningTableMenu(int containerId, Inventory playerInventory, IItemHandler tableInventory, ContainerData tableData, ContainerLevelAccess levelAccess) {
+    public SummoningTableMenu(int containerId, Inventory playerInventory, IItemHandler tableInventory, TableContainerData tableData, ContainerLevelAccess levelAccess) {
         super(FamiliarGUIStuffs.SUMMONING_TABLE_MENU.get(), containerId);
         checkContainerDataCount(tableData, 5);
         this.levelAccess = levelAccess;
         this.tableData = tableData;
+
+        if (tableInventory instanceof DummyTableItemHandler dummy) {
+            dummy.setContainerData(tableData);
+        }
 
         // table inv
         this.trueNameSlot = new MoodySlotItemHandler(tableInventory, 0, 44, 31) {
@@ -75,15 +81,6 @@ public class SummoningTableMenu extends AbstractContainerMenu {
 
         // table data
         this.addDataSlots(tableData);
-    }
-
-    public UUID getTarget() {
-        // maybe i should consider making an extension of containerdata to handle this for me
-        return UUIDUtil.uuidFromIntArray(new int[]{tableData.get(0), tableData.get(1), tableData.get(2), tableData.get(3)});
-    }
-
-    public boolean feelingMoody() {
-        return tableData.get(4) == 0;
     }
 
     // in theory i don't want this. because it's an inventory. it should keep it
@@ -156,10 +153,10 @@ public class SummoningTableMenu extends AbstractContainerMenu {
 
         @Override
         public boolean isHighlightable() {
-            if (feelingMoody()) {
-                return false;
-            } else {
+            if (SummoningTableMenu.this.tableData.isModifiable()) {
                 return super.isHighlightable();
+            } else {
+                return false;
             }
         }
     }
