@@ -15,6 +15,7 @@ import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 @ParametersAreNonnullByDefault
 public class SummoningTableScreen extends AbstractContainerScreen<SummoningTableMenu> {
     private static final ResourceLocation BACKGROUND = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/container/summoning_table.png");
+    private static final ResourceLocation BACKGROUND_MOODY = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/container/summoning_table_blocked.png");
 
     public SummoningTableScreen(SummoningTableMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -22,7 +23,11 @@ public class SummoningTableScreen extends AbstractContainerScreen<SummoningTable
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        if (menu.feelingMoody()) {
+            graphics.blit(BACKGROUND_MOODY, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        } else {
+            graphics.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        }
     }
 
     @Override

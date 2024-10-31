@@ -97,6 +97,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         public int get(int index) {
             return switch (index) {
                 case 0, 1, 2, 3 -> UUIDUtil.uuidToIntArray(targetFromCandles)[index];
+                case 4 -> SummoningTableBlockEntity.this.canChangeItems() ? 1 : 0;
                 default -> 0;
             };
         }
@@ -121,7 +122,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
         @Override
         public int getCount() {
-            return 4;
+            return 5;
         }
     };
 
@@ -476,6 +477,10 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
     }
 
+    public boolean canChangeItems() {
+        return this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE;
+    }
+
     @Override
     public int getSlots() {
         return 5;
@@ -497,18 +502,20 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
         ItemStack toReturn = stack;
 
-        if (slot == 0 && this.trueName.isEmpty() && stack.is(FamiliarItems.TRUE_NAME_ITEM)) {
-            if (!simulate) {
-                this.trueName = stack.copyWithCount(1);
+        if (this.canChangeItems()) {
+            if (slot == 0 && this.trueName.isEmpty() && stack.is(FamiliarItems.TRUE_NAME_ITEM)) {
+                if (!simulate) {
+                    this.trueName = stack.copyWithCount(1);
+                }
+
+                toReturn = stack.copyWithCount(stack.getCount() - 1);
+            } else if (slot > 0 && slot < 5) {
+                toReturn = offerings.insertItem(slot - 1, stack, simulate);
             }
 
-            toReturn = stack.copyWithCount(stack.getCount() - 1);
-        } else if (slot > 0 && slot < 5) {
-            toReturn = offerings.insertItem(slot - 1, stack, simulate);
-        }
-
-        if (toReturn.getCount() != stack.getCount() && !simulate) {
-            this.setChanged();
+            if (toReturn.getCount() != stack.getCount() && !simulate) {
+                this.setChanged();
+            }
         }
 
         return toReturn;
@@ -518,17 +525,19 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         ItemStack toReturn = ItemStack.EMPTY;
 
-        if (slot == 0) {
-            toReturn = this.trueName.copy();
-            if (!simulate) {
-                this.trueName = ItemStack.EMPTY;
+        if (this.canChangeItems()) {
+            if (slot == 0) {
+                toReturn = this.trueName.copy();
+                if (!simulate) {
+                    this.trueName = ItemStack.EMPTY;
+                }
+            } else if (slot > 0 && slot < 5) {
+                toReturn = offerings.extractItem(slot - 1, amount, simulate);
             }
-        } else if (slot > 0 && slot < 5) {
-            toReturn = offerings.extractItem(slot - 1, amount, simulate);
-        }
 
-        if (!toReturn.isEmpty() && !simulate) {
-            this.setChanged();
+            if (!toReturn.isEmpty() && !simulate) {
+                this.setChanged();
+            }
         }
 
         return toReturn;

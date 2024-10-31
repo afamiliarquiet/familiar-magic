@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,6 +16,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.UUID;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 
@@ -28,16 +30,16 @@ public class SummoningTableMenu extends AbstractContainerMenu {
     private final SlotItemHandler trueNameSlot;
 
     public SummoningTableMenu(int containerId, Inventory playerInv) {
-        this(containerId,  playerInv, new ItemStackHandler(5), new SimpleContainerData(4), ContainerLevelAccess.NULL);
+        this(containerId,  playerInv, new ItemStackHandler(5), new SimpleContainerData(5), ContainerLevelAccess.NULL);
     }
     public SummoningTableMenu(int containerId, Inventory playerInventory, IItemHandler tableInventory, ContainerData tableData, ContainerLevelAccess levelAccess) {
         super(FamiliarGUIStuffs.SUMMONING_TABLE_MENU.get(), containerId);
-        checkContainerDataCount(tableData, 4);
+        checkContainerDataCount(tableData, 5);
         this.levelAccess = levelAccess;
         this.tableData = tableData;
 
         // table inv
-        this.trueNameSlot = new SlotItemHandler(tableInventory, 0, 44, 31) {
+        this.trueNameSlot = new MoodySlotItemHandler(tableInventory, 0, 44, 31) {
             @Override
             public boolean mayPlace(ItemStack itemStack) {
                 return itemStack.is(FamiliarItems.TRUE_NAME_ITEM);
@@ -57,7 +59,7 @@ public class SummoningTableMenu extends AbstractContainerMenu {
         this.addSlot(this.trueNameSlot);
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
-                this.addSlot(new SlotItemHandler(tableInventory, j + i * 2 + 1, 116 + j * 18, 22 + i * 18));
+                this.addSlot(new MoodySlotItemHandler(tableInventory, j + i * 2 + 1, 116 + j * 18, 22 + i * 18));
             }
         }
 
@@ -73,6 +75,15 @@ public class SummoningTableMenu extends AbstractContainerMenu {
 
         // table data
         this.addDataSlots(tableData);
+    }
+
+    public UUID getTarget() {
+        // maybe i should consider making an extension of containerdata to handle this for me
+        return UUIDUtil.uuidFromIntArray(new int[]{tableData.get(0), tableData.get(1), tableData.get(2), tableData.get(3)});
+    }
+
+    public boolean feelingMoody() {
+        return tableData.get(4) == 0;
     }
 
     // in theory i don't want this. because it's an inventory. it should keep it
@@ -136,5 +147,20 @@ public class SummoningTableMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         return stillValid(this.levelAccess, player, FamiliarBlocks.SUMMONING_TABLE_BLOCK.get());
+    }
+
+    public class MoodySlotItemHandler extends SlotItemHandler {
+        public MoodySlotItemHandler(IItemHandler itemHandler, int index, int xPosition, int yPosition) {
+            super(itemHandler, index, xPosition, yPosition);
+        }
+
+        @Override
+        public boolean isHighlightable() {
+            if (feelingMoody()) {
+                return false;
+            } else {
+                return super.isHighlightable();
+            }
+        }
     }
 }
