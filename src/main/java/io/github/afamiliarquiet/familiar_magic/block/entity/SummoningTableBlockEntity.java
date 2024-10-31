@@ -6,10 +6,10 @@ import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.block.SmokeWispBlock;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
 import io.github.afamiliarquiet.familiar_magic.client.gooey.SummoningTableMenu;
+import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.item.SingedComponentRecord;
-import io.github.afamiliarquiet.familiar_magic.network.SomethingFamiliar;
-import io.github.afamiliarquiet.familiar_magic.network.SummoningCancelledPayload;
+import io.github.afamiliarquiet.familiar_magic.network.SummoningRequestPayload;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -24,8 +24,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -45,9 +46,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.findTargetByUuid;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
@@ -61,17 +62,17 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     // spread out for easier reference (instead of computed)
     // as for the other choices on display, no comment
     private static final int[] CANDLE_COLUMN_OFFSETS = {
-            -5,-5,  -3,-5,  -1,-5,  1,-5,  3,-5,  5,-5,
-            -5,-3,  -3,-3,  -1,-3,  1,-3,  3,-3,  5,-3,
-            -5,-1,  -3,-1,                 3,-1,  5,-1,
-            -5, 1,  -3, 1,                 3, 1,  5, 1,
-            -5, 3,  -3, 3,  -1, 3,  1, 3,  3, 3,  5, 3,
-            -5, 5,  -3, 5,  -1, 5,  1, 5,  3, 5,  5, 5
+            -5, -5, -3, -5, -1, -5, 1, -5, 3, -5, 5, -5,
+            -5, -3, -3, -3, -1, -3, 1, -3, 3, -3, 5, -3,
+            -5, -1, -3, -1, 3, -1, 5, -1,
+            -5, 1, -3, 1, 3, 1, 5, 1,
+            -5, 3, -3, 3, -1, 3, 1, 3, 3, 3, 5, 3,
+            -5, 5, -3, 5, -1, 5, 1, 5, 3, 5, 5, 5
     };
     private static final int[][] PHASE_INDICES = {
-            {0,  5, 26, 31}, // phase 1 (final phase)
+            {0, 5, 26, 31}, // phase 1 (final phase)
             {1, 11, 20, 30}, // phase 2
-            {4,  6, 25, 27}, // phase 3
+            {4, 6, 25, 27}, // phase 3
             {3, 12, 19, 28}, // phase 4
             {2, 15, 16, 29}, // phase 5
             {7, 10, 21, 24}, // phase 6
@@ -132,26 +133,34 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     public BlockState startSummoning(BlockState state, boolean simulate) {
         if (this.level instanceof ServerLevel serverLevel) {
-            Entity targetEntity = serverLevel.getEntity(this.targetFromCandles);
-            if (targetEntity instanceof LivingEntity livingTarget) {
-                this.summoningTimer = 30;
+            LivingEntity livingTarget = findTargetByUuid(this.targetFromCandles, serverLevel.getServer());
+            if (livingTarget != null) {
+                if (!simulate) {
+                    this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
 
-                if (livingTarget instanceof ServerPlayer player) {
-                    PacketDistributor.sendToPlayer(player, new SomethingFamiliar(
-                            this.getBlockPos(),
-                            List.of(
-                                    this.offerings.getStackInSlot(0),
-                                    this.offerings.getStackInSlot(1),
-                                    this.offerings.getStackInSlot(2),
-                                    this.offerings.getStackInSlot(3)
-                            )
-                    ));
-                } else {
-                    // todo - let picky critters be picky
-                    serverLevel.scheduleTick(this.getBlockPos(), state.getBlock(), level.random.nextInt(13, 62));
+                    if (livingTarget instanceof ServerPlayer player) {
+                        SummoningRequestData requestData = new SummoningRequestData(
+                                this.level.dimension(),
+                                this.getBlockPos(),
+                                Optional.of(List.of(
+                                        this.offerings.getStackInSlot(0),
+                                        this.offerings.getStackInSlot(1),
+                                        this.offerings.getStackInSlot(2),
+                                        this.offerings.getStackInSlot(3)
+                                ))
+                        );
+
+                        //setRequest(player, requestData);
+                        PacketDistributor.sendToPlayer(player, new SummoningRequestPayload(requestData, false));
+                    } else {
+                        // todo - let picky critters be picky
+                        serverLevel.scheduleTick(this.getBlockPos(), state.getBlock(), level.random.nextInt(13, 62));
+                    }
                 }
 
                 return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.SUMMONING);
+            } else {
+                // couldn't find target on server. nonexistent? unloaded? logged out?
             }
         }
         return state;
@@ -159,9 +168,9 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     // assistant to previous method
     public void scheduledAccept() {
-        if (this.level instanceof ServerLevel serverLevel) {
-            Entity targetEntity = serverLevel.getEntity(this.targetFromCandles);
-            if (targetEntity instanceof LivingEntity livingTarget) {
+        if (this.level instanceof ServerLevel) {
+            LivingEntity livingTarget = findTargetByUuid(this.targetFromCandles, this.level.getServer());
+            if (livingTarget != null) {
                 acceptSummoning(livingTarget);
             }
         }
@@ -184,11 +193,13 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             return;
         }
 
-        Entity target = ((ServerLevel)level).getEntity(this.targetFromCandles);
+        LivingEntity target = findTargetByUuid(this.targetFromCandles, level.getServer());
         if (target instanceof ServerPlayer player) {
             // could i in theory use a different packet for this? yeah. should i? iunno
             // answer: YES because nulling the other one is NOT ALLOWED!!! i kinda figured :l
-            PacketDistributor.sendToPlayer(player, new SummoningCancelledPayload());
+            SummoningRequestData requestData = new SummoningRequestData(this.level.dimension(), this.getBlockPos(), Optional.empty());
+            //removeRequest(player, requestData);
+            PacketDistributor.sendToPlayer(player, new SummoningRequestPayload(requestData, true));
         }
 
         this.summoningTimer = 0;
@@ -201,7 +212,11 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
         if (livingTarget.getUUID().equals(this.targetFromCandles) && this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
             BlockPos destination = this.getBlockPos();
-            livingTarget.teleportTo(destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5);
+            livingTarget.teleportTo((ServerLevel) this.level, destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5, EnumSet.noneOf(RelativeMovement.class), livingTarget.getYRot(), livingTarget.getXRot());
+
+            if (livingTarget instanceof PathfinderMob pathfindermob) {
+                pathfindermob.getNavigation().stop();
+            }
 
             // todo - replace these with more happy variants, and also give offerings to accepting player
             cancelSummoning();
@@ -270,9 +285,9 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         int nybblesTaken = 0;
 
         // columns, when facing northward
-        for (int z = pos.getZ() - 5, zLimit = pos.getZ() + 5; z <= zLimit; z+=2) {
+        for (int z = pos.getZ() - 5, zLimit = pos.getZ() + 5; z <= zLimit; z += 2) {
             // rows, when facing northward
-            for (int x = pos.getX() - 5, xLimit = pos.getX() + 5; x <= xLimit; x+=2) {
+            for (int x = pos.getX() - 5, xLimit = pos.getX() + 5; x <= xLimit; x += 2) {
                 // skip center voids
                 if (Math.abs(x - pos.getX()) <= 1 && Math.abs(z - pos.getZ()) <= 1) {
                     continue;
@@ -370,7 +385,6 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
 
-
     // ahead lies the containery part of this damnable thing. Good lird
 
     @Override
@@ -419,7 +433,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         if (!allItems.isEmpty()) {
             this.trueName = allItems.getFirst();
         }
-        for (int i = 1; i < allItems.size() && i < 1+offerings.getSlots(); i++) {
+        for (int i = 1; i < allItems.size() && i < 1 + offerings.getSlots(); i++) {
             offerings.setStackInSlot(i - 1, allItems.get(i));
         }
     }
@@ -469,7 +483,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         if (BaseContainerBlockEntity.canUnlock(player, this.lockKey, this.getDisplayName())) {
-            return new SummoningTableMenu(containerId, playerInventory, this, this.dataAccess, ContainerLevelAccess.create(this.level, this.getBlockPos()));
+            return new SummoningTableMenu(containerId, playerInventory, this, this.dataAccess, ContainerLevelAccess.create(player.level(), this.getBlockPos()));
         } else {
             return null;
         }
@@ -543,10 +557,16 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     @Override
     public int getSlotLimit(int slot) {
-        switch(slot) {
-            case 0 -> {return 1;}
-            case 1,2,3,4 -> {return this.offerings.getSlotLimit(slot - 1);}
-            default -> {return 0;}
+        switch (slot) {
+            case 0 -> {
+                return 1;
+            }
+            case 1, 2, 3, 4 -> {
+                return this.offerings.getSlotLimit(slot - 1);
+            }
+            default -> {
+                return 0;
+            }
         }
     }
 

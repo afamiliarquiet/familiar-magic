@@ -1,9 +1,14 @@
 package io.github.afamiliarquiet.familiar_magic;
 
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
+import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,7 +19,9 @@ import java.util.UUID;
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class FamiliarTricks {
-    // yea ill uhhh kill a quarter byte
+    // todo - configurize?
+    public static final int SUMMONING_TIME_SECONDS = 30;
+
     public static final char[] I_TAKE_A_BYTE = { // todo - for fun maybe make this configurable
             'd', // 0
             'o', // 1
@@ -34,6 +41,7 @@ public class FamiliarTricks {
             'h', // f
     };
 
+    // yea ill uhhh kill a quarter byte
     public static final byte[] OW_IVE_BEEN_BYTTEN = new byte[256];
     static {
         Arrays.fill(OW_IVE_BEEN_BYTTEN, (byte) -1);
@@ -92,5 +100,38 @@ public class FamiliarTricks {
 
     public static ItemStack getHat(Entity entity) {
         return entity.getData(FamiliarAttachments.HAT).getStackInSlot(0);
+    }
+
+    public static @Nullable LivingEntity findTargetByUuid(UUID uuid, MinecraftServer server) {
+        LivingEntity livingTarget = null;
+        for (ServerLevel possibleLevel : server.getAllLevels()) {
+            Entity possibleTarget = possibleLevel.getEntity(uuid);
+            if (possibleTarget instanceof LivingEntity) {
+                livingTarget = (LivingEntity) possibleTarget;
+                break;
+            }
+        }
+        return livingTarget;
+    }
+
+    public static boolean hasRequest(Player player) {
+        return player.hasData(FamiliarAttachments.SUMMONING_REQUEST);
+    }
+
+    public static SummoningRequestData getRequest(Player player) {
+        return player.getData(FamiliarAttachments.SUMMONING_REQUEST);
+    }
+
+    public static void setRequest(Player player, SummoningRequestData requestData) {
+        player.setData(FamiliarAttachments.SUMMONING_REQUEST, requestData);
+    }
+
+    public static void removeRequest(Player player, SummoningRequestData cancellingPayloadData) {
+        if (hasRequest(player)) {
+            SummoningRequestData currentData = getRequest(player);
+            if (cancellingPayloadData.isSameRequester(currentData)) {
+                player.removeData(FamiliarAttachments.SUMMONING_REQUEST);
+            }
+        }
     }
 }

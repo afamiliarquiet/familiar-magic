@@ -15,6 +15,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -31,6 +32,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getRequest;
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.hasRequest;
 
 @Mod(value = "familiar_magic", dist = Dist.CLIENT)
 public class FamiliarMagicClient {
@@ -156,7 +159,7 @@ public class FamiliarMagicClient {
             }
 
             // accept/reject summoning (a little bit weird to snag option keys isDown but..)
-            if (focusedNow && player.hasData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION)) {
+            if (focusedNow && hasRequest(player)) {
                 if (options.keyShift.isDown()) {
                     sendReply(player, false);
                 } else if (options.keyJump.isDown()) {
@@ -170,18 +173,9 @@ public class FamiliarMagicClient {
             }
         }
 
-        public static void sendReply(LocalPlayer player, boolean accepted) {
-            PacketDistributor.sendToServer(new SummoningResponsePayload(player.getData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION), accepted));
+        private static void sendReply(Player player, boolean accepted) {
+            // assumes player hasdata. server will probably just ignore request if it pulls default data though
+            PacketDistributor.sendToServer(new SummoningResponsePayload(getRequest(player), accepted));
         }
-
-//        @SubscribeEvent
-//        private static void mrwLivingEventLivingJumpEvent(LivingEvent.LivingJumpEvent event) {
-//            // i feel like i shouldn't need to look at every single entity jump event but whatever, if it works it works
-//            if (event.getEntity() instanceof LocalPlayer player) {
-//                if (player.getData(FamiliarAttachments.FOCUSED) && player.hasData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION)) {
-//                    PacketDistributor.sendToServer(new SummoningResponsePayload(player.getData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION)));
-//                }
-//            }
-//        }
     }
 }

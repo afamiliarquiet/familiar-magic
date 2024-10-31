@@ -33,13 +33,10 @@ public class FamiliarAttachments {
     );
 
     // also not persistent - client only - these defaults shouldn't ever really be seen. if they are uhh.. report bug <3
-    // todo - make summoning work cross dimensionally, and these not disappear when changing dimension
+    // todo - make these not disappear when changing dimension, and make table cancel when target disconnects mayyybe.. maybe not because then i'd have to store on animals too and cancel when they unload and that sounds unnecessary but maybe later
     // i feel like the serialization would help with that but. for now, not a big issue. bugfix maybe
-    public static final Supplier<AttachmentType<BlockPos>> FAMILIAR_SUMMONING_DESTINATION = ATTACHMENT_TYPES.register(
-            "familiar_summoning_destination", () -> AttachmentType.builder(() -> BlockPos.ZERO).build()
-    );
-    public static final Supplier<AttachmentType<List<ItemStack>>> FAMILIAR_SUMMONING_OFFERINGS = ATTACHMENT_TYPES.register(
-            "familiar_summoning_offerings", () -> AttachmentType.<List<ItemStack>>builder(() -> List.of()).build()
+    public static final Supplier<AttachmentType<SummoningRequestData>> SUMMONING_REQUEST = ATTACHMENT_TYPES.register(
+            "summoning_request", () -> AttachmentType.builder(() -> SummoningRequestData.DEFAULT).build()
     );
 
     public static void register(IEventBus modEventBus) {

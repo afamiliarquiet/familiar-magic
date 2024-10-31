@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.client.gooey;
 
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
+import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -17,6 +18,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getRequest;
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.hasRequest;
 
 @ParametersAreNonnullByDefault
 public class SummoningRequestLayer implements LayeredDraw.Layer {
@@ -32,13 +35,11 @@ public class SummoningRequestLayer implements LayeredDraw.Layer {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
 
-        if ( // wowowow intellij makes u really float all the way out here huh
-                player == null
-                        || !player.hasData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION)
-                        || !player.hasData(FamiliarAttachments.FAMILIAR_SUMMONING_OFFERINGS)
-        ) {
+        if (player == null || !hasRequest(player)) {
             return;
         }
+
+        SummoningRequestData requestData = getRequest(player);
 
         int top = guiGraphics.guiHeight() - (this.imageHeight + this.spacing);
         int left = guiGraphics.guiWidth() - (this.imageWidth + this.spacing);
@@ -54,17 +55,21 @@ public class SummoningRequestLayer implements LayeredDraw.Layer {
                 minecraft.options.keyJump.getKey().getDisplayName(),
                 minecraft.options.keyShift.getKey().getDisplayName()
         );
-        BlockPos destinationPos = player.getData(FamiliarAttachments.FAMILIAR_SUMMONING_DESTINATION);
+
+        // i have a hunch this may not exist but we shall see! maybe neoforge is nice to me today
+        Component levelComponent = Component.translatable(requestData.tableLevelKey().location().toLanguageKey());
+        BlockPos destinationPos = requestData.tablePos();
         Component positionComponent = Component.translatable(
                 "gui.familiar_magic.summoning_request.position",
                 destinationPos.getX(),
                 destinationPos.getY(),
                 destinationPos.getZ()
         );
-        List<ItemStack> offerings = player.getData(FamiliarAttachments.FAMILIAR_SUMMONING_OFFERINGS);
+        List<ItemStack> offerings = requestData.offerings().orElse(List.of()); // *should* always be present but w/e
 
         this.drawCenteredStringAtHeight(guiGraphics, minecraft.font, top, left, titleComponent, 0);
         guiGraphics.drawWordWrap(minecraft.font, blurb, left + this.spacing, top + 26, this.imageWidth - 2 * this.spacing, 0x492f5b);
+        this.drawCenteredStringAtHeight(guiGraphics, minecraft.font, top, left, levelComponent, 60);
         this.drawCenteredStringAtHeight(guiGraphics, minecraft.font, top, left, positionComponent, 72);
 
         this.drawItems(guiGraphics, minecraft.font, top, left, offerings);
@@ -82,6 +87,11 @@ public class SummoningRequestLayer implements LayeredDraw.Layer {
     }
 
     private void drawItems(GuiGraphics guiGraphics, Font font, int top, int left, List<ItemStack> offerings) {
+        if (offerings.size() != 4) {
+            // just to be extra safe
+            return;
+        }
+
         for (int i = 0; i < 4; i++) {
             int itemTop = top + 98;
             int itemLeft = i * 18 + left + 29;

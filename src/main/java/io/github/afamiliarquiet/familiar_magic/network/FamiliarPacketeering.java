@@ -20,19 +20,14 @@ public class FamiliarPacketeering {
         );
 
         registrar.playToClient(
-                SomethingFamiliar.TYPE,
-                SomethingFamiliar.STREAM_CODEC,
-                SomethingFamiliar::hmHmYouWantToSummonMe
-        );
-        registrar.playToClient(
-                SummoningCancelledPayload.TYPE,
-                SummoningCancelledPayload.STREAM_CODEC,
-                SummoningCancelledPayload::sorry
+                SummoningRequestPayload.TYPE,
+                SummoningRequestPayload.STREAM_CODEC,
+                SummoningRequestPayload::ayeAyeRequestReceived
         );
         registrar.playToServer(
                 SummoningResponsePayload.TYPE,
                 SummoningResponsePayload.STREAM_CODEC,
-                SummoningResponsePayload::atYourService
+                SummoningResponsePayload::iveGivenItSomeThought
         );
     }
 }

@@ -10,26 +10,11 @@ import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.item.NameTagDispenseItemBehavior;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import io.github.afamiliarquiet.familiar_magic.network.HattedPayload;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Position;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.dispenser.BlockSource;
-import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -40,7 +25,6 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getHat;
@@ -87,6 +71,7 @@ public class FamiliarMagic {
 
         @SubscribeEvent
         private static void mrwPlayerEventStartTracking(PlayerEvent.StartTracking event) {
+            // why do i gotta do this. why don't the attachments just do this for you. wargh.
             Entity theEntity = event.getTarget();
             ItemStack hat = getHat(theEntity);
             if (theEntity instanceof HatWearer && !hat.isEmpty()) {
@@ -111,5 +96,36 @@ public class FamiliarMagic {
         private static void mrwRegisterCommandsEvent(RegisterCommandsEvent event) {
             PlaceCandlesCommand.register(event.getDispatcher());
         }
+
+//        @SubscribeEvent
+//        private static void mrwNOTEXCLAMATIONMARKPlayerEventClone(EntityTravelToDimensionEvent event) {
+//            // this player event clone thing has comments for dimension change but doesn't even fire on dimension change.
+//            // and then entitytraveltodimensionevent doesn't give me before and after!!
+//            if (!(event.getEntity() instanceof ServerPlayer player)) {
+//                // this shouldn't happen because clone only happens on server, but i may as well check since i'm casting
+//                // well now it happens because it's not always a player!!! GRAH
+//                return;
+//            }
+//
+//            // oh neat the instanceof variable can carry out beyond a ! return. feels wrong though
+//            // anyway last ditch effort. we can maybe survive one dimension transition if the packet isn't Instantaneous
+//            // doesn't seem to work on dev env, maybe because packet is Instantaneous but like. whatever. let it break
+//            // as you well know, teleportation is not compatible with other teleportation. hard to keep a good lock on the target
+//            // GUARDS!! comment out their entire existence
+//            if (hasRequest(player)) {
+//                PacketDistributor.sendToPlayer(player, new SummoningRequestPayload(getRequest(player), false));
+//            }
+//
+//            if (hasRequest(event.getOriginal())) {
+//                SummoningRequestData requestData = getRequest(event.getOriginal());
+//                if (event.isWasDeath()) {
+//                    // player here shouldn't even get used really
+//                    SummoningResponsePayload.eatRequestResponse(requestData, false, event.getEntity());
+//                } else {
+//                    setRequest(event.getEntity(), requestData);
+//                    PacketDistributor.sendToPlayer((ServerPlayer) event.getEntity(), new SummoningRequestPayload(requestData, false));
+//                }
+//            }
+//        }
     }
 }
