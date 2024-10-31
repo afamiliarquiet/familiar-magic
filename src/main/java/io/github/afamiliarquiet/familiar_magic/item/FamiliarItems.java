@@ -3,6 +3,7 @@ package io.github.afamiliarquiet.familiar_magic.item;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
@@ -11,6 +12,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.SimpleTier;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -22,6 +24,7 @@ import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
 public class FamiliarItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
     public static final DeferredRegister<ArmorMaterial> ARMOR_MATERIALS = DeferredRegister.create(Registries.ARMOR_MATERIAL, MOD_ID);
+    public static final DeferredRegister.DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MOD_ID);
 
     public static final Tier SOMEWHAT_FAMILIAR_TIER = new SimpleTier(
             BlockTags.INCORRECT_FOR_IRON_TOOL,
@@ -53,7 +56,19 @@ public class FamiliarItems {
             )
     );
 
-    public static final DeferredItem<Item> TRUE_NAME_ITEM = ITEMS.registerSimpleItem("true_name");
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<SingedComponentRecord>> SINGED_COMPONENT = COMPONENTS.registerComponentType(
+        "singed",
+        builder -> builder
+                .persistent(SingedComponentRecord.CODEC)
+                .networkSynchronized(SingedComponentRecord.STREAM_CODEC)
+    );
+
+    public static final DeferredItem<Item> TRUE_NAME_ITEM = ITEMS.register(
+            "true_name",
+            () -> new Item(new Item.Properties()
+                    .component(SINGED_COMPONENT.get(), new SingedComponentRecord(false))
+            )
+    );
     public static final DeferredItem<Item> BIG_HAT = ITEMS.register(
             "big_hat",
             () -> new ClothingItem(
@@ -66,6 +81,7 @@ public class FamiliarItems {
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
         ARMOR_MATERIALS.register(eventBus);
+        COMPONENTS.register(eventBus);
         eventBus.addListener(FamiliarItems::mrwBuildCreativeModeTabContents);
     }
 

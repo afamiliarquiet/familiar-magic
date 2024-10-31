@@ -1,0 +1,6 @@
+{
+  "parent": "familiar_magic:item/true_name",
+  "textures": {
+    "layer0": "familiar_magic:item/true_name_singed"
+  }
+}

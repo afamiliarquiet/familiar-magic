@@ -4,12 +4,15 @@ import com.mojang.blaze3d.platform.InputConstants;
 import io.github.afamiliarquiet.familiar_magic.client.gooey.FocusRenderLayer;
 import io.github.afamiliarquiet.familiar_magic.client.gooey.SummoningRequestLayer;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
+import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
+import io.github.afamiliarquiet.familiar_magic.item.SingedComponentRecord;
 import io.github.afamiliarquiet.familiar_magic.network.FocusPayload;
 import io.github.afamiliarquiet.familiar_magic.network.SummoningResponsePayload;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -17,6 +20,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
@@ -56,9 +60,21 @@ public class FamiliarMagicClient {
     );
 
     public FamiliarMagicClient(IEventBus modClientEventBus) {
+        modClientEventBus.addListener(FamiliarMagicClient::mrwClientSetupEvent);
         modClientEventBus.addListener(FamiliarMagicClient::mrwRegisterKeyMappingsEvent);
         modClientEventBus.addListener(FamiliarMagicClient::mrwRegisterGuiLayersEvent);
 //        modClientEventBus.addListener(FamiliarMagicClient::mrwEntityRenderersEventAddLayers);
+    }
+
+    private static void mrwClientSetupEvent(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> ItemProperties.register(
+                FamiliarItems.TRUE_NAME_ITEM.get(),
+                ResourceLocation.fromNamespaceAndPath(MOD_ID, "singed"),
+                (stack, level, entity, seed) -> {
+                    SingedComponentRecord component = stack.get(FamiliarItems.SINGED_COMPONENT);
+                    return component != null && component.singed() ? 1.0f : 0.0f;
+                }
+        ));
     }
 
     private static void mrwRegisterKeyMappingsEvent(RegisterKeyMappingsEvent event) {

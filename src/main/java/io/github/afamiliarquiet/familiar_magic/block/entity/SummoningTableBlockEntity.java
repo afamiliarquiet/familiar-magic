@@ -7,6 +7,7 @@ import io.github.afamiliarquiet.familiar_magic.block.SmokeWispBlock;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
 import io.github.afamiliarquiet.familiar_magic.client.gooey.SummoningTableMenu;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
+import io.github.afamiliarquiet.familiar_magic.item.SingedComponentRecord;
 import io.github.afamiliarquiet.familiar_magic.network.SomethingFamiliar;
 import io.github.afamiliarquiet.familiar_magic.network.SummoningCancelledPayload;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -216,6 +217,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
             if (parsedTargetFromItem != null) {
                 if (!simulate) {
+                    this.trueName.set(FamiliarItems.SINGED_COMPONENT, new SingedComponentRecord(true));
                     this.targetFromTrueNameInNybbles = parsedTargetFromItem;
                     this.burningPhase = 8;
                 }

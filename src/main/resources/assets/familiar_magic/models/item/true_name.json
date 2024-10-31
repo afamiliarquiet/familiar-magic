@@ -2,5 +2,13 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "familiar_magic:item/true_name"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "familiar_magic:singed": 1.0
+      },
+      "model": "familiar_magic:item/true_name_singed"
+    }
+  ]
 }
