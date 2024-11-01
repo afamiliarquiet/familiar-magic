@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
@@ -225,6 +226,8 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
                 pathfindermob.getNavigation().stop();
             }
 
+            this.giveOfferings(livingTarget);
+
             level.gameEvent(GameEvent.TELEPORT, livingTarget.position(), GameEvent.Context.of(livingTarget));
             level.broadcastEntityEvent(livingTarget, (byte)46);
             level.playSound(null, this.getBlockPos(), SoundEvents.PLAYER_TELEPORT, SoundSource.BLOCKS, 1, 1);
@@ -232,6 +235,25 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             // todo - replace these with more happy variants, and also give offerings to accepting player
             cancelSummoning();
             SummoningTableBlock.extinguish(null, this.getBlockState(), this.level, this.getBlockPos());
+        }
+    }
+
+    private void giveOfferings(LivingEntity target) {
+        if (level == null || level.isClientSide) {
+            // this isn't happening. chill out, relax, it's fine
+            return;
+        }
+        BlockPos pos = this.getBlockPos();
+        for (int i = 0; i < this.offerings.getSlots(); i++) {
+            ItemStack offering = this.offerings.getStackInSlot(i);
+            if (target instanceof ServerPlayer player) {
+                if (!player.getInventory().add(offering)) {
+                    Containers.dropItemStack(level, pos.getX(), pos.getY()+1, pos.getZ(), offering);
+                }
+            } else {
+                // todo - feed the critters
+                Containers.dropItemStack(level, pos.getX(), pos.getY()+1, pos.getZ(), offering);
+            }
         }
     }
 
