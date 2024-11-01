@@ -135,6 +135,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     public SummoningTableBlockEntity(BlockPos pos, BlockState blockState) {
         super(FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY.get(), pos, blockState);
+        Arrays.fill(this.targetFromCandlesInNybbles, FamiliarTricks.NO_CANDLE);
     }
 
     public BlockState startSummoning(BlockState state, boolean simulate) {
