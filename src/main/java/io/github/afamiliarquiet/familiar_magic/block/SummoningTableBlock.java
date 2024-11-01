@@ -174,7 +174,8 @@ public class SummoningTableBlock extends BaseEntityBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (state.getValue(SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
+        SummoningTableState tableState = state.getValue(SUMMONING_TABLE_STATE);
+        if (tableState == SummoningTableState.SUMMONING) {
             if (random.nextInt(100) == 0) {
                 // truly just ripping this whole thing from respawn anchor. as usual, might change sound later. unlikely
                 level.playLocalSound(pos, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
@@ -185,6 +186,21 @@ public class SummoningTableBlock extends BaseEntityBlock {
             double d2 = (double)pos.getZ() + 0.5 + (0.5 - random.nextDouble());
             double d3 = (double)random.nextFloat() * 0.04;
             level.addParticle(ParticleTypes.REVERSE_PORTAL, d0, d1, d2, 0.0, d3, 0.0);
+        } else if (tableState == SummoningTableState.BURNING) {
+            if (random.nextInt(31) == 0) {
+                level.playLocalSound(pos, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 1, 1, false);
+            }
+
+            if (random.nextInt(2) == 0) {
+                double x = pos.getX() + 0.5 + 0.5 * (0.5 - random.nextDouble());
+                double y = pos.getY() + 0.8375;
+                double z = pos.getZ() + 0.5 + 0.5 * (0.5 - random.nextDouble());
+                level.addParticle(
+                        random.nextInt(6) == 0 ? ParticleTypes.FLAME : ParticleTypes.SMOKE,
+                        x, y, z,
+                        0.0, 0.0, 0.0
+                );
+            }
         }
     }
 

@@ -20,6 +20,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
@@ -37,6 +39,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -135,11 +138,12 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     public BlockState startSummoning(BlockState state, boolean simulate) {
         // todo - check for unlits, then blow out candles on summoning start
-        if (this.level instanceof ServerLevel serverLevel) {
+        if (!this.anyUnlit() && this.level instanceof ServerLevel serverLevel) {
             LivingEntity livingTarget = findTargetByUuid(this.getCandleTarget(), serverLevel.getServer());
             if (livingTarget != null) {
                 if (!simulate) {
                     this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
+                    //this.unlightAll();
 
                     if (livingTarget instanceof ServerPlayer player) {
                         SummoningRequestData requestData = new SummoningRequestData(
@@ -210,7 +214,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     public void acceptSummoning(LivingEntity livingTarget) {
         if (this.level == null) {
-            // this really shouldn't ever be real
+            // this really shouldn't ever be real. also this should always be on server side?
             return;
         }
         if (livingTarget.getUUID().equals(this.getCandleTarget()) && this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
@@ -220,6 +224,10 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             if (livingTarget instanceof PathfinderMob pathfindermob) {
                 pathfindermob.getNavigation().stop();
             }
+
+            level.gameEvent(GameEvent.TELEPORT, livingTarget.position(), GameEvent.Context.of(livingTarget));
+            level.broadcastEntityEvent(livingTarget, (byte)46);
+            level.playSound(null, this.getBlockPos(), SoundEvents.PLAYER_TELEPORT, SoundSource.BLOCKS, 1, 1);
 
             // todo - replace these with more happy variants, and also give offerings to accepting player
             cancelSummoning();
@@ -301,6 +309,25 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
 
         return false;
+    }
+
+    private void unlightAll() {
+        if (this.level == null) {
+            return;
+        }
+
+        for (int i = 0; i < 32; i++) {
+            // boldly unchecked because this should only be called when all the things are there... err i should check actually
+            BlockPos targetPos = this.getBlockPos().offset(CANDLE_COLUMN_OFFSETS[2*i], 0, CANDLE_COLUMN_OFFSETS[2*i+1]);
+            targetPos = targetPos.offset(0, ((this.targetFromCandlesInNybbles[i] >> 2) & 0b11) + 1, 0);
+            BlockState targetState = this.level.getBlockState(targetPos);
+            if (targetState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK)) {
+                this.level.setBlock(targetPos, targetState.setValue(EnchantedCandleBlock.LIT, false), Block.UPDATE_CLIENTS);
+            }
+        }
+
+        // todo - custom sound/event
+        level.playSound(null, this.getBlockPos(), SoundEvents.BREEZE_LAND, SoundSource.BLOCKS, 1, 1);
     }
 
     // written with the aid of our lady luna :innocent:

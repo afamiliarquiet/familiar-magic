@@ -30,7 +30,9 @@ public class FamiliarBlocks {
 
     public static final DeferredBlock<CandleBlock> ENCHANTED_CANDLE_BLOCK = registerBlockWithItem(
             "enchanted_candle",
-            () -> new EnchantedCandleBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CANDLE)) // maybe toy with properties later
+            () -> new EnchantedCandleBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CANDLE)
+                    .mapColor(MapColor.COLOR_ORANGE)
+            ) // maybe toy with properties later
     );
 
     public static final DeferredBlock<SummoningTableBlock> SUMMONING_TABLE_BLOCK = registerBlockWithItem(
@@ -38,7 +40,7 @@ public class FamiliarBlocks {
             () -> new SummoningTableBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_PURPLE)
                     .instrument(NoteBlockInstrument.BASEDRUM)
-                    .requiresCorrectToolForDrops() // hmm good point. i should fix this by adding this to stone pick tag or whatever
+                    .requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE).lightLevel())
                     .strength(5.0F, 1200.0F)
             )

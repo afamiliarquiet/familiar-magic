@@ -2,11 +2,12 @@ package io.github.afamiliarquiet.familiar_magic.network;
 
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
@@ -42,6 +43,7 @@ public record SummoningRequestPayload(SummoningRequestData requestData, boolean 
         } else {
             // also set like, request time? to 30? and fade screen in and out at the ends
             setRequest(hehehe, summoningRequestPayload.requestData);
+            hehehe.level().playLocalSound(hehehe, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1, 1);
         }
     }
 }
