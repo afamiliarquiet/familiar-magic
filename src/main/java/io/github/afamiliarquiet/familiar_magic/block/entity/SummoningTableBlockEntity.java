@@ -13,7 +13,6 @@ import io.github.afamiliarquiet.familiar_magic.network.SummoningRequestPayload;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -62,17 +61,17 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     // spread out for easier reference (instead of computed)
     // as for the other choices on display, no comment
     private static final int[] CANDLE_COLUMN_OFFSETS = {
-            -5, -5, -3, -5, -1, -5, 1, -5, 3, -5, 5, -5,
-            -5, -3, -3, -3, -1, -3, 1, -3, 3, -3, 5, -3,
-            -5, -1, -3, -1, 3, -1, 5, -1,
-            -5, 1, -3, 1, 3, 1, 5, 1,
-            -5, 3, -3, 3, -1, 3, 1, 3, 3, 3, 5, 3,
-            -5, 5, -3, 5, -1, 5, 1, 5, 3, 5, 5, 5
+            -5,-5,  -3,-5,  -1,-5,  1,-5,  3,-5,  5,-5,
+            -5,-3,  -3,-3,  -1,-3,  1,-3,  3,-3,  5,-3,
+            -5,-1,  -3,-1,                 3,-1,  5,-1,
+            -5, 1,  -3, 1,                 3, 1,  5, 1,
+            -5, 3,  -3, 3,  -1, 3,  1, 3,  3, 3,  5, 3,
+            -5, 5,  -3, 5,  -1, 5,  1, 5,  3, 5,  5, 5
     };
     private static final int[][] PHASE_INDICES = {
-            {0, 5, 26, 31}, // phase 1 (final phase)
+            {0,  5, 26, 31}, // phase 1 (final phase)
             {1, 11, 20, 30}, // phase 2
-            {4, 6, 25, 27}, // phase 3
+            {4,  6, 25, 27}, // phase 3
             {3, 12, 19, 28}, // phase 4
             {2, 15, 16, 29}, // phase 5
             {7, 10, 21, 24}, // phase 6
@@ -83,10 +82,13 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     @Nullable
     private Component name;
     private LockCode lockKey = LockCode.NO_LOCK;
+    // both targetFromCandles should always be in sync
     @NotNull
     private UUID targetFromCandles = new UUID(0, 0);
+    private byte[] targetFromCandlesInNybbles = new byte[32];
+    // burnedTarget is only set for burning
     @Nullable
-    private byte[] targetFromTrueNameInNybbles = null;
+    private byte[] burnedTargetFromTrueNameInNybbles = null;
     private ItemStack trueName = ItemStack.EMPTY;
     private final ItemStackHandler offerings = new ItemStackHandler(4);
     private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
@@ -97,8 +99,8 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0, 1, 2, 3 -> UUIDUtil.uuidToIntArray(targetFromCandles)[index];
-                case 4 -> SummoningTableBlockEntity.this.canChangeItems() ? 1 : 0;
+                case 0, 1, 2, 3, 4, 5, 6, 7 -> FamiliarTricks.nybblesToIntChomp(getCandleTargetNybbles(), index);
+                case 8 -> SummoningTableBlockEntity.this.canChangeItems() ? 1 : 0;
                 default -> 0;
             };
         }
@@ -123,7 +125,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
         @Override
         public int getCount() {
-            return 5;
+            return 9;
         }
     };
 
@@ -132,8 +134,9 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     public BlockState startSummoning(BlockState state, boolean simulate) {
+        // todo - check for unlits, then blow out candles on summoning start
         if (this.level instanceof ServerLevel serverLevel) {
-            LivingEntity livingTarget = findTargetByUuid(this.targetFromCandles, serverLevel.getServer());
+            LivingEntity livingTarget = findTargetByUuid(this.getCandleTarget(), serverLevel.getServer());
             if (livingTarget != null) {
                 if (!simulate) {
                     this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
@@ -169,7 +172,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     // assistant to previous method
     public void scheduledAccept() {
         if (this.level instanceof ServerLevel) {
-            LivingEntity livingTarget = findTargetByUuid(this.targetFromCandles, this.level.getServer());
+            LivingEntity livingTarget = findTargetByUuid(this.getCandleTarget(), this.level.getServer());
             if (livingTarget != null) {
                 acceptSummoning(livingTarget);
             }
@@ -193,7 +196,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             return;
         }
 
-        LivingEntity target = findTargetByUuid(this.targetFromCandles, level.getServer());
+        LivingEntity target = findTargetByUuid(this.getCandleTarget(), level.getServer());
         if (target instanceof ServerPlayer player) {
             // could i in theory use a different packet for this? yeah. should i? iunno
             // answer: YES because nulling the other one is NOT ALLOWED!!! i kinda figured :l
@@ -210,7 +213,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             // this really shouldn't ever be real
             return;
         }
-        if (livingTarget.getUUID().equals(this.targetFromCandles) && this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
+        if (livingTarget.getUUID().equals(this.getCandleTarget()) && this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
             BlockPos destination = this.getBlockPos();
             livingTarget.teleportTo((ServerLevel) this.level, destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5, EnumSet.noneOf(RelativeMovement.class), livingTarget.getYRot(), livingTarget.getXRot());
 
@@ -233,7 +236,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             if (parsedTargetFromItem != null) {
                 if (!simulate) {
                     this.trueName.set(FamiliarItems.SINGED_COMPONENT, new SingedComponentRecord(true));
-                    this.targetFromTrueNameInNybbles = parsedTargetFromItem;
+                    this.burnedTargetFromTrueNameInNybbles = parsedTargetFromItem;
                     this.burningPhase = 8;
                 }
                 return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.BURNING);
@@ -261,76 +264,88 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         // is this once a second? yea seems so - check on summoning timer n maybe cancel it
         if ((level.getGameTime() % 20L == 0L)) {
 
-            UUID newTarget = thys.targetFromCandles;
+            UUID newTarget = thys.getCandleTarget();
+            byte[] newTargetNybbles = thys.targetFromCandlesInNybbles;
             if (level.getGameTime() % 80L == 0L) {
-                newTarget = processCandles(level, pos);
+                newTargetNybbles = processCandles(level, pos);
+                newTarget = FamiliarTricks.nybblesToUUID(newTargetNybbles);
             }
 
             if (tableState == SummoningTableState.SUMMONING) {
-                tickSummoning(level, pos, state, thys, !newTarget.equals(thys.targetFromCandles));
+                tickSummoning(level, pos, state, thys, !thys.getCandleTarget().equals(newTarget));
             } else if (tableState == SummoningTableState.BURNING) {
                 // process burning
                 tickBurning(level, pos, state, thys);
             }
 
+            thys.targetFromCandlesInNybbles = newTargetNybbles;
             thys.targetFromCandles = newTarget;
         }
 
     }
 
-    // written with the aid of our lady luna :innocent:
-    //@Nullable
-    private static UUID processCandles(Level level, BlockPos pos) {
-        long uuidMost = 0, uuidLeast = 0;
-        int nybblesTaken = 0;
+    // using getters so i can remove one of these two variables later if i feel like it n convert
+    private UUID getCandleTarget() {
+        return this.targetFromCandles;
+    }
 
-        // columns, when facing northward
-        for (int z = pos.getZ() - 5, zLimit = pos.getZ() + 5; z <= zLimit; z += 2) {
-            // rows, when facing northward
-            for (int x = pos.getX() - 5, xLimit = pos.getX() + 5; x <= xLimit; x += 2) {
-                // skip center voids
-                if (Math.abs(x - pos.getX()) <= 1 && Math.abs(z - pos.getZ()) <= 1) {
-                    continue;
-                }
+    private byte[] getCandleTargetNybbles() {
+        return this.targetFromCandlesInNybbles;
+    }
 
-                byte nybble = nybbleFromCandleColumn(level, new BlockPos(x, pos.getY(), z));
-
-                // store nybble
-                if (nybblesTaken < 16) {
-                    uuidMost <<= 4;
-                    uuidMost |= nybble;
-                } else {
-                    uuidLeast <<= 4;
-                    uuidLeast |= nybble;
-                }
-                nybblesTaken++;
+    public boolean anyUnlit() {
+        for (byte tasty : this.targetFromCandlesInNybbles) {
+            if ((tasty & FamiliarTricks.UNLIT_CANDLE) != 0) {
+                return true;
             }
         }
 
-        return new UUID(uuidMost, uuidLeast);
+        return false;
+    }
+
+    // written with the aid of our lady luna :innocent:
+    private static byte[] processCandles(Level level, BlockPos pos) {
+        byte[] nybbles = new byte[32];
+
+        for (int i = 0; i < 32; i++) {
+            nybbles[i] = nybbleFromCandleColumn(
+                    level,
+                    new BlockPos(
+                            pos.getX() + CANDLE_COLUMN_OFFSETS[2 * i],
+                            pos.getY(),
+                            pos.getZ() + CANDLE_COLUMN_OFFSETS[2 * i + 1]
+                    )
+            );
+        }
+
+        return nybbles;
     }
 
     private static byte nybbleFromCandleColumn(Level level, BlockPos bottomPos) {
         for (int yOffset = 4; yOffset > 0; yOffset--) {
             BlockState curiousBlockState = level.getBlockState(bottomPos.offset(0, yOffset, 0));
             if (curiousBlockState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK)) {
-                return (byte) ((yOffset - 1) << 2 | (curiousBlockState.getValue(EnchantedCandleBlock.CANDLES) - 1));
+                byte toReturn = 0x00;
+                if (!curiousBlockState.getValue(EnchantedCandleBlock.LIT)) {
+                    toReturn = FamiliarTricks.UNLIT_CANDLE;
+                }
+                return (byte) (toReturn | (yOffset - 1) << 2 | (curiousBlockState.getValue(EnchantedCandleBlock.CANDLES) - 1));
             }
         }
 
-        // failed to find any candle
-        return (byte) 0x00;
+        // failed to find any candle (any bits in the first nybble indicates no candle :shrug:)
+        return FamiliarTricks.NO_CANDLE;
     }
 
     private static void tickBurning(Level level, BlockPos tablePos, BlockState state, SummoningTableBlockEntity thys) {
-        if (thys.targetFromTrueNameInNybbles == null) {
+        if (thys.burnedTargetFromTrueNameInNybbles == null) {
             // i reserve the right to explode your base if this happens
             thys.burningPhase = 0;
         }
 
         if (thys.burningPhase > 0) {
             thys.burningPhase--;
-            burnPhase(level, tablePos, thys.targetFromTrueNameInNybbles, thys.burningPhase, FamiliarBlocks.SMOKE_WISP_BLOCK.get());
+            burnPhase(level, tablePos, thys.burnedTargetFromTrueNameInNybbles, thys.burningPhase, FamiliarBlocks.SMOKE_WISP_BLOCK.get());
         }
 
         if (thys.burningPhase <= 0) {
@@ -341,10 +356,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     public static boolean superburn(Level level, BlockPos tablePos, UUID target) {
-        byte[] nybbles = FamiliarTricks.trueNameToNybbles(FamiliarTricks.uuidToTrueName(target));
-        if (nybbles == null) {
-            return false;
-        }
+        byte[] nybbles = FamiliarTricks.uuidToNybbles(target);
 
         for (int i = 7; i >= 0; i--) {
             burnPhase(level, tablePos, nybbles, i, FamiliarBlocks.ENCHANTED_CANDLE_BLOCK.get());

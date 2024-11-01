@@ -29,14 +29,14 @@ public class SummoningTableMenu extends AbstractContainerMenu {
 
     private final ContainerLevelAccess levelAccess;
     protected final TableContainerData tableData;
-    private final SlotItemHandler trueNameSlot;
+    final SlotItemHandler trueNameSlot;
 
     public SummoningTableMenu(int containerId, Inventory playerInv) {
-        this(containerId,  playerInv, new DummyTableItemHandler(5), new TableContainerData(5), ContainerLevelAccess.NULL);
+        this(containerId,  playerInv, new DummyTableItemHandler(5), new TableContainerData(9), ContainerLevelAccess.NULL);
     }
     public SummoningTableMenu(int containerId, Inventory playerInventory, IItemHandler tableInventory, TableContainerData tableData, ContainerLevelAccess levelAccess) {
         super(FamiliarGUIStuffs.SUMMONING_TABLE_MENU.get(), containerId);
-        checkContainerDataCount(tableData, 5);
+        checkContainerDataCount(tableData, 9);
         this.levelAccess = levelAccess;
         this.tableData = tableData;
 
@@ -45,7 +45,7 @@ public class SummoningTableMenu extends AbstractContainerMenu {
         }
 
         // table inv
-        this.trueNameSlot = new MoodySlotItemHandler(tableInventory, 0, 44, 31) {
+        this.trueNameSlot = new MoodySlotItemHandler(tableInventory, 0, 44, 41) {
             @Override
             public boolean mayPlace(ItemStack itemStack) {
                 return itemStack.is(FamiliarItems.TRUE_NAME_ITEM);
@@ -65,18 +65,18 @@ public class SummoningTableMenu extends AbstractContainerMenu {
         this.addSlot(this.trueNameSlot);
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
-                this.addSlot(new MoodySlotItemHandler(tableInventory, j + i * 2 + 1, 116 + j * 18, 22 + i * 18));
+                this.addSlot(new MoodySlotItemHandler(tableInventory, j + i * 2 + 1, 116 + j * 18, 32 + i * 18));
             }
         }
 
         // player inv
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
-                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 98 + i * 18));
             }
         }
         for (int k = 0; k < 9; k++) {
-            this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
+            this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 156));
         }
 
         // table data
