@@ -32,7 +32,7 @@ public class FoxActivateSummoningTableGoal extends MoveToBlockGoal {
         return blockState.is(FamiliarBlocks.SUMMONING_TABLE_BLOCK)
                 && blockState.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE
                 && blockEntity instanceof SummoningTableBlockEntity tableEntity
-                && tableEntity.canSummon();
+                && tableEntity.hasTarget();
     }
 
     @Override

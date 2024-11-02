@@ -139,16 +139,26 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         Arrays.fill(this.targetFromCandlesInNybbles, FamiliarTricks.NO_CANDLE);
     }
 
-    public boolean canSummon() {
-        return !this.anyUnlit()
-                && this.level instanceof ServerLevel serverLevel
+    public boolean hasLitCandles() {
+        for (byte tasty : this.targetFromCandlesInNybbles) {
+            if ((tasty & (FamiliarTricks.NO_CANDLE | FamiliarTricks.UNLIT_CANDLE)) != 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean hasTarget() {
+        return this.level instanceof ServerLevel serverLevel
                 && findTargetByUuid(this.getCandleTarget(), serverLevel.getServer()) != null;
     }
 
 
     public BlockState startSummoning(BlockState state, boolean simulate) {
         // todo - check for unlits, then blow out candles on summoning start
-        if (!this.anyUnlit() && this.level instanceof ServerLevel serverLevel) {
+        if (this.hasLitCandles() && this.level instanceof ServerLevel serverLevel) {
+            serverLevel.playSound(null, this.getBlockPos(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS);
             LivingEntity livingTarget = findTargetByUuid(this.getCandleTarget(), serverLevel.getServer());
             if (livingTarget != null) {
                 if (!simulate) {
@@ -350,16 +360,6 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
     private byte[] getCandleTargetNybbles() {
         return this.targetFromCandlesInNybbles;
-    }
-
-    public boolean anyUnlit() {
-        for (byte tasty : this.targetFromCandlesInNybbles) {
-            if ((tasty & FamiliarTricks.UNLIT_CANDLE) != 0) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void unlightAll() {
