@@ -3,6 +3,7 @@
   "package": "io.github.afamiliarquiet.familiar_magic.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "FamiliarFoxMixin",
     "TrueNameTagMixin",
     "hattery.CatHatWearerMixin",
     "hattery.FoxHatWearerMixin",

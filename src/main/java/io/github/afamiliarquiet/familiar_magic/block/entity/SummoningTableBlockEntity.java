@@ -138,6 +138,13 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         Arrays.fill(this.targetFromCandlesInNybbles, FamiliarTricks.NO_CANDLE);
     }
 
+    public boolean canSummon() {
+        return !this.anyUnlit()
+                && this.level instanceof ServerLevel serverLevel
+                && findTargetByUuid(this.getCandleTarget(), serverLevel.getServer()) != null;
+    }
+
+
     public BlockState startSummoning(BlockState state, boolean simulate) {
         // todo - check for unlits, then blow out candles on summoning start
         if (!this.anyUnlit() && this.level instanceof ServerLevel serverLevel) {
