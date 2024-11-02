@@ -45,10 +45,10 @@ public class ParrotHatLayer extends RenderLayer<Parrot, ParrotModel> {
 
         poseStack.pushPose();
 
-        ModelPart littleFishyHead = this.getParentModel().head;
-        poseStack.translate(littleFishyHead.x / 16.0f, littleFishyHead.y / 16.0f, littleFishyHead.z / 16.0f);
-        poseStack.mulPose(new Quaternionf().rotationZYX(littleFishyHead.zRot, littleFishyHead.yRot, littleFishyHead.xRot));
-        poseStack.scale(littleFishyHead.xScale, littleFishyHead.yScale, littleFishyHead.zScale);
+        ModelPart head = this.getParentModel().head;
+        poseStack.translate(head.x / 16.0f, head.y / 16.0f, head.z / 16.0f);
+        poseStack.mulPose(new Quaternionf().rotationZYX(head.zRot, head.yRot, head.xRot));
+        poseStack.scale(head.xScale, head.yScale, head.zScale);
 
         poseStack.mulPose(Axis.ZP.rotationDegrees(180));
         poseStack.translate(0f, 0.0625f, -0.0625f);

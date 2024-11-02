@@ -6,5 +6,5 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(Silverfish.class)
 public class SilverfishHatWearerMixin implements HatWearer {
-    // the hat will totally just disappear if the fish goes into a block. that's a later todo
+    // the hat will totally just disappear if the fish goes into a block. (same for endermites.) that's a later todo
 }
