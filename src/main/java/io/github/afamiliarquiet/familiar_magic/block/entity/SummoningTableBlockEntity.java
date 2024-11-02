@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -179,6 +180,8 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
                 // couldn't find target on server. nonexistent? unloaded? logged out?
             }
         }
+
+        addFailEffects();
         return state;
     }
 
@@ -285,10 +288,28 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
 
         // failed due to no true name
+        addFailEffects();
         return state;
     }
 
     public void tryDesignate(BlockState state) {
+    }
+
+    public void addFailEffects() {
+        // y'know i feel like just grabbing at the nearest random i can find is probably not the best idea. but w/e
+        if (this.level != null) {
+            this.level.playSound(null, this.getBlockPos(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 1);
+            for (int i = 0; i < 5; i++) {
+                double x = this.getBlockPos().getX() + 0.5 + 0.5 * (0.5 - this.level.random.nextDouble());
+                double y = this.getBlockPos().getY() + 0.8375;
+                double z = this.getBlockPos().getZ() + 0.5 + 0.5 * (0.5 - this.level.random.nextDouble());
+                level.addParticle(
+                        ParticleTypes.SMOKE,
+                        x, y, z,
+                        0.0, 0.0, 0.0
+                );
+            }
+        }
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
