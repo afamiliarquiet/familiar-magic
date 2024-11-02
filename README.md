@@ -28,7 +28,7 @@ allows you to summon any entity to its location.
   * crafted with 4 black wool in the shape you'd figure. 
     get a piece of black wool and you'll get the recipe in your recipe book :)
   * as a bonus, you can sneak up on a few mobs and right-click the hat onto them!
-    * (supported critters: cats, foxes, frogs, parrots, silverfish, and wolves)
+    * (supported critters: cats, endermites, foxes, frogs, parrots, silverfish, and wolves)
     * sneak up on em again with an empty hand to take back the hat - 
       fear not, it'll be just as good as when you gave it to them :)
 
