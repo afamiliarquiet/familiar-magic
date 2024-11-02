@@ -6,6 +6,7 @@ import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableState;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,6 +18,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
@@ -81,6 +83,19 @@ public class SummoningTableBlock extends BaseEntityBlock {
         } else {
             return super.getToolModifiedState(state, context, itemAbility, simulate);
         }
+    }
+
+    @Override
+    protected void onProjectileHit(Level level, BlockState state, BlockHitResult hit, Projectile projectile) {
+        if (!level.isClientSide
+                && projectile.isOnFire()
+                && hit.getDirection() == Direction.UP
+                && state.getValue(SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE
+                && level.getBlockEntity(hit.getBlockPos()) instanceof SummoningTableBlockEntity summonizer
+        ) {
+            level.setBlockAndUpdate(hit.getBlockPos(), summonizer.tryBurnName(state, false));
+        }
+        super.onProjectileHit(level, state, hit, projectile);
     }
 
     protected boolean useShapeForLightOcclusion(BlockState state) {
