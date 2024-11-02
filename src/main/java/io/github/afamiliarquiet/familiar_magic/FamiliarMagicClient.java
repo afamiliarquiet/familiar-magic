@@ -14,7 +14,9 @@ import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -159,11 +161,24 @@ public class FamiliarMagicClient {
             }
 
             // accept/reject summoning (a little bit weird to snag option keys isDown but..)
-            if (focusedNow && hasRequest(player)) {
-                if (options.keyShift.isDown()) {
-                    sendReply(player, false);
-                } else if (options.keyJump.isDown()) {
-                    sendReply(player, true);
+            if (focusedNow) {
+                RandomSource random = player.level().random;
+                for (int i = 0; i < 6; i++) {
+                    player.level().addParticle(
+                            ParticleTypes.WITCH,
+                            player.getX() + 9 * random.nextGaussian(),
+                            player.getY() + 6 * random.nextGaussian(),
+                            player.getZ() + 9 * random.nextGaussian(),
+                            0, 0, 0
+                    );
+                }
+
+                if (hasRequest(player)) {
+                    if (options.keyShift.isDown()) {
+                        sendReply(player, false);
+                    } else if (options.keyJump.isDown()) {
+                        sendReply(player, true);
+                    }
                 }
             }
 
