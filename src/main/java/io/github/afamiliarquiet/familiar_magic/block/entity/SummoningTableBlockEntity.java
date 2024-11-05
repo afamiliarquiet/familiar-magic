@@ -3,7 +3,6 @@ package io.github.afamiliarquiet.familiar_magic.block.entity;
 import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
-import io.github.afamiliarquiet.familiar_magic.block.SmokeWispBlock;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
 import io.github.afamiliarquiet.familiar_magic.client.gooey.SummoningTableMenu;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
@@ -41,6 +40,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
@@ -83,6 +83,12 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             {8, 14, 17, 23}, // phase 7
             {9, 13, 18, 22}, // phase 8 (first phase)
     };
+
+    private enum CandlePlacement {
+        SMOKE,
+        UNLIT,
+        LIT
+    }
 
     @Nullable
     private Component name;
@@ -423,7 +429,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
         if (thys.burningPhase > 0) {
             thys.burningPhase--;
-            burnPhase(level, tablePos, thys.burnedTargetFromTrueNameInNybbles, thys.burningPhase, FamiliarBlocks.SMOKE_WISP_BLOCK.get());
+            burnPhase(level, tablePos, thys.burnedTargetFromTrueNameInNybbles, thys.burningPhase, CandlePlacement.SMOKE);
         }
 
         if (thys.burningPhase <= 0) {
@@ -433,19 +439,23 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
     }
 
-    public static boolean superburn(Level level, BlockPos tablePos, UUID target) {
+    public static void superburn(Level level, BlockPos tablePos, UUID target, boolean lit) {
         byte[] nybbles = FamiliarTricks.uuidToNybbles(target);
 
         for (int i = 7; i >= 0; i--) {
-            burnPhase(level, tablePos, nybbles, i, FamiliarBlocks.ENCHANTED_CANDLE_BLOCK.get());
+            burnPhase(level, tablePos, nybbles, i, lit ? CandlePlacement.LIT : CandlePlacement.UNLIT);
         }
-
-        return true;
     }
 
-    private static void burnPhase(Level level, BlockPos tablePos, byte[] nybbles, int phase, Block blockToPlace) {
+    private static void burnPhase(Level level, BlockPos tablePos, byte[] nybbles, int phase, CandlePlacement placement) {
         int[] targetIndices = PHASE_INDICES[phase];
         for (int targetIndex : targetIndices) {
+            BlockState blockToPlace = switch(placement) {
+                case SMOKE -> FamiliarBlocks.SMOKE_WISP_BLOCK.get().defaultBlockState();
+                case UNLIT -> FamiliarBlocks.ENCHANTED_CANDLE_BLOCK.get().defaultBlockState();
+                case LIT -> FamiliarBlocks.ENCHANTED_CANDLE_BLOCK.get().defaultBlockState().setValue(BlockStateProperties.LIT, true);
+            };
+
             burnColumn(
                     level,
                     tablePos.offset(CANDLE_COLUMN_OFFSETS[2 * targetIndex], 0, CANDLE_COLUMN_OFFSETS[2 * targetIndex + 1]),
@@ -455,7 +465,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         }
     }
 
-    private static void burnColumn(Level level, BlockPos bottomPos, byte nybbleDigit, Block blockToPlace) {
+    private static void burnColumn(Level level, BlockPos bottomPos, byte nybbleDigit, BlockState blockToPlace) {
         // wahaha i was right java does smear the bits (i think), this was a justified &
         int desiredHeight = ((nybbleDigit >> 2) & 0b11) + 1;
         int desiredCandles = (nybbleDigit & 0b11) + 1;
@@ -465,7 +475,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
         if (targetState.canBeReplaced()) {
             // maybe sound/particle?
-            level.setBlockAndUpdate(targetPos, blockToPlace.defaultBlockState().setValue(SmokeWispBlock.CANDLES, desiredCandles));
+            level.setBlockAndUpdate(targetPos, blockToPlace.setValue(BlockStateProperties.CANDLES, desiredCandles));
         } else if (targetState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK) && targetState.getValue(EnchantedCandleBlock.CANDLES) == desiredCandles && !targetState.getValue(EnchantedCandleBlock.LIT)) {
             // maybe happy sound/particle?
             level.setBlockAndUpdate(targetPos, targetState.setValue(EnchantedCandleBlock.LIT, true));
@@ -514,7 +524,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     }
 
     @Override
-    protected void applyImplicitComponents(BlockEntity.DataComponentInput componentInput) {
+    protected void applyImplicitComponents(DataComponentInput componentInput) {
         super.applyImplicitComponents(componentInput);
         this.name = componentInput.get(DataComponents.CUSTOM_NAME);
         this.lockKey = componentInput.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);

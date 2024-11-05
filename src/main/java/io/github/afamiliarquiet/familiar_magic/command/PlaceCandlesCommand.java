@@ -1,6 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
@@ -16,10 +17,6 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class PlaceCandlesCommand {
-    private static final SimpleCommandExceptionType INVALID_TARGET = new SimpleCommandExceptionType(
-            Component.translatable("commands.familiar_magic.invalidTarget")
-    );
-
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("placecandles")
                 .requires(commandSourceStack -> commandSourceStack. hasPermission(2))
@@ -33,30 +30,39 @@ public class PlaceCandlesCommand {
                                                                     context.getSource(),
                                                                     EntityArgument.getEntity(context, "target"),
                                                                     context.getSource().getLevel(),
-                                                                    BlockPosArgument.getBlockPos(context, "pos")
+                                                                    BlockPosArgument.getBlockPos(context, "pos"),
+                                                                    true
                                                             )
+                                                )
+                                                .then(
+                                                        argument("lit", BoolArgumentType.bool())
+                                                                .executes(
+                                                                        context -> placeCandles(
+                                                                                context.getSource(),
+                                                                                EntityArgument.getEntity(context, "target"),
+                                                                                context.getSource().getLevel(),
+                                                                                BlockPosArgument.getBlockPos(context, "pos"),
+                                                                                BoolArgumentType.getBool(context, "lit")
+                                                                        )
+                                                                )
                                                 )
                                 )
                 )
         );
     }
 
-    private static int placeCandles(CommandSourceStack source, Entity target, ServerLevel level, BlockPos pos) throws CommandSyntaxException {
-        if (SummoningTableBlockEntity.superburn(level, pos, target.getUUID())) {
-            source.sendSuccess(
-                    () -> Component.translatable(
-                            "commands.familiar_magic.success",
-                            target.getDisplayName(),
-                            pos.getX(),
-                            pos.getY(),
-                            pos.getZ()
-                    ),
-                    true
-            );
-            return 1;
-        } else {
-            // this should be impossible
-            throw INVALID_TARGET.create();
-        }
+    private static int placeCandles(CommandSourceStack source, Entity target, ServerLevel level, BlockPos pos, boolean lit) {
+        SummoningTableBlockEntity.superburn(level, pos, target.getUUID(), lit);
+        source.sendSuccess(
+                () -> Component.translatable(
+                        "commands.familiar_magic.success",
+                        target.getDisplayName(),
+                        pos.getX(),
+                        pos.getY(),
+                        pos.getZ()
+                ),
+                true
+        );
+        return 1;
     }
 }
