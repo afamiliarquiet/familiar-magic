@@ -28,6 +28,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getHat;
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.hasHat;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(FamiliarMagic.MOD_ID)
@@ -73,9 +74,9 @@ public class FamiliarMagic {
         private static void mrwPlayerEventStartTracking(PlayerEvent.StartTracking event) {
             // why do i gotta do this. why don't the attachments just do this for you. wargh.
             Entity theEntity = event.getTarget();
-            ItemStack hat = getHat(theEntity);
-            if (theEntity instanceof HatWearer && !hat.isEmpty()) {
-                if (event.getEntity() instanceof ServerPlayer player) {
+            if (theEntity instanceof HatWearer && hasHat(theEntity)) {
+                ItemStack hat = getHat(theEntity);
+                if (!hat.isEmpty() && event.getEntity() instanceof ServerPlayer player) {
                     // idk why this ever wouldn't be the case.. whatever
                     PacketDistributor.sendToPlayer(player, new HattedPayload(hat, theEntity.getId()));
                 }
@@ -85,10 +86,12 @@ public class FamiliarMagic {
         @SubscribeEvent
         private static void mrwLivingDropsEvent(LivingDropsEvent event) {
             Entity theEntity = event.getEntity();
-            ItemStack hat = getHat(theEntity);
-            if (theEntity instanceof HatWearer && !hat.isEmpty()) {
-                theEntity.spawnAtLocation(hat);
-                hat.shrink(1);
+            if (theEntity instanceof HatWearer && hasHat(theEntity)) {
+                ItemStack hat = getHat(theEntity);
+                if (!hat.isEmpty()) {
+                    theEntity.spawnAtLocation(hat);
+                    hat.shrink(1);
+                }
             }
         }
 
