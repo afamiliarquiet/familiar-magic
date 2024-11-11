@@ -199,4 +199,8 @@ public class FamiliarTricks {
             }
         }
     }
+
+    public static boolean isWillingFamiliar(Entity entity) {
+        return !Config.useWillingTag || entity.hasData(FamiliarAttachments.WILLING_FAMILIAR) && entity.getData(FamiliarAttachments.WILLING_FAMILIAR);
+    }
 }

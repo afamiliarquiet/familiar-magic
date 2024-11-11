@@ -53,6 +53,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.findTargetByUuid;
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.isWillingFamiliar;
 
 @MethodsReturnNonnullByDefault
 @ParametersAreNonnullByDefault
@@ -206,7 +207,12 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         if (this.level instanceof ServerLevel) {
             LivingEntity livingTarget = findTargetByUuid(this.getCandleTarget(), this.level.getServer());
             if (livingTarget != null) {
-                acceptSummoning(livingTarget);
+                if (isWillingFamiliar(livingTarget)) {
+                    acceptSummoning(livingTarget);
+                } else {
+                    cancelSummoning();
+                    SummoningTableBlock.extinguish(null, this.getBlockState(), this.level, this.getBlockPos());
+                }
             }
         }
     }

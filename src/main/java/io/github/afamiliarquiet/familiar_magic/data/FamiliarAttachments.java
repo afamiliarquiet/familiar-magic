@@ -1,5 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.data;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
@@ -37,6 +38,10 @@ public class FamiliarAttachments {
     // i feel like the serialization would help with that but. for now, not a big issue. bugfix maybe
     public static final Supplier<AttachmentType<SummoningRequestData>> SUMMONING_REQUEST = ATTACHMENT_TYPES.register(
             "summoning_request", () -> AttachmentType.builder(() -> SummoningRequestData.DEFAULT).build()
+    );
+
+    public static final Supplier<AttachmentType<Boolean>> WILLING_FAMILIAR = ATTACHMENT_TYPES.register(
+            "willing_familiar", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build()
     );
 
     public static void register(IEventBus modEventBus) {
