@@ -77,6 +77,14 @@ public class FamiliarItems {
                     new Item.Properties().durability(1031)
             )
     );
+    public static final DeferredItem<Item> MEGUMINS_HAT = ITEMS.register( // todo - maybe only have this exist when fbombs loaded?
+            "megumins_hat",
+            () -> new ClothingItem(
+                    SOMEWHAT_FAMILIAR_MATERIAL,
+                    ArmorItem.Type.HELMET,
+                    new Item.Properties().durability(1204)
+            )
+    );
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
@@ -105,6 +113,11 @@ public class FamiliarItems {
             event.insertBefore(
                     Items.LEATHER_HELMET.getDefaultInstance(),
                     BIG_HAT.toStack(),
+                    CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS
+            );
+            event.insertBefore(
+                    Items.LEATHER_HELMET.getDefaultInstance(),
+                    MEGUMINS_HAT.toStack(),
                     CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS
             );
         }

@@ -17,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.Map;
 
+import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
+
 @Mixin(ModelBakery.class)
 public abstract class HatBakeryMixin {
     @Shadow
@@ -25,11 +27,18 @@ public abstract class HatBakeryMixin {
     // it kinda sounds like this could be replaced with ModelEvent.RegisterAdditional but. ehhhh...
     // this works and that might not. hey u reading this, if that'd work then tell me n i'll try it
     @Inject(at = @At("TAIL"), method = "<init>")
-    private void mmFreshHotHat(BlockColors blockColors,
-                               ProfilerFiller profilerFiller,
-                               Map<ResourceLocation, BlockModel> modelResources,
-                               Map<ResourceLocation, List<BlockStateModelLoader.LoadedJson>> blockStateResources,
-                               CallbackInfo ci) {
-        this.loadSpecialItemModelAndDependencies(FamiliarMagicClient.BIG_HAT_ON_HEAD_MODEL);
+    private void mmFreshHotHat(
+            BlockColors blockColors,
+            ProfilerFiller profilerFiller,
+            Map<ResourceLocation, BlockModel> modelResources,
+            Map<ResourceLocation, List<BlockStateModelLoader.LoadedJson>> blockStateResources,
+            CallbackInfo ci)
+    {
+        this.loadSpecialItemModelAndDependencies(
+                ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(MOD_ID, "big_hat_worn"))
+        );
+        this.loadSpecialItemModelAndDependencies(
+                ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(MOD_ID, "megumins_hat_worn"))
+        );
     }
 }

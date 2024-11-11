@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
+import io.github.afamiliarquiet.familiar_magic.item.ClothingItem;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.HattedPayload;
 import net.minecraft.world.InteractionHand;
@@ -32,7 +33,7 @@ public abstract class MobHatEquipMixin extends LivingEntity {
         if (this instanceof HatWearer) {
             boolean isClient = this.level().isClientSide;
             if (player.isSecondaryUseActive()) {
-                if (player.getItemInHand(hand).is(FamiliarItems.BIG_HAT)) {
+                if (player.getItemInHand(hand).getItem() instanceof ClothingItem) {
                     if (!isClient) {
                         this.getData(FamiliarAttachments.HAT).setStackInSlot(0, player.getItemInHand(hand));
                         PacketDistributor.sendToPlayersTrackingEntity(this, new HattedPayload(player.getItemInHand(hand), this.getId()));

@@ -39,7 +39,6 @@ import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.hasRequest;
 
 @Mod(value = "familiar_magic", dist = Dist.CLIENT)
 public class FamiliarMagicClient {
-    public static final ModelResourceLocation BIG_HAT_ON_HEAD_MODEL = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(MOD_ID, "big_hat_on_head"));
     public static final ResourceLocation FOCUS_OVERLAY = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/misc/focus.png");
     public static final ResourceLocation FOCUS_LAYER = ResourceLocation.fromNamespaceAndPath(MOD_ID, "focus");
     public static final ResourceLocation SUMMONING_REQUEST_LAYER = ResourceLocation.fromNamespaceAndPath(MOD_ID, "summoning_request");

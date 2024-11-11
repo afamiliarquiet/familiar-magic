@@ -1,6 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
 import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
+import io.github.afamiliarquiet.familiar_magic.item.ClothingItem;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,7 +26,7 @@ public abstract class WolfHatEquipAndWearMixin extends TamableAnimal implements 
     @Inject(at = @At("HEAD"), method = "mobInteract", cancellable = true)
     private void mobInteract(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         // there's some nonsense going on in wolf's mobinteract. let's just skip that if we've got hat business
-        if (player.isSecondaryUseActive() && (player.getItemInHand(hand).is(FamiliarItems.BIG_HAT) || hasHat(this))) {
+        if (player.isSecondaryUseActive() && (player.getItemInHand(hand).getItem() instanceof ClothingItem || hasHat(this))) {
             cir.setReturnValue(super.mobInteract(player, hand));
         }
     }

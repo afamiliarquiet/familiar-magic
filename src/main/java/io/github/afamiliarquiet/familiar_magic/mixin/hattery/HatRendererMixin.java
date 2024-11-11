@@ -2,13 +2,21 @@ package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient;
+import io.github.afamiliarquiet.familiar_magic.item.ClothingItem;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,10 +44,16 @@ public abstract class HatRendererMixin {
     // could maybe replace this with a @modifyvariable n grab itemstack n display context via @local? might try later
     @Inject(at = @At("HEAD"), method = "render", cancellable = true)
     private void render(ItemStack itemStack, ItemDisplayContext displayContext, boolean leftHand, PoseStack poseStack, MultiBufferSource bufferSource, int combinedLight, int combinedOverlay, BakedModel p_model, CallbackInfo ci) {
-        if (itemStack.is(FamiliarItems.BIG_HAT) && displayContext == ItemDisplayContext.HEAD) {
+        if (itemStack.getItem() instanceof ClothingItem && displayContext == ItemDisplayContext.HEAD) {
             if (!itemStack.isEmpty()) {
                 poseStack.pushPose();
-                p_model = this.itemModelShaper.getModelManager().getModel(FamiliarMagicClient.BIG_HAT_ON_HEAD_MODEL);
+
+                ResourceLocation originalLocation = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
+                p_model = this.itemModelShaper.getModelManager().getModel(ModelResourceLocation.inventory(
+                        ResourceLocation.fromNamespaceAndPath(
+                                originalLocation.getNamespace(), originalLocation.getPath() + "_worn"
+                        )
+                ));
 
                 p_model = net.neoforged.neoforge.client.ClientHooks.handleCameraTransforms(poseStack, p_model, displayContext, leftHand);
                 poseStack.translate(-0.5F, -0.5F, -0.5F);

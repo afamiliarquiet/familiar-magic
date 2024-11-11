@@ -1,0 +1,26 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "fbombs"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "#": {
+      "item": "minecraft:brown_wool"
+    },
+    "E": {
+      "item": "fbombs:high_power_tnt"
+    }
+  },
+  "pattern": [
+    " # ",
+    "#E#"
+  ],
+  "result": {
+    "count": 1,
+    "id": "familiar_magic:explosion_hat"
+  }
+}
