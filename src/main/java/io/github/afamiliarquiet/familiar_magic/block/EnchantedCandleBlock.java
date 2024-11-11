@@ -6,6 +6,7 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -65,6 +66,22 @@ public class EnchantedCandleBlock extends CandleBlock {
         } else {
             return super.getToolModifiedState(state, context, itemAbility, simulate);
         }
+    }
+
+    // todo - remove this after modfest 'cause there's really no point aside from showcase and it feels hacky.. maybe
+    @Override
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
+        BlockState clickedState = context.getLevel().getBlockState(context.getClickedPos());
+        BlockState placementState = super.getStateForPlacement(context);
+        if (placementState != null && context.getPlayer() != null && !context.getPlayer().getAbilities().mayBuild) {
+            if (clickedState.is(FamiliarBlocks.SMOKE_WISP_BLOCK)) {
+                return placementState.setValue(CANDLES, clickedState.getValue(SmokeWispBlock.CANDLES));
+            } else {
+                // i guess i don't need to do this since they'll just have canPlaceOn smokewisp
+                //return null;
+            }
+        }
+        return placementState;
     }
 
     @Override
