@@ -54,7 +54,8 @@ public class FoxActivateSummoningTableGoal extends MoveToBlockGoal {
     public boolean canUse() {
         return this.mob instanceof Fox fox
                 && fox.getItemBySlot(EquipmentSlot.MAINHAND).canPerformAction(ItemAbilities.FIRESTARTER_LIGHT)
-                && !fox.isSleeping() // i would hate terribly to wake a fox for this. sorry people that want to get summoned
+                //&& !fox.isSleeping() // i would hate terribly to wake a fox for this. sorry people that want to get summoned
+                // sorry foxes it's just for modfest please forgive me
                 && super.canUse();
 
     }
