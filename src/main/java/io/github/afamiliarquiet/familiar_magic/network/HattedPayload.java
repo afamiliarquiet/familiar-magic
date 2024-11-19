@@ -18,7 +18,7 @@ public record HattedPayload(ItemStack hatStack, int entityId) implements CustomP
     public static final Type<HattedPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "hatted_payload"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, HattedPayload> STREAM_CODEC = StreamCodec.composite(
-            ItemStack.STREAM_CODEC, // no actually minecraft needs the registry version of bytebuf, sorry
+            ItemStack.OPTIONAL_STREAM_CODEC, // no actually minecraft needs the registry version of bytebuf, sorry
             HattedPayload::hatStack,
             ByteBufCodecs.VAR_INT,
             HattedPayload::entityId,
