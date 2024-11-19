@@ -1,6 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic;
 
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarTags;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.UUIDUtil;
@@ -202,5 +203,9 @@ public class FamiliarTricks {
 
     public static boolean isWillingFamiliar(Entity entity) {
         return !Config.useWillingTag || entity.hasData(FamiliarAttachments.WILLING_FAMILIAR) && entity.getData(FamiliarAttachments.WILLING_FAMILIAR);
+    }
+
+    public static boolean canWearHat(@Nullable Entity entity) {
+        return entity != null && entity.getType().getTags().anyMatch(tagKey -> tagKey.equals(FamiliarTags.HATTABLE));
     }
 }

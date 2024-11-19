@@ -1,8 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
-import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
 import io.github.afamiliarquiet.familiar_magic.item.ClothingItem;
-import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -18,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.hasHat;
 
 @Mixin(Wolf.class)
-public abstract class WolfHatEquipAndWearMixin extends TamableAnimal implements HatWearer {
-    protected WolfHatEquipAndWearMixin(EntityType<? extends TamableAnimal> entityType, Level level) {
+public abstract class WolfHatEquipMixin extends TamableAnimal {
+    protected WolfHatEquipMixin(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
     }
 

@@ -5,14 +5,8 @@
   "mixins": [
     "FamiliarFoxMixin",
     "TrueNameTagMixin",
-    "hattery.CatHatWearerMixin",
-    "hattery.EndermiteHatWearerMixin",
-    "hattery.FoxHatWearerMixin",
-    "hattery.FrogHatWearerMixin",
     "hattery.MobHatEquipMixin",
-    "hattery.ParrotHatWearerMixin",
-    "hattery.SilverfishHatWearerMixin",
-    "hattery.WolfHatEquipAndWearMixin"
+    "hattery.WolfHatEquipMixin"
   ],
   "injectors": {
     "defaultRequire": 1

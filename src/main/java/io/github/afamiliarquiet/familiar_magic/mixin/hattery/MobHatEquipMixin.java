@@ -1,9 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.hattery;
 
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
-import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
 import io.github.afamiliarquiet.familiar_magic.item.ClothingItem;
-import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.HattedPayload;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -20,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.canWearHat;
 import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.hasHat;
 
 @Mixin(Mob.class)
@@ -30,7 +29,7 @@ public abstract class MobHatEquipMixin extends LivingEntity {
 
     @Inject(at = @At("HEAD"), method = "mobInteract", cancellable = true)
     private void mobInteract(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
-        if (this instanceof HatWearer) {
+        if (canWearHat(this)) {
             boolean isClient = this.level().isClientSide;
             if (player.isSecondaryUseActive()) {
                 if (player.getItemInHand(hand).getItem() instanceof ClothingItem) {

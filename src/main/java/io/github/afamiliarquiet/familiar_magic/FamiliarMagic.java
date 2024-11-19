@@ -1,12 +1,11 @@
 package io.github.afamiliarquiet.familiar_magic;
 
-import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
 import com.mojang.logging.LogUtils;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.client.gooey.FamiliarGUIStuffs;
 import io.github.afamiliarquiet.familiar_magic.command.PlaceCandlesCommand;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
-import io.github.afamiliarquiet.familiar_magic.data.HatWearer;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarTags;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.item.NameTagDispenseItemBehavior;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
@@ -23,15 +22,13 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
-import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.getHat;
-import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.hasHat;
+import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.*;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(FamiliarMagic.MOD_ID)
@@ -50,6 +47,7 @@ public class FamiliarMagic {
         FamiliarBlocks.register(modEventBus);
         FamiliarGUIStuffs.register(modEventBus);
         FamiliarAttachments.register(modEventBus);
+        FamiliarTags.register(modEventBus);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
@@ -77,7 +75,7 @@ public class FamiliarMagic {
         private static void mrwPlayerEventStartTracking(PlayerEvent.StartTracking event) {
             // why do i gotta do this. why don't the attachments just do this for you. wargh.
             Entity theEntity = event.getTarget();
-            if (theEntity instanceof HatWearer && hasHat(theEntity)) {
+            if (canWearHat(theEntity) && hasHat(theEntity)) {
                 ItemStack hat = getHat(theEntity);
                 if (!hat.isEmpty() && event.getEntity() instanceof ServerPlayer player) {
                     // idk why this ever wouldn't be the case.. whatever
@@ -89,7 +87,7 @@ public class FamiliarMagic {
         @SubscribeEvent
         private static void mrwLivingDropsEvent(LivingDropsEvent event) {
             Entity theEntity = event.getEntity();
-            if (theEntity instanceof HatWearer && hasHat(theEntity)) {
+            if (canWearHat(theEntity) && hasHat(theEntity)) {
                 ItemStack hat = getHat(theEntity);
                 if (!hat.isEmpty()) {
                     theEntity.spawnAtLocation(hat);
