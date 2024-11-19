@@ -75,7 +75,7 @@ public class FamiliarMagic {
         private static void mrwPlayerEventStartTracking(PlayerEvent.StartTracking event) {
             // why do i gotta do this. why don't the attachments just do this for you. wargh.
             Entity theEntity = event.getTarget();
-            if (canWearHat(theEntity) && hasHat(theEntity)) {
+            if (isHattable(theEntity) && hasHat(theEntity)) {
                 ItemStack hat = getHat(theEntity);
                 if (!hat.isEmpty() && event.getEntity() instanceof ServerPlayer player) {
                     // idk why this ever wouldn't be the case.. whatever
@@ -87,7 +87,7 @@ public class FamiliarMagic {
         @SubscribeEvent
         private static void mrwLivingDropsEvent(LivingDropsEvent event) {
             Entity theEntity = event.getEntity();
-            if (canWearHat(theEntity) && hasHat(theEntity)) {
+            if (isHattable(theEntity) && hasHat(theEntity)) {
                 ItemStack hat = getHat(theEntity);
                 if (!hat.isEmpty()) {
                     theEntity.spawnAtLocation(hat);

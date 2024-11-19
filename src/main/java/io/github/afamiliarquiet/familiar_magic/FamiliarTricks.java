@@ -167,6 +167,10 @@ public class FamiliarTricks {
         return entity.getData(FamiliarAttachments.HAT).getStackInSlot(0);
     }
 
+    public static void setHat(Entity entity, ItemStack hat) {
+        entity.getData(FamiliarAttachments.HAT).setStackInSlot(0, hat);
+    }
+
     public static @Nullable Entity findTargetByUuid(UUID uuid, MinecraftServer server) {
         Entity target = null;
         for (ServerLevel possibleLevel : server.getAllLevels()) {
@@ -204,7 +208,7 @@ public class FamiliarTricks {
         return !Config.useWillingTag || entity.hasData(FamiliarAttachments.WILLING_FAMILIAR) && entity.getData(FamiliarAttachments.WILLING_FAMILIAR);
     }
 
-    public static boolean canWearHat(@Nullable Entity entity) {
+    public static boolean isHattable(@Nullable Entity entity) {
         return entity != null && entity.getType().getTags().anyMatch(tagKey -> tagKey.equals(FamiliarTags.HATTABLE));
     }
 }
