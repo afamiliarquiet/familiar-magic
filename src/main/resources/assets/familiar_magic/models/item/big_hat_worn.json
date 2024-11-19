@@ -1,5 +1,4 @@
 {
-	"parent": "familiar_magic:item/template_hat_worn",
 	"textures": {
 		"1": "familiar_magic:item/big_hat_worn"
 	},
