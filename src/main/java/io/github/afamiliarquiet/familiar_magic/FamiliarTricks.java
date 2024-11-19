@@ -8,7 +8,6 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -168,16 +167,16 @@ public class FamiliarTricks {
         return entity.getData(FamiliarAttachments.HAT).getStackInSlot(0);
     }
 
-    public static @Nullable LivingEntity findTargetByUuid(UUID uuid, MinecraftServer server) {
-        LivingEntity livingTarget = null;
+    public static @Nullable Entity findTargetByUuid(UUID uuid, MinecraftServer server) {
+        Entity target = null;
         for (ServerLevel possibleLevel : server.getAllLevels()) {
             Entity possibleTarget = possibleLevel.getEntity(uuid);
-            if (possibleTarget instanceof LivingEntity) {
-                livingTarget = (LivingEntity) possibleTarget;
+            if (possibleTarget != null) {
+                target = possibleTarget;
                 break;
             }
         }
-        return livingTarget;
+        return target;
     }
 
     public static boolean hasRequest(Player player) {

@@ -26,9 +26,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -166,13 +164,13 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         // todo - check for unlits, then blow out candles on summoning start
         if (this.hasLitCandles() && this.level instanceof ServerLevel serverLevel) {
             serverLevel.playSound(null, this.getBlockPos(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS);
-            LivingEntity livingTarget = findTargetByUuid(this.getCandleTarget(), serverLevel.getServer());
-            if (livingTarget != null) {
+            Entity target = findTargetByUuid(this.getCandleTarget(), serverLevel.getServer());
+            if (target != null) {
                 if (!simulate) {
                     this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
                     //this.unlightAll();
 
-                    if (livingTarget instanceof ServerPlayer player) {
+                    if (target instanceof ServerPlayer player) {
                         SummoningRequestData requestData = new SummoningRequestData(
                                 this.level.dimension(),
                                 this.getBlockPos(),
@@ -205,10 +203,10 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     // assistant to previous method
     public void scheduledAccept() {
         if (this.level instanceof ServerLevel) {
-            LivingEntity livingTarget = findTargetByUuid(this.getCandleTarget(), this.level.getServer());
-            if (livingTarget != null) {
-                if (isWillingFamiliar(livingTarget)) {
-                    acceptSummoning(livingTarget);
+            Entity target = findTargetByUuid(this.getCandleTarget(), this.level.getServer());
+            if (target != null) {
+                if (isWillingFamiliar(target)) {
+                    acceptSummoning(target);
                 } else {
                     cancelSummoning();
                     SummoningTableBlock.extinguish(null, this.getBlockState(), this.level, this.getBlockPos());
@@ -234,7 +232,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
             return;
         }
 
-        LivingEntity target = findTargetByUuid(this.getCandleTarget(), level.getServer());
+        Entity target = findTargetByUuid(this.getCandleTarget(), level.getServer());
         if (target instanceof ServerPlayer player) {
             // could i in theory use a different packet for this? yeah. should i? iunno
             // answer: YES because nulling the other one is NOT ALLOWED!!! i kinda figured :l
@@ -246,32 +244,31 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         this.summoningTimer = 0;
     }
 
-    public void acceptSummoning(LivingEntity livingTarget) {
+    public void acceptSummoning(Entity target) {
         if (this.level == null) {
             // this really shouldn't ever be real. also this should always be on server side?
             return;
         }
-        if (livingTarget.getUUID().equals(this.getCandleTarget()) && this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
+        if (target.getUUID().equals(this.getCandleTarget()) && this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
             BlockPos destination = this.getBlockPos();
-            livingTarget.teleportTo((ServerLevel) this.level, destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5, EnumSet.noneOf(RelativeMovement.class), livingTarget.getYRot(), livingTarget.getXRot());
+            target.teleportTo((ServerLevel) this.level, destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5, EnumSet.noneOf(RelativeMovement.class), target.getYRot(), target.getXRot());
 
-            if (livingTarget instanceof PathfinderMob pathfindermob) {
+            if (target instanceof PathfinderMob pathfindermob) {
                 pathfindermob.getNavigation().stop();
             }
 
-            this.giveOfferings(livingTarget);
+            this.giveOfferings(target);
 
-            level.gameEvent(GameEvent.TELEPORT, livingTarget.position(), GameEvent.Context.of(livingTarget));
-            level.broadcastEntityEvent(livingTarget, (byte)46);
+            level.gameEvent(GameEvent.TELEPORT, target.position(), GameEvent.Context.of(target));
+            level.broadcastEntityEvent(target, EntityEvent.TELEPORT);
             level.playSound(null, this.getBlockPos(), SoundEvents.PLAYER_TELEPORT, SoundSource.BLOCKS, 1, 1);
 
-            // todo - replace these with more happy variants, and also give offerings to accepting player
             cancelSummoning();
             SummoningTableBlock.extinguish(null, this.getBlockState(), this.level, this.getBlockPos());
         }
     }
 
-    private void giveOfferings(LivingEntity target) {
+    private void giveOfferings(Entity target) {
         if (level == null || level.isClientSide) {
             // this isn't happening. chill out, relax, it's fine
             return;
