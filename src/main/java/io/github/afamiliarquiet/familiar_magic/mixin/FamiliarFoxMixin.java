@@ -19,6 +19,6 @@ public abstract class FamiliarFoxMixin extends Animal {
     @Inject(at = @At("TAIL"), method = "registerGoals")
     private void registerGoals(CallbackInfo ci) {
         // a slightly more relieving casting than (Fox)(Object).. i'm kinda glad this fest is on neo, i'm liking it here
-        this.goalSelector.addGoal(10, new FoxActivateSummoningTableGoal((Fox)this.self(), 1, 12));
+        this.goalSelector.addGoal(6, new FoxActivateSummoningTableGoal((Fox)this.self(), 1, 12));
     }
 }

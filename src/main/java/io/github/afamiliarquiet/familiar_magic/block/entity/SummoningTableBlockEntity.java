@@ -144,6 +144,7 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         Arrays.fill(this.targetFromCandlesInNybbles, FamiliarTricks.NO_CANDLE);
     }
 
+    // could maybe remember these for a few ticks if performance is a concern, update when candles update or something
     public boolean hasLitCandles() {
         for (byte tasty : this.targetFromCandlesInNybbles) {
             if ((tasty & (FamiliarTricks.NO_CANDLE | FamiliarTricks.UNLIT_CANDLE)) != 0) {
@@ -154,8 +155,9 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         return true;
     }
 
-    public boolean hasTarget() {
+    public boolean  hasTarget() {
         return this.level instanceof ServerLevel serverLevel
+                && hasLitCandles()
                 && findTargetByUuid(this.getCandleTarget(), serverLevel.getServer()) != null;
     }
 
