@@ -65,7 +65,7 @@ public class FamiliarItems {
 
     public static final DeferredItem<Item> TRUE_NAME_ITEM = ITEMS.register(
             "true_name",
-            () -> new Item(new Item.Properties()
+            () -> new TrueNameItem(new Item.Properties()
                     .component(SINGED_COMPONENT.get(), new SingedComponentRecord(false))
             )
     );

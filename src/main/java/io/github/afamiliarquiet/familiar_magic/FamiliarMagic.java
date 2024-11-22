@@ -8,6 +8,7 @@ import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarTags;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.item.NameTagDispenseItemBehavior;
+import io.github.afamiliarquiet.familiar_magic.item.TrueNameDispenseItemBehavior;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import io.github.afamiliarquiet.familiar_magic.network.HattedPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -54,7 +55,10 @@ public class FamiliarMagic {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> DispenserBlock.registerBehavior(Items.NAME_TAG, new NameTagDispenseItemBehavior()));
+        event.enqueueWork(() -> {
+            DispenserBlock.registerBehavior(Items.NAME_TAG, new NameTagDispenseItemBehavior());
+            DispenserBlock.registerBehavior(FamiliarItems.TRUE_NAME_ITEM, new TrueNameDispenseItemBehavior());
+        });
 
 //        LOGGER.info("HELLO FROM COMMON SETUP");
 //
