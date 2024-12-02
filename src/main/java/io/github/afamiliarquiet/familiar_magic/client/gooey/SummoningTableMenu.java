@@ -45,7 +45,7 @@ public class SummoningTableMenu extends AbstractContainerMenu {
         }
 
         // table inv
-        this.trueNameSlot = new MoodySlotItemHandler(tableInventory, 0, 44, 41) {
+        this.trueNameSlot = new MoodySlotItemHandler(tableInventory, 0, 44, 45) {
             @Override
             public boolean mayPlace(ItemStack itemStack) {
                 return itemStack.is(FamiliarItems.TRUE_NAME_ITEM);
@@ -65,18 +65,18 @@ public class SummoningTableMenu extends AbstractContainerMenu {
         this.addSlot(this.trueNameSlot);
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
-                this.addSlot(new MoodySlotItemHandler(tableInventory, j + i * 2 + 1, 116 + j * 18, 32 + i * 18));
+                this.addSlot(new MoodySlotItemHandler(tableInventory, j + i * 2 + 1, 116 + j * 18, 36 + i * 18));
             }
         }
 
         // player inv
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
-                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 98 + i * 18));
+                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 105 + i * 18));
             }
         }
         for (int k = 0; k < 9; k++) {
-            this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 156));
+            this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 163));
         }
 
         // table data

@@ -4,7 +4,9 @@
     "particle": "familiar_magic:block/summoning_table_bottom",
     "bottom": "familiar_magic:block/summoning_table_bottom",
     "top": "familiar_magic:block/summoning_table_top",
-    "side": "familiar_magic:block/summoning_table_side"
+    "side": "familiar_magic:block/summoning_table_side",
+    "side_north": "familiar_magic:block/summoning_table_side_north",
+    "side_west": "familiar_magic:block/summoning_table_side_west"
   },
   "elements": [
     {   "from": [ 0, 0, 0 ],
@@ -12,9 +14,9 @@
       "faces": {
         "down":  { "uv": [ 0, 0, 16, 16 ], "texture": "#bottom", "cullface": "down" },
         "up":    { "uv": [ 0, 0, 16, 16 ], "texture": "#top" },
-        "north": { "uv": [ 0, 4, 16, 16 ], "texture": "#side", "cullface": "north" },
+        "north": { "uv": [ 0, 4, 16, 16 ], "texture": "#side_north", "cullface": "north" },
         "south": { "uv": [ 0, 4, 16, 16 ], "texture": "#side", "cullface": "south" },
-        "west":  { "uv": [ 0, 4, 16, 16 ], "texture": "#side", "cullface": "west" },
+        "west":  { "uv": [ 0, 4, 16, 16 ], "texture": "#side_west", "cullface": "west" },
         "east":  { "uv": [ 0, 4, 16, 16 ], "texture": "#side", "cullface": "east" }
       }
     }

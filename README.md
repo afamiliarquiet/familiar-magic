@@ -12,7 +12,7 @@ allows you to summon any entity to its location.
 ### blocks:
 * summoning table! the centerpiece of any summoning ritual. used by.. 
   throwing in a true name and building a couple rings of enchanted candles.
-  * crafted like an enchanting table, with a true name instead of a book and copper instead of diamonds 
+  * crafted like an enchanting table, with a true name instead of a book and an amethyst shard and copper ingot instead of diamonds 
   * using a flint and steel on the summoning table while focusing will attempt to activate the summoning
   * using a flint and steel on the summoning table without focusing will burn the true name you placed within
     (assuming you did put one in - you should give it a try!)

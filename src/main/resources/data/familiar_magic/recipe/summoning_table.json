@@ -8,13 +8,16 @@
     "N": {
       "item": "familiar_magic:true_name"
     },
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
     "C": {
       "item": "minecraft:copper_ingot"
     }
   },
   "pattern": [
     " N ",
-    "C#C",
+    "A#C",
     "###"
   ],
   "result": {
