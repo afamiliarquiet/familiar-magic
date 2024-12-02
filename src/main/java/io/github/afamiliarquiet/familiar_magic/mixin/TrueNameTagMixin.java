@@ -28,7 +28,7 @@ public class TrueNameTagMixin {
                 ItemStack trueName = FamiliarItems.TRUE_NAME_ITEM.toStack();
                 trueName.set(DataComponents.CUSTOM_NAME, Component.literal(FamiliarTricks.uuidToTrueName(target.getUUID())));
 
-                ItemStack handStack = ItemUtils.createFilledResult(nameTag, player, trueName, false);
+                ItemStack handStack = ItemUtils.createFilledResult(nameTag.copy(), player, trueName, false);
                 player.setItemInHand(hand, handStack);
             }
 

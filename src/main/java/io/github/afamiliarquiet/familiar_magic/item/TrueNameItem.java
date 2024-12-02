@@ -1,5 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.item;
 
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.component.DataComponents;
@@ -31,7 +32,7 @@ public class TrueNameItem extends Item {
                 ItemStack trueName = FamiliarItems.TRUE_NAME_ITEM.toStack();
                 trueName.set(DataComponents.CUSTOM_NAME, Component.literal(FamiliarTricks.uuidToTrueName(target.getUUID())));
 
-                ItemStack handStack = ItemUtils.createFilledResult(nameTag, player, trueName, false);
+                ItemStack handStack = ItemUtils.createFilledResult(nameTag.copy(), player, trueName, false);
                 player.setItemInHand(hand, handStack);
             }
 
