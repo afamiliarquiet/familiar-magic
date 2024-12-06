@@ -1,8 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.data;
 
-import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
@@ -14,16 +13,12 @@ import java.util.List;
 import java.util.Optional;
 
 public record SummoningRequestData(ResourceKey<Level> tableLevelKey, BlockPos tablePos, Optional<List<ItemStack>> offerings) {
-    public static final StreamCodec<ByteBuf, SummoningRequestData> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<RegistryFriendlyByteBuf, SummoningRequestData> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.fromCodec(Level.RESOURCE_KEY_CODEC),
             SummoningRequestData::tableLevelKey,
             ByteBufCodecs.fromCodec(BlockPos.CODEC),
             SummoningRequestData::tablePos,
-            ByteBufCodecs.optional(ByteBufCodecs.collection( // goidness ggrayshesous
-                    NonNullList::createWithCapacity,
-                    ByteBufCodecs.fromCodec(ItemStack.OPTIONAL_CODEC),
-                    4
-            )),
+            ByteBufCodecs.optional(ItemStack.OPTIONAL_LIST_STREAM_CODEC),
             SummoningRequestData::offerings,
             SummoningRequestData::new
     );

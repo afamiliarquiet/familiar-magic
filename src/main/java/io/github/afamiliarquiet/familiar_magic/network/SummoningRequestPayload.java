@@ -1,7 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.network;
 
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -19,7 +19,7 @@ import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.setRequest;
 public record SummoningRequestPayload(SummoningRequestData requestData, boolean cancelled) implements CustomPacketPayload {
     public static final Type<SummoningRequestPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "summoning_start_payload"));
 
-    public static final StreamCodec<ByteBuf, SummoningRequestPayload> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<RegistryFriendlyByteBuf, SummoningRequestPayload> STREAM_CODEC = StreamCodec.composite(
             SummoningRequestData.STREAM_CODEC,
             SummoningRequestPayload::requestData,
             ByteBufCodecs.BOOL,

@@ -2,7 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.network;
 
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
-import io.netty.buffer.ByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -20,7 +20,7 @@ public record SummoningResponsePayload(SummoningRequestData requestData, boolean
     public static final Type<SummoningResponsePayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "summoning_accepted_payload"));
 
     // is this is this sensible? this feels sensible enough enough.
-    public static final StreamCodec<ByteBuf, SummoningResponsePayload> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<RegistryFriendlyByteBuf, SummoningResponsePayload> STREAM_CODEC = StreamCodec.composite(
             SummoningRequestData.STREAM_CODEC,
             SummoningResponsePayload::requestData,
             ByteBufCodecs.BOOL,
