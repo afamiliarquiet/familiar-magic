@@ -27,6 +27,9 @@ public class FamiliarItems {
             ArmorItem.Type.HELMET, new Item.Settings().maxDamage(1031)
     ));
 
+    public static final RegistryKey<Item> ODD_TRINKET_KEY = key("odd_trinket");
+    public static final Item ODD_TRINKET = register(ODD_TRINKET_KEY, new OddTrinketItem(new Item.Settings()));
+
     public static void initialize() {
         // now i know this was a bad thing on neo because of thread stuffs. but is it also bad on fabric? find out..
         DispenserBlock.registerBehavior(TRUE_NAME, new TrueNameDispenserBehavior());
@@ -35,9 +38,10 @@ public class FamiliarItems {
                 (itemGroup) -> itemGroup.addBefore(Items.LEATHER_HELMET, BIG_HAT)
         );
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(
-                (itemGroup) -> itemGroup.addAfter(Items.NAME_TAG, TRUE_NAME)
-        );
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register((itemGroup) -> {
+            itemGroup.addAfter(Items.NAME_TAG, TRUE_NAME);
+            itemGroup.addAfter(Items.BRUSH, ODD_TRINKET);
+        });
 
         // wanna see a fummy trick? im gonna possibly initialize familiarblocks here instead kinda sorta
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((itemGroup) -> {

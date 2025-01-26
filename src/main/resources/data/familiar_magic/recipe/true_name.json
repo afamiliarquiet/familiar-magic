@@ -1,16 +1,12 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {
-    "N": {
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
       "item": "minecraft:name_tag"
     }
-  },
-  "pattern": [
-    "N"
   ],
   "result": {
-    "count": 1,
-    "id": "familiar_magic:true_name"
+    "id": "familiar_magic:true_name",
+    "count": 1
   }
 }

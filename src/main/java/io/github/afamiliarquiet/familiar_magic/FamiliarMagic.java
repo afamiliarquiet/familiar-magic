@@ -4,6 +4,7 @@ import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.command.FamiliarCommands;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarTags;
+import io.github.afamiliarquiet.familiar_magic.entity.FamiliarEntities;
 import io.github.afamiliarquiet.familiar_magic.friendly.FamiliarFriends;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
@@ -37,6 +38,7 @@ public class FamiliarMagic implements ModInitializer {
 		FamiliarComponents.initialize();
 		FamiliarScreenery.initialize();
 		FamiliarCommands.initialize();
+		FamiliarEntities.initialize();
 		FamiliarFriends.initialize();
 		FamiliarBlocks.initialize();
 		FamiliarItems.initialize();

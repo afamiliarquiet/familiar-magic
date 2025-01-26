@@ -4,15 +4,14 @@ import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarClientAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
-import io.github.afamiliarquiet.familiar_magic.gooey.FocusRenderLayer;
+import io.github.afamiliarquiet.familiar_magic.entity.FamiliarClientEntitry;
+import io.github.afamiliarquiet.familiar_magic.gooey.FamiliarClientScreenery;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarClientPacketeering;
 import io.github.afamiliarquiet.familiar_magic.network.SillySummoningRequestLuggage;
-import io.github.afamiliarquiet.familiar_magic.gooey.FamiliarClientScreenery;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -30,6 +29,7 @@ public class FamiliarMagicClient implements ClientModInitializer {
 		FamiliarClientPacketeering.initialize();
 		FamiliarClientAttachments.initialize();
 		FamiliarClientScreenery.initialize();
+		FamiliarClientEntitry.initialize();
 		FamiliarKeybinds.initialize();
 		initializeModelPredicates();
 

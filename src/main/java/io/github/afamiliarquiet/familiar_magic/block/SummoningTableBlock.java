@@ -19,7 +19,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
-import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -29,7 +28,6 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.hit.BlockHitResult;
@@ -141,7 +139,7 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
     @Override
     protected void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
         if (!world.isClient && projectile.isOnFire() && hit.getSide() == Direction.UP) {
-            onIgnition(state, new ItemUsageContext(world, projectile.getOwner() instanceof PlayerEntity player ? player : null, Hand.MAIN_HAND, ItemStack.EMPTY, hit));
+            world.setBlockState(hit.getBlockPos(), onIgnition(state, new ItemUsageContext(world, projectile.getOwner() instanceof PlayerEntity player ? player : null, Hand.MAIN_HAND, ItemStack.EMPTY, hit)));
         }
         super.onProjectileHit(world, state, hit, projectile);
     }
