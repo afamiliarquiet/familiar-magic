@@ -22,7 +22,7 @@ allows you to summon any entity to its location.
   if you [Focus] (keybind), you'll start to see how it should come together!
 
 ### items:
-* true name! obtained by right clicking an unnamed name tag on any entity to imprint their true name.
+* true name! crafted from name tag (nothing else). right click on any entity to imprint their true name.
   to be used to figure out the right candle arrangement in a summoning table
 * big hat!!!!! any practitioner of witchery needs to at least have the option to put on a big hat.
   * crafted with 4 black wool in the shape you'd figure. 
