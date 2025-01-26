@@ -6,7 +6,10 @@
     "FamiliarFoxMixin",
     "FireChargeIgnitionMixin",
     "FlintAndSteelIgnitionMixin",
-    "MobHatEquipMixin"
+    "MobHatEquipMixin",
+    "curse.dragon.BlockEatenMixin",
+    "curse.dragon.HungryPlayerEntityMixin",
+    "curse.dragon.ServerPlayerEatingManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -48,7 +48,7 @@ public class FamiliarAttachments {
             id("curse"), (builder) -> builder
                     .initializer(() -> new CurseAttachment(CurseAttachment.Curse.NOTHING))
                     .persistent(CurseAttachment.CODEC)
-                    .syncWith(CurseAttachment.PACKET_CODEC, AttachmentSyncPredicate.targetOnly()) // maybe all later
+                    .syncWith(CurseAttachment.PACKET_CODEC, AttachmentSyncPredicate.all())
     );
 
     public static void initialize() {

@@ -6,6 +6,7 @@ import io.github.afamiliarquiet.familiar_magic.entity.FireBreathEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.sound.SoundCategory;
@@ -76,20 +77,20 @@ public record CurseAttachment(Curse currentAffliction) {
             };
         }
 
-        public List<Text> noComment() {
+        public static List<Text> noComment() {
             return List.of(); // nothing for you
         }
 
-        public void noInfliction(World world, LivingEntity bearer) {
+        public static void noInfliction(World world, LivingEntity bearer) {
             // yep thats right. still nothing.
         }
 
-        public List<Text> draconicComments() {
+        public static List<Text> draconicComments() {
             // not yet sure what im doing with this actually since tooltip doesn't have player. but will consider
             return List.of();
         }
 
-        public void draconicInfliction(World world, LivingEntity bearer) {
+        public static void draconicInfliction(World world, LivingEntity bearer) {
             if (!world.isClient) {
                 EntityDimensions sizey = bearer.getDimensions(bearer.getPose());
                 float scaley = Math.max(sizey.height(), sizey.width()) / 1.8f;
@@ -102,6 +103,10 @@ public record CurseAttachment(Curse currentAffliction) {
                 Vec3d p = bearer.getPos();
                 world.playSound(null, p.x, p.y, p.z, SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 0.2f, bearer.getRandom().nextFloat() * 0.13f + 1);
             }
+        }
+
+        public static boolean shouldMaw(LivingEntity entity) {
+            return FamiliarAttachments.getCurse(entity).currentAffliction == DRAGON && entity.getMainHandStack().isEmpty();
         }
     }
 
