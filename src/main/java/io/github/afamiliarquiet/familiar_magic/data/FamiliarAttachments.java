@@ -1,50 +1,106 @@
 package io.github.afamiliarquiet.familiar_magic.data;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.codec.PacketCodecs;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.function.Supplier;
+import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.id;
 
-import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
-
+@SuppressWarnings({"UnstableApiUsage", "UnusedReturnValue"})
+// haha don't worry this is SOOO stable. don't mind the ravine below us lol :clueless:
 public class FamiliarAttachments {
-    // my file structure is.. utterly unclouded
+    // scritchy scratching my evil little marks onto things
 
-    private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MOD_ID);
-
-    // no serialization because focus shouldn't be a persistent thing - used on both client n server, but only c2s
-    public static final Supplier<AttachmentType<Boolean>> FOCUSED = ATTACHMENT_TYPES.register(
-            "focused", () -> AttachmentType.builder(() -> false).build()
-    );
-    // this one very client only don't worry about it. this is my solution to focus persisting when you disconnect from a server
-    // now that i think about it i should maybe look into registering these things only on client....... later problem
-    public static final Supplier<AttachmentType<Boolean>> FOCUS_KEY_HELD = ATTACHMENT_TYPES.register(
-            "focus_held", () -> AttachmentType.builder(() -> false).build()
+    public static final AttachmentType<Boolean> FOCUSED = AttachmentRegistry.create(
+            id("focused"), (builder) -> builder
+                    .initializer(() -> false)
+                    //.syncWith(PacketCodecs.BOOL, AttachmentSyncPredicate.targetOnly())
     );
 
-    public static final Supplier<AttachmentType<ItemStackHandler>> HAT = ATTACHMENT_TYPES.register(
-            "hat", () -> AttachmentType.serializable(() -> new ItemStackHandler(1)).build()
+    @SuppressWarnings("Convert2MethodRef") // shush your face intellij i do what i want and you stay out of my way
+    public static final AttachmentType<SummoningRequestData> SUMMONING_REQUEST = AttachmentRegistry.create(
+            id("summoning_request"), (builder) -> builder
+                    //.syncWith(SummoningRequestData.PACKET_CODEC, AttachmentSyncPredicate.targetOnly())
+                    .copyOnDeath() // will this help with dim change? idk! find out
     );
 
-    // also not persistent - client only - these defaults shouldn't ever really be seen. if they are uhh.. report bug <3
-    // todo - make these not disappear when changing dimension, and make table cancel when target disconnects mayyybe.. maybe not because then i'd have to store on animals too and cancel when they unload and that sounds unnecessary but maybe later
-    // i feel like the serialization would help with that but. for now, not a big issue. bugfix maybe
-    public static final Supplier<AttachmentType<SummoningRequestData>> SUMMONING_REQUEST = ATTACHMENT_TYPES.register(
-            "summoning_request", () -> AttachmentType.builder(() -> SummoningRequestData.DEFAULT).build()
+    public static final AttachmentType<ItemStack> HAT = AttachmentRegistry.create(
+            id("hat"), (builder) -> builder
+                    .initializer(() -> ItemStack.EMPTY)
+                    .persistent(ItemStack.OPTIONAL_CODEC)
+                    .syncWith(ItemStack.OPTIONAL_PACKET_CODEC, AttachmentSyncPredicate.all())
     );
 
-    public static final Supplier<AttachmentType<Boolean>> WILLING_FAMILIAR = ATTACHMENT_TYPES.register(
-            "willing_familiar", () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL).build()
+    public static final AttachmentType<Boolean> WILLING_FAMILIAR = AttachmentRegistry.create(
+            id("willing_familiar"), (builder) -> builder
+                    .initializer(() -> false)
+                    .persistent(Codec.BOOL)
     );
 
-    public static void register(IEventBus modEventBus) {
-        ATTACHMENT_TYPES.register(modEventBus);
+    public static void initialize() {
+
+    }
+
+
+    // i'm doing this to try to make things less annoying for meself in the future if i decide to try neo again
+    public static boolean isFocused(@Nullable Entity entity) {
+        return entity != null && entity.getAttachedOrCreate(FOCUSED);
+    }
+
+    public static void setFocused(@NotNull Entity entity, boolean focused) {
+        entity.setAttached(FOCUSED, focused);
+    }
+
+    public static boolean isHattable(@Nullable Entity entity) {
+        return entity != null && entity.getType().isIn(FamiliarTags.HATTABLE);
+    }
+
+    public static boolean hasRequest(@Nullable PlayerEntity player) {
+        return player != null && player.hasAttached(SUMMONING_REQUEST);
+    }
+
+    public static @Nullable SummoningRequestData getRequest(@Nullable PlayerEntity player) {
+        return !hasRequest(player) ? null : player.getAttached(SUMMONING_REQUEST);
+    }
+
+    public static @Nullable SummoningRequestData removeRequest(@Nullable PlayerEntity player) {
+        return player == null ? null : player.removeAttached(SUMMONING_REQUEST);
+    }
+
+    public static void setRequest(@Nullable PlayerEntity player, SummoningRequestData request) {
+        if (player != null) {
+            player.setAttached(SUMMONING_REQUEST, request);
+        }
+    }
+
+    public static boolean hasHat(@Nullable Entity entity) {
+        return entity != null && entity.hasAttached(HAT) && !getHat(entity).isEmpty();
+    }
+
+    public static @NotNull ItemStack getHat(@NotNull Entity entity) {
+        return entity.getAttachedOrCreate(HAT) ;
+    }
+
+    public static @NotNull ItemStack removeHat(@NotNull Entity entity) {
+        ItemStack hat = getHat(entity);
+        entity.removeAttached(HAT);
+        return hat;
+    }
+
+    public static void setHat(@NotNull Entity entity, @Nullable ItemStack hat) {
+        // null hat will just be equivalent to removeHat :shrug:
+        entity.setAttached(HAT, hat);
+    }
+
+    public static boolean isWillingFamiliar(@Nullable Entity target) {
+        return !FamiliarMagic.CONFIG.useWillingTag || target != null && target.getAttachedOrCreate(WILLING_FAMILIAR);
     }
 }

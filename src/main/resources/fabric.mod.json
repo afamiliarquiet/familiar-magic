@@ -1,0 +1,42 @@
+{
+	"schemaVersion": 1,
+	"id": "familiar_magic",
+	"version": "${version}",
+	"name": "familiar magic",
+	"description": "a mod for summoning! much like /tpahere, but for any entities and way more inconvenient",
+	"authors": [
+		"afamiliarquiet"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/familiar_magic/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+          "io.github.afamiliarquiet.familiar_magic.FamiliarMagic"
+		],
+		"client": [
+			"io.github.afamiliarquiet.familiar_magic.FamiliarMagicClient"
+		],
+		"fabric-datagen": [
+			"io.github.afamiliarquiet.familiar_magic.FamiliarMagicDataGenerator"
+		]
+	},
+	"mixins": [
+		"familiar_magic.mixins.json",
+		{
+			"config": "familiar_magic.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"accessWidener": "familiar_magic.accesswidener",
+	"depends": {
+		"fabricloader": ">=0.16.9",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

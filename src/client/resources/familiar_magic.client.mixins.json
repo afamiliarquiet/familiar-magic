@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "package": "io.github.afamiliarquiet.familiar_magic.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "FocusBlockParticleMixin",
+    "HatBakeryMixin",
+    "HatRendererMixin",
+    "hattable.CatHatRendererMixin",
+    "hattable.EndermiteHatRendererMixin",
+    "hattable.FoxHatRendererMixin",
+    "hattable.FrogHatRendererMixin",
+    "hattable.MagmaCubeHatRendererMixin",
+    "hattable.ParrotHatRendererMixin",
+    "hattable.SilverfishHatRendererMixin",
+    "hattable.SlimeHatRendererMixin",
+    "hattable.WolfHatRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}

@@ -1,84 +1,61 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.serialization.MapCodec;
-import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.block.*;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.IntProperty;
+import net.minecraft.state.property.Properties;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-//ClassesAreTaggedWithThisNonsenseByDefault
-//IntelliJUnderstandsThatIAmNotBotheredByNonnullStuffByDefault
-//BeepBeepByDefault
 public class SmokeWispBlock extends Block {
-    public static final IntegerProperty CANDLES = BlockStateProperties.CANDLES;
+    public static final IntProperty CANDLES = Properties.CANDLES;
 
-    public static final MapCodec<SmokeWispBlock> CODEC = simpleCodec(SmokeWispBlock::new);
+    public static final MapCodec<SmokeWispBlock> CODEC = AbstractBlock.createCodec(SmokeWispBlock::new);
 
-    private static final VoxelShape SQUARETITUDE = Block.box(5.0, 5.0, 5.0, 11.0, 11.0, 11.0);
+    private static final VoxelShape SQUARETITUDE = Block.createCuboidShape(5.0, 5.0, 5.0, 11.0, 11.0, 11.0);
 
     @Override
-    protected MapCodec<? extends Block> codec() {
+    protected MapCodec<? extends Block> getCodec() {
         return CODEC;
     }
 
-    public SmokeWispBlock(Properties properties) {
-        super(properties);
-        this.registerDefaultState(
-                this.stateDefinition
-                        .any()
-                        .setValue(CANDLES, 1)
-        );
+    public SmokeWispBlock(Settings settings) {
+        super(settings);
+        this.setDefaultState(this.stateManager.getDefaultState().with(CANDLES, 1));
     }
 
     @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (!level.isClientSide) {
-            // this should be impossible but just to be safe
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        if (!world.isClient()) {
             return;
         }
 
-        double d0 = (double)pos.getX() + 0.3125 + 0.375 * random.nextDouble();
-        double d1 = (double)pos.getY() + 0.3125 + 0.375 * random.nextDouble();
-        double d2 = (double)pos.getZ() + 0.3125 + 0.375 * random.nextDouble();
-        level.addParticle(ParticleTypes.SMOKE, d0, d1, d2, 0.0, 0.0, 0.0);
+        double x = pos.getX() + 0.3125 + 0.375 * random.nextDouble();
+        double y = pos.getY() + 0.3125 + 0.375 * random.nextDouble();
+        double z = pos.getZ() + 0.3125 + 0.375 * random.nextDouble();
+        world.addParticle(ParticleTypes.SMOKE, x, y, z, 0, 0, 0);
 
-        // show candle ghost if focusing! just like barriers
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null && player.getData(FamiliarAttachments.FOCUSED)) {
-            level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, state), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
-        }
+        // looking for the focus particle? see FocusBlockParticleMixin
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         return SQUARETITUDE;
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+    protected BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.INVISIBLE;
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(CANDLES);
     }
 }

@@ -1,29 +1,24 @@
 package io.github.afamiliarquiet.familiar_magic;
 
-import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
-import io.github.afamiliarquiet.familiar_magic.data.FamiliarTags;
-import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.UUIDUtil;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemConvertible;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Uuids;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Arrays;
 import java.util.UUID;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class FamiliarTricks {
     // todo - configurize?
     public static final int SUMMONING_TIME_SECONDS = 30;
 
     public static final byte NO_CANDLE = (byte) 0b10000000;
     public static final byte UNLIT_CANDLE = (byte) 0b01000000;
+    public static final byte CANDLE_ERROR_MASK = (byte) 0b11110000;
 
     public static final char[] I_TAKE_A_BYTE = { // todo - for fun maybe make this configurable
             'd', // 0
@@ -66,8 +61,20 @@ public class FamiliarTricks {
         OW_IVE_BEEN_BYTTEN['h'] = 15;
     }
 
+    public static int height(byte nybble) {
+        return ((nybble >> 2) & 0b11) + 1;
+    }
+
+    public static int quantity(byte nybble) {
+        return (nybble & 0b11) + 1;
+    }
+
+    public static byte makeNybble(int height, int quantity) {
+        return (byte) ((((height - 1) & 0b11) << 2) | ((quantity - 1) & 0b11));
+    }
+
     public static String uuidToTrueName(UUID uuid) {
-        byte[] uuidBytes = UUIDUtil.uuidToByteArray(uuid);
+        byte[] uuidBytes = Uuids.toByteArray(uuid);
         StringBuilder trueNameBuilder = new StringBuilder();
         for (byte uuidByte : uuidBytes) {
             trueNameBuilder.append(I_TAKE_A_BYTE[(uuidByte >> 4) & 0b1111]);
@@ -79,7 +86,7 @@ public class FamiliarTricks {
 
     public static byte[] uuidToNybbles(UUID uuid) {
         byte[] nybbles = new byte[32];
-        byte[] bytes = UUIDUtil.uuidToByteArray(uuid);
+        byte[] bytes = Uuids.toByteArray(uuid);
 
         for (int i = 0; i < 16; i++) {
             nybbles[2*i] = (byte) ((bytes[i] >> 4) & 0b1111);
@@ -114,9 +121,9 @@ public class FamiliarTricks {
     public static int nybblesToIntChomp(byte[] nybbles, int chompIndex) {
         int chomp = 0;
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 2; i++) {
             chomp <<= 8;
-            chomp |= ((int) nybbles[chompIndex * 4 + i]) & 0xFF;  // o luna.. why did i choose to delve into bitwise land
+            chomp |= ((int) nybbles[chompIndex * 2 + i]) & 0xFF;  // o luna.. why did i choose to delve into bitwise land
         }
 
         return chomp;
@@ -125,15 +132,15 @@ public class FamiliarTricks {
     public static byte[] chompsToNybbles(int[] chomps) {
         byte[] nybbles = new byte[32];
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 16; i++) {
             int chomp = chomps[i];
-            nybbles[i * 4 + 3] = (byte) (chomp & 0xFF);
+//            nybbles[i * 2 + 3] = (byte) (chomp & 0xFF);
+//            chomp >>= 8;
+//            nybbles[i * 2 + 2] = (byte) (chomp & 0xFF);
+//            chomp >>= 8;
+            nybbles[i * 2 + 1] = (byte) (chomp & 0xFF);
             chomp >>= 8;
-            nybbles[i * 4 + 2] = (byte) (chomp & 0xFF);
-            chomp >>= 8;
-            nybbles[i * 4 + 1] = (byte) (chomp & 0xFF);
-            chomp >>= 8;
-            nybbles[i * 4] = (byte) (chomp & 0xFF);
+            nybbles[i * 2] = (byte) (chomp & 0xFF);
         }
 
         return nybbles;
@@ -159,22 +166,10 @@ public class FamiliarTricks {
         return nybbles;
     }
 
-    public static boolean hasHat(Entity entity) {
-        return !getHat(entity).isEmpty();
-    }
-
-    public static ItemStack getHat(Entity entity) {
-        return entity.getData(FamiliarAttachments.HAT).getStackInSlot(0);
-    }
-
-    public static void setHat(Entity entity, ItemStack hat) {
-        entity.getData(FamiliarAttachments.HAT).setStackInSlot(0, hat);
-    }
-
     public static @Nullable Entity findTargetByUuid(UUID uuid, MinecraftServer server) {
         Entity target = null;
-        for (ServerLevel possibleLevel : server.getAllLevels()) {
-            Entity possibleTarget = possibleLevel.getEntity(uuid);
+        for (ServerWorld possibleWorld : server.getWorlds()) {
+            Entity possibleTarget = possibleWorld.getEntity(uuid);
             if (possibleTarget != null) {
                 target = possibleTarget;
                 break;
@@ -183,32 +178,19 @@ public class FamiliarTricks {
         return target;
     }
 
-    public static boolean hasRequest(Player player) {
-        return player.hasData(FamiliarAttachments.SUMMONING_REQUEST);
-    }
-
-    public static SummoningRequestData getRequest(Player player) {
-        return player.getData(FamiliarAttachments.SUMMONING_REQUEST);
-    }
-
-    public static void setRequest(Player player, SummoningRequestData requestData) {
-        player.setData(FamiliarAttachments.SUMMONING_REQUEST, requestData);
-    }
-
-    public static void removeRequest(Player player, SummoningRequestData cancellingPayloadData) {
-        if (hasRequest(player)) {
-            SummoningRequestData currentData = getRequest(player);
-            if (cancellingPayloadData.isSameRequester(currentData)) {
-                player.removeData(FamiliarAttachments.SUMMONING_REQUEST);
+    public static String nybblesToStrings(byte[] nybbles) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 32; i++) {
+            sb.append(String.format("%8s", Integer.toBinaryString(Byte.toUnsignedInt(nybbles[i]))).replace(' ', '0'));
+            sb.append(", ");
+            if (i == 5 || i == 11 || i == 15 || i == 19 || i == 25) {
+                sb.append('\n');
             }
         }
+        return sb.toString();
     }
 
-    public static boolean isWillingFamiliar(Entity entity) {
-        return !Config.useWillingTag || entity.hasData(FamiliarAttachments.WILLING_FAMILIAR) && entity.getData(FamiliarAttachments.WILLING_FAMILIAR);
-    }
-
-    public static boolean isHattable(@Nullable Entity entity) {
-        return entity != null && entity.getType().getTags().anyMatch(tagKey -> tagKey.equals(FamiliarTags.HATTABLE));
+    public static boolean canIgnite(ItemStack stack) {
+        return stack.isOf(Items.FLINT_AND_STEEL) || stack.isOf(Items.FIRE_CHARGE);
     }
 }

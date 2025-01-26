@@ -1,39 +1,42 @@
 package io.github.afamiliarquiet.familiar_magic.data;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 
-public record SummoningRequestData(ResourceKey<Level> tableLevelKey, BlockPos tablePos, Optional<List<ItemStack>> offerings) {
-    public static final StreamCodec<RegistryFriendlyByteBuf, SummoningRequestData> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.fromCodec(Level.RESOURCE_KEY_CODEC),
-            SummoningRequestData::tableLevelKey,
-            ByteBufCodecs.fromCodec(BlockPos.CODEC),
+public record SummoningRequestData(RegistryKey<World> tableWorldKey, BlockPos tablePos, Optional<List<ItemStack>> offerings) {
+    public static final PacketCodec<RegistryByteBuf, SummoningRequestData> PACKET_CODEC = PacketCodec.tuple(
+            PacketCodecs.codec(World.CODEC),
+            SummoningRequestData::tableWorldKey,
+            BlockPos.PACKET_CODEC,
             SummoningRequestData::tablePos,
-            ByteBufCodecs.optional(ItemStack.OPTIONAL_LIST_STREAM_CODEC),
+            PacketCodecs.optional(ItemStack.OPTIONAL_LIST_PACKET_CODEC),
             SummoningRequestData::offerings,
             SummoningRequestData::new
     );
 
-    // this should never ever be seen, only there because it's kinda required because attachments are silly
-    public static final SummoningRequestData DEFAULT = new SummoningRequestData(Level.OVERWORLD, BlockPos.ZERO, Optional.empty());
+    // don't see this. is this necessary? find out next time on fabric data attachment api!
+    public static final SummoningRequestData DEFAULT = new SummoningRequestData(World.OVERWORLD, BlockPos.ORIGIN, Optional.empty());
 
     public boolean isSameRequester(@Nullable SummoningRequestData other) {
-        return other != null && this.tableLevelKey.compareTo(other.tableLevelKey) == 0 && this.tablePos.equals(other.tablePos);
+        return other != null
+                && this.tableWorldKey.getRegistry().compareTo(other.tableWorldKey.getRegistry()) == 0
+                && this.tableWorldKey.getValue().compareTo(other.tableWorldKey.getValue()) == 0
+                && this.tablePos.equals(other.tablePos);
     }
 
     @Override
     public String toString() {
         return "SummoningRequestData{" +
-                "tableLevelKey=" + tableLevelKey +
+                "tableWorldKey=" + tableWorldKey +
                 ", tablePos=" + tablePos +
                 ", offerings=" + offerings +
                 '}';

@@ -1,33 +1,15 @@
 package io.github.afamiliarquiet.familiar_magic.network;
 
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public class FamiliarPacketeering {
-    public static void mrwRegisterPayloadHandlersEvent(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1"); // 1, i guess
+    public static void initialize() {
+        PayloadTypeRegistry.playC2S().register(C2SFocusLuggage.ID, C2SFocusLuggage.PACKET_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(C2SFocusLuggage.ID, C2SFocusLuggage::focusEater);
 
-        registrar.playToServer(
-                FocusPayload.TYPE,
-                FocusPayload.STREAM_CODEC,
-                FocusPayload::focusEater
-        );
-
-        registrar.playToClient(
-                HattedPayload.TYPE,
-                HattedPayload.STREAM_CODEC,
-                HattedPayload::hattedOhILoveHatted
-        );
-
-        registrar.playToClient(
-                SummoningRequestPayload.TYPE,
-                SummoningRequestPayload.STREAM_CODEC,
-                SummoningRequestPayload::ayeAyeRequestReceived
-        );
-        registrar.playToServer(
-                SummoningResponsePayload.TYPE,
-                SummoningResponsePayload.STREAM_CODEC,
-                SummoningResponsePayload::iveGivenItSomeThought
-        );
+        PayloadTypeRegistry.playS2C().register(SillySummoningRequestLuggage.ID, SillySummoningRequestLuggage.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(SillySummoningRequestLuggage.ID, SillySummoningRequestLuggage.PACKET_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(SillySummoningRequestLuggage.ID, SillySummoningRequestLuggage::doomOfAllServers);
     }
 }

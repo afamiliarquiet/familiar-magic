@@ -1,84 +1,80 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CandleBlock;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.material.PushReaction;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Supplier;
-
-import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.MOD_ID;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.MapColor;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.block.enums.NoteBlockInstrument;
+import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.sound.BlockSoundGroup;
 
 public class FamiliarBlocks {
-    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MOD_ID);
-    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
-
-
-
-    public static final DeferredBlock<CandleBlock> ENCHANTED_CANDLE_BLOCK = registerBlockWithItem(
-            "enchanted_candle",
-            () -> new EnchantedCandleBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CANDLE)
-                    .mapColor(MapColor.COLOR_ORANGE)
-            ) // maybe toy with properties later
-    );
-
-    public static final DeferredBlock<SummoningTableBlock> SUMMONING_TABLE_BLOCK = registerBlockWithItem(
-            "summoning_table",
-            () -> new SummoningTableBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_PURPLE)
-                    .instrument(NoteBlockInstrument.BASEDRUM)
-                    .requiresCorrectToolForDrops()
-                    .lightLevel(state -> state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE).lightLevel())
-                    .strength(5.0F, 1200.0F)
-            )
-    );
-
-    @SuppressWarnings("unused") // because it IS USED >:( it is NOT safe to delete
-    public static final DeferredBlock<SmokeWispBlock> SMOKE_WISP_BLOCK = BLOCKS.register(
-            "smoke_wisp",
-            () -> new SmokeWispBlock(BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.COLOR_GRAY)
+    public static final RegistryKey<Block> SMOKE_WISP_KEY = key("smoke_wisp");
+    public static final Block SMOKE_WISP = register(SMOKE_WISP_KEY,
+            new SmokeWispBlock(AbstractBlock.Settings.create()
+                    .mapColor(MapColor.GRAY)
                     .replaceable()
-                    .noCollission()
-                    .instabreak()
-                    .sound(SoundType.WOOL)
-                    .pushReaction(PushReaction.DESTROY)
+                    .noCollision()
+                    .breakInstantly()
+                    .sounds(BlockSoundGroup.WOOL)
+                    .pistonBehavior(PistonBehavior.DESTROY)
             )
     );
 
-    @SuppressWarnings("DataFlowIssue") // totally get it. yeah. it says notnull. but neoforge docs say it's fine so it's fine
-    public static final Supplier<BlockEntityType<SummoningTableBlockEntity>> SUMMONING_TABLE_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
-
-            "summoning_table_block_entity",
-            () -> BlockEntityType.Builder.of(
-                    SummoningTableBlockEntity::new,
-                    SUMMONING_TABLE_BLOCK.get()
-            ).build(null)
+    public static final RegistryKey<Block> ENCHANTED_CANDLE_KEY = key("enchanted_candle");
+    public static final Block ENCHANTED_CANDLE = regitem(ENCHANTED_CANDLE_KEY,
+            new EnchantedCandleBlock(AbstractBlock.Settings.copy(Blocks.CANDLE)
+                    .mapColor(MapColor.ORANGE)
+            )
     );
 
+    public static final RegistryKey<Block> SUMMONING_TABLE_KEY = key("summoning_table");
+    public static final Block SUMMONING_TABLE = regitem(SUMMONING_TABLE_KEY,
+            new SummoningTableBlock(AbstractBlock.Settings.create()
+                    .mapColor(MapColor.PURPLE)
+                    .instrument(NoteBlockInstrument.BASEDRUM)
+                    .requiresTool()
+                    .luminance(state -> state.get(SummoningTableBlock.SUMMONING_TABLE_STATE).lightLevel())
+                    .strength(5, 1200)
+            )
+    );
 
+    // this will change in 1.21.2 wahooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+    public static final BlockEntityType<SummoningTableBlockEntity> SUMMONING_TABLE_BLOCK_ENTITY = Registry.register(
+            Registries.BLOCK_ENTITY_TYPE,
+            FamiliarMagic.id("summoning_table_block_entity"),
+            BlockEntityType.Builder.create(SummoningTableBlockEntity::new, SUMMONING_TABLE).build()
+    );
 
-    private static <T extends Block> DeferredBlock<T> registerBlockWithItem(String name, Supplier<T> block) {
-        DeferredBlock<T> deferredBlock = BLOCKS.register(name, block);
-        FamiliarItems.ITEMS.register(name, () -> new BlockItem(deferredBlock.get(), new Item.Properties()));
-        return deferredBlock;
+    public static void initialize() {
+
     }
 
-    public static void register(IEventBus eventBus) {
-        BLOCKS.register(eventBus);
-        BLOCK_ENTITY_TYPES.register(eventBus);
+    public static Block register(RegistryKey<Block> blockKey, Block block) {
+        return Registry.register(Registries.BLOCK, blockKey, block);
+    }
+
+    public static Block regitem(RegistryKey<Block> blockKey, Block block) {
+        RegistryKey<Item> itemKey = FamiliarItems.key(blockKey.getValue().getPath());
+
+        BlockItem blockItem = new BlockItem(block, new Item.Settings());
+        Registry.register(Registries.ITEM, itemKey, blockItem);
+
+        return Registry.register(Registries.BLOCK, blockKey, block);
+    }
+
+    public static RegistryKey<Block> key(String thing) {
+        return RegistryKey.of(RegistryKeys.BLOCK, FamiliarMagic.id(thing));
     }
 }

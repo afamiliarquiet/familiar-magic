@@ -4,66 +4,47 @@ import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
-import io.github.afamiliarquiet.familiar_magic.client.gooey.SummoningTableMenu;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
-import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
-import io.github.afamiliarquiet.familiar_magic.item.SingedComponentRecord;
-import io.github.afamiliarquiet.familiar_magic.network.SummoningRequestPayload;
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
-import net.minecraft.world.LockCode;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.Nameable;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.network.PacketDistributor;
+import io.github.afamiliarquiet.familiar_magic.network.SillySummoningRequestLuggage;
+import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableScreenHandler;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.CandleBlock;
+import net.minecraft.block.entity.LockableContainerBlockEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityStatuses;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventories;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.ItemScatterer;
+import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.findTargetByUuid;
-import static io.github.afamiliarquiet.familiar_magic.FamiliarTricks.isWillingFamiliar;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
-public class SummoningTableBlockEntity extends BlockEntity implements IItemHandler, IItemHandlerModifiable, MenuProvider, Nameable {
-    // i'm really not feeling great about implementing IItemHandlerModifiable. feels like i should be doing something else.
-    // but it works for now so whatever. i'm tryin my best to be neoforgey!!
-    // this is.. fine. this is great. this feels so perfect. this is a place of honor! y'know why? because it works well enough!!
-
-    // btw if you touch my public methods in here you will explode. i've cleverly hidden many explosives. don't do it.
-
-    // spread out for easier reference (instead of computed)
-    // as for the other choices on display, no comment
+public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
     private static final int[] CANDLE_COLUMN_OFFSETS = {
             -5,-5,  -3,-5,  -1,-5,  1,-5,  3,-5,  5,-5,
             -5,-3,  -3,-3,  -1,-3,  1,-3,  3,-3,  5,-3,
@@ -86,68 +67,52 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
     private enum CandlePlacement {
         SMOKE,
         UNLIT,
-        LIT
+        LIT;
+
+        public BlockState asBlock() {
+            return switch(this) {
+                case SMOKE -> FamiliarBlocks.SMOKE_WISP.getDefaultState();
+                case UNLIT -> FamiliarBlocks.ENCHANTED_CANDLE.getDefaultState();
+                case LIT -> FamiliarBlocks.ENCHANTED_CANDLE.getDefaultState().with(EnchantedCandleBlock.LIT, true);
+            };
+        }
     }
 
-    @Nullable
-    private Component name;
-    private LockCode lockKey = LockCode.NO_LOCK;
-    // both targetFromCandles should always be in sync
     @NotNull
     private UUID targetFromCandles = new UUID(0, 0);
     private byte[] targetFromCandlesInNybbles = new byte[32];
-    // burnedTarget is only set for burning
     @Nullable
     private byte[] burnedTargetFromTrueNameInNybbles = null;
-    private ItemStack trueName = ItemStack.EMPTY;
-    private final ItemStackHandler offerings = new ItemStackHandler(4);
     private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
     private int summoningTimer = 0;
 
-    private final TableContainerData dataAccess = new TableContainerData(5) {
-        // lady luna guide me once more orz
+    private DefaultedList<ItemStack> inv = DefaultedList.ofSize(5, ItemStack.EMPTY);
+
+    private final SummoningTablePropertyDelegate menuData = new SummoningTablePropertyDelegate(17) {
         @Override
         public int get(int index) {
             return switch (index) {
-                case 0, 1, 2, 3, 4, 5, 6, 7 -> FamiliarTricks.nybblesToIntChomp(getCandleTargetNybbles(), index);
-                case 8 -> SummoningTableBlockEntity.this.canChangeItems() ? 1 : 0;
+                case 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 -> FamiliarTricks.nybblesToIntChomp(getCandleTargetNybbles(), index);
+                case 16 -> SummoningTableBlockEntity.this.canChangeItems() ? 1 : 0;
                 default -> 0;
             };
         }
 
         @Override
         public void set(int index, int value) {
-            switch (index) {
-//                case 0:
-//                    BeaconBlockEntity.this.levels = value;
-//                    break;
-//                case 1:
-//                    if (!BeaconBlockEntity.this.level.isClientSide && !BeaconBlockEntity.this.beamSections.isEmpty()) {
-//                        BeaconBlockEntity.playSound(BeaconBlockEntity.this.level, BeaconBlockEntity.this.worldPosition, SoundEvents.BEACON_POWER_SELECT);
-//                    }
-//
-//                    BeaconBlockEntity.this.primaryPower = BeaconBlockEntity.filterEffect(BeaconMenu.decodeEffect(value));
-//                    break;
-//                case 2:
-//                    BeaconBlockEntity.this.secondaryPower = BeaconBlockEntity.filterEffect(BeaconMenu.decodeEffect(value));
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 9;
+            // get mulched. you don't need to change dirt.
         }
     };
 
     public SummoningTableBlockEntity(BlockPos pos, BlockState blockState) {
-        super(FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY.get(), pos, blockState);
+        super(FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY, pos, blockState);
         Arrays.fill(this.targetFromCandlesInNybbles, FamiliarTricks.NO_CANDLE);
     }
 
-    // could maybe remember these for a few ticks if performance is a concern, update when candles update or something
-    public boolean hasLitCandles() {
+    public boolean allCandlesLit() {
+        // i forgor.. maybe i should rember
         for (byte tasty : this.targetFromCandlesInNybbles) {
-            if ((tasty & (FamiliarTricks.NO_CANDLE | FamiliarTricks.UNLIT_CANDLE)) != 0) {
+            if ((tasty & FamiliarTricks.CANDLE_ERROR_MASK) != 0) {
                 return false;
             }
         }
@@ -155,216 +120,17 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         return true;
     }
 
-    public boolean  hasTarget() {
-        return this.level instanceof ServerLevel serverLevel
-                && hasLitCandles()
-                && findTargetByUuid(this.getCandleTarget(), serverLevel.getServer()) != null;
+    public boolean hasTarget() {
+        return this.world instanceof ServerWorld serverWorld
+                && allCandlesLit()
+                && FamiliarTricks.findTargetByUuid(this.getCandleTarget(), serverWorld.getServer()) != null;
     }
 
-
-    public BlockState startSummoning(BlockState state, boolean simulate) {
-        // todo - check for unlits, then blow out candles on summoning start
-        if (this.hasLitCandles() && this.level instanceof ServerLevel serverLevel) {
-            serverLevel.playSound(null, this.getBlockPos(), SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS);
-            Entity target = findTargetByUuid(this.getCandleTarget(), serverLevel.getServer());
-            if (target != null) {
-                if (!simulate) {
-                    this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
-                    //this.unlightAll();
-
-                    if (target instanceof ServerPlayer player) {
-                        SummoningRequestData requestData = new SummoningRequestData(
-                                this.level.dimension(),
-                                this.getBlockPos(),
-                                Optional.of(List.of(
-                                        this.offerings.getStackInSlot(0),
-                                        this.offerings.getStackInSlot(1),
-                                        this.offerings.getStackInSlot(2),
-                                        this.offerings.getStackInSlot(3)
-                                ))
-                        );
-
-                        //setRequest(player, requestData);
-                        PacketDistributor.sendToPlayer(player, new SummoningRequestPayload(requestData, false));
-                    } else {
-                        // todo - let picky critters be picky
-                        serverLevel.scheduleTick(this.getBlockPos(), state.getBlock(), level.random.nextInt(13, 62));
-                    }
-                }
-
-                return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.SUMMONING);
-            } else {
-                // couldn't find target on server. nonexistent? unloaded? logged out?
-            }
-        }
-
-        addFailEffects();
-        return state;
+    public boolean canChangeItems() {
+        return this.getCachedState().get(SummoningTableBlock.SUMMONING_TABLE_STATE) != SummoningTableBlock.SummoningTableState.SUMMONING;
     }
 
-    // assistant to previous method
-    public void scheduledAccept() {
-        if (this.level instanceof ServerLevel) {
-            Entity target = findTargetByUuid(this.getCandleTarget(), this.level.getServer());
-            if (target != null) {
-                if (isWillingFamiliar(target)) {
-                    acceptSummoning(target);
-                } else {
-                    cancelSummoning();
-                    SummoningTableBlock.extinguish(null, this.getBlockState(), this.level, this.getBlockPos());
-                }
-            }
-        }
-    }
-
-    private static void tickSummoning(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thys, boolean targetChanged) {
-        if (thys.summoningTimer <= 0 || targetChanged) {
-            thys.cancelSummoning();
-            SummoningTableBlock.extinguish(null, state, level, pos);
-        }
-
-        if (thys.summoningTimer > 0) {
-            thys.summoningTimer--;
-        }
-    }
-
-    public void cancelSummoning() {
-        if (!(level instanceof ServerLevel)) {
-            // this can't happen ever. hopefully.
-            return;
-        }
-
-        Entity target = findTargetByUuid(this.getCandleTarget(), level.getServer());
-        if (target instanceof ServerPlayer player) {
-            // could i in theory use a different packet for this? yeah. should i? iunno
-            // answer: YES because nulling the other one is NOT ALLOWED!!! i kinda figured :l
-            SummoningRequestData requestData = new SummoningRequestData(this.level.dimension(), this.getBlockPos(), Optional.empty());
-            //removeRequest(player, requestData);
-            PacketDistributor.sendToPlayer(player, new SummoningRequestPayload(requestData, true));
-        }
-
-        this.summoningTimer = 0;
-    }
-
-    public void acceptSummoning(Entity target) {
-        if (this.level == null) {
-            // this really shouldn't ever be real. also this should always be on server side?
-            return;
-        }
-        if (target.getUUID().equals(this.getCandleTarget()) && this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
-            BlockPos destination = this.getBlockPos();
-            target.teleportTo((ServerLevel) this.level, destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5, EnumSet.noneOf(RelativeMovement.class), target.getYRot(), target.getXRot());
-
-            if (target instanceof PathfinderMob pathfindermob) {
-                pathfindermob.getNavigation().stop();
-            }
-
-            this.giveOfferings(target);
-
-            level.gameEvent(GameEvent.TELEPORT, target.position(), GameEvent.Context.of(target));
-            level.broadcastEntityEvent(target, EntityEvent.TELEPORT);
-            level.playSound(null, this.getBlockPos(), SoundEvents.PLAYER_TELEPORT, SoundSource.BLOCKS, 1, 1);
-
-            cancelSummoning();
-            SummoningTableBlock.extinguish(null, this.getBlockState(), this.level, this.getBlockPos());
-        }
-    }
-
-    private void giveOfferings(Entity target) {
-        if (level == null || level.isClientSide) {
-            // this isn't happening. chill out, relax, it's fine
-            return;
-        }
-        BlockPos pos = this.getBlockPos();
-        for (int i = 0; i < this.offerings.getSlots(); i++) {
-            ItemStack offering = this.offerings.getStackInSlot(i);
-            if (target instanceof ServerPlayer player) {
-                if (!player.getInventory().add(offering)) {
-                    Containers.dropItemStack(level, pos.getX(), pos.getY()+1, pos.getZ(), offering);
-                }
-            } else {
-                // todo - feed the critters
-                Containers.dropItemStack(level, pos.getX(), pos.getY()+1, pos.getZ(), offering);
-            }
-        }
-    }
-
-    public BlockState tryBurnName(BlockState state, boolean simulate) {
-        // this fails on client because client can't see the true name. maybe that's a problem to deal with? idk
-
-        if (!this.trueName.isEmpty()) {
-            byte[] parsedTargetFromItem = FamiliarTricks.trueNameToNybbles(this.trueName.getHoverName().getString());
-
-            if (parsedTargetFromItem != null) {
-                if (!simulate) {
-                    this.trueName.set(FamiliarItems.SINGED_COMPONENT, new SingedComponentRecord(true));
-                    this.burnedTargetFromTrueNameInNybbles = parsedTargetFromItem;
-                    this.burningPhase = 8;
-                }
-                return state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.BURNING);
-            } else {
-                // failed due to bad true name
-                return state;
-            }
-        }
-
-        // failed due to no true name
-        addFailEffects();
-        return state;
-    }
-
-    public void tryDesignate(BlockState state) {
-    }
-
-    public void addFailEffects() {
-        // y'know i feel like just grabbing at the nearest random i can find is probably not the best idea. but w/e
-        if (this.level != null) {
-            this.level.playSound(null, this.getBlockPos(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5f, 1);
-            for (int i = 0; i < 5; i++) {
-                double x = this.getBlockPos().getX() + 0.5 + 0.5 * (0.5 - this.level.random.nextDouble());
-                double y = this.getBlockPos().getY() + 0.8375;
-                double z = this.getBlockPos().getZ() + 0.5 + 0.5 * (0.5 - this.level.random.nextDouble());
-                level.addParticle(
-                        ParticleTypes.SMOKE,
-                        x, y, z,
-                        0.0, 0.0, 0.0
-                );
-            }
-        }
-    }
-
-    public static void tick(Level level, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
-        if (level.isClientSide) {
-            // idk if client needs to do any of this tick stuff. we shall see
-            return;
-        }
-
-        SummoningTableState tableState = state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE);
-
-        // is this once a second? yea seems so - check on summoning timer n maybe cancel it
-        if ((level.getGameTime() % 20L == 0L)) {
-
-            UUID newTarget = thys.getCandleTarget();
-            byte[] newTargetNybbles = thys.targetFromCandlesInNybbles;
-            if (level.getGameTime() % 80L == 0L) {
-                newTargetNybbles = processCandles(level, pos);
-                newTarget = FamiliarTricks.nybblesToUUID(newTargetNybbles);
-            }
-
-            if (tableState == SummoningTableState.SUMMONING) {
-                tickSummoning(level, pos, state, thys, !thys.getCandleTarget().equals(newTarget));
-            } else if (tableState == SummoningTableState.BURNING) {
-                // process burning
-                tickBurning(level, pos, state, thys);
-            }
-
-            thys.targetFromCandlesInNybbles = newTargetNybbles;
-            thys.targetFromCandles = newTarget;
-        }
-
-    }
-
-    // using getters so i can remove one of these two variables later if i feel like it n convert
+    // in theory i'm using these (not true already) so i can remove one of these two variables later (need setters too..)
     private UUID getCandleTarget() {
         return this.targetFromCandles;
     }
@@ -373,32 +139,43 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         return this.targetFromCandlesInNybbles;
     }
 
-    private void unlightAll() {
-        if (this.level == null) {
+    protected ItemStack trueName() {
+        return this.inv.getFirst();
+    }
+
+    public static void tick(World world, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
+        if (world.isClient()) {
             return;
         }
 
-        for (int i = 0; i < 32; i++) {
-            // boldly unchecked because this should only be called when all the things are there... err i should check actually
-            BlockPos targetPos = this.getBlockPos().offset(CANDLE_COLUMN_OFFSETS[2*i], 0, CANDLE_COLUMN_OFFSETS[2*i+1]);
-            targetPos = targetPos.offset(0, ((this.targetFromCandlesInNybbles[i] >> 2) & 0b11) + 1, 0);
-            BlockState targetState = this.level.getBlockState(targetPos);
-            if (targetState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK)) {
-                this.level.setBlock(targetPos, targetState.setValue(EnchantedCandleBlock.LIT, false), Block.UPDATE_CLIENTS);
-            }
-        }
+        SummoningTableBlock.SummoningTableState tableState = state.get(SummoningTableBlock.SUMMONING_TABLE_STATE);
 
-        // todo - custom sound/event
-        level.playSound(null, this.getBlockPos(), SoundEvents.BREEZE_LAND, SoundSource.BLOCKS, 1, 1);
+        if (world.getTime() % 20L == 0L) {
+            UUID newTarget = thys.getCandleTarget();
+            byte[] newTargetNybbles = thys.targetFromCandlesInNybbles;
+            if (world.getTime() % 80L == 0L) {
+                newTargetNybbles = processCandles(world, pos);
+                newTarget = FamiliarTricks.nybblesToUUID(newTargetNybbles);
+            }
+
+            if (tableState == SummoningTableBlock.SummoningTableState.SUMMONING) {
+                tickSummoning(world, pos, state, thys, !thys.getCandleTarget().equals(newTarget));
+            } else if (tableState == SummoningTableBlock.SummoningTableState.BURNING) {
+                tickBurning(world, pos, state, thys);
+            }
+
+            thys.targetFromCandlesInNybbles = newTargetNybbles;
+            thys.targetFromCandles = newTarget;
+        }
     }
 
-    // written with the aid of our lady luna :innocent:
-    private static byte[] processCandles(Level level, BlockPos pos) {
+    // written with the aid of our lady luna :innocent:, it says
+    private static byte[] processCandles(World world, BlockPos pos) {
         byte[] nybbles = new byte[32];
 
         for (int i = 0; i < 32; i++) {
             nybbles[i] = nybbleFromCandleColumn(
-                    level,
+                    world,
                     new BlockPos(
                             pos.getX() + CANDLE_COLUMN_OFFSETS[2 * i],
                             pos.getY(),
@@ -410,23 +187,159 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
         return nybbles;
     }
 
-    private static byte nybbleFromCandleColumn(Level level, BlockPos bottomPos) {
-        for (int yOffset = 4; yOffset > 0; yOffset--) {
-            BlockState curiousBlockState = level.getBlockState(bottomPos.offset(0, yOffset, 0));
-            if (curiousBlockState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK)) {
-                byte toReturn = 0x00;
-                if (!curiousBlockState.getValue(EnchantedCandleBlock.LIT)) {
-                    toReturn = FamiliarTricks.UNLIT_CANDLE;
+    private static byte nybbleFromCandleColumn(World world, BlockPos bottomPos) {
+        for (int height = 4; height > 0; height--) {
+            BlockState curiousBlockState = world.getBlockState(bottomPos.add(0, height, 0));
+            if (curiousBlockState.isOf(FamiliarBlocks.ENCHANTED_CANDLE)) {
+                byte errors = 0b00000000;
+                if (!curiousBlockState.get(EnchantedCandleBlock.LIT)) {
+                    errors |= FamiliarTricks.UNLIT_CANDLE;
                 }
-                return (byte) (toReturn | (yOffset - 1) << 2 | (curiousBlockState.getValue(EnchantedCandleBlock.CANDLES) - 1));
+                return (byte) (errors | FamiliarTricks.makeNybble(height, curiousBlockState.get(EnchantedCandleBlock.CANDLES)));
             }
         }
 
-        // failed to find any candle (any bits in the first nybble indicates no candle :shrug:)
         return FamiliarTricks.NO_CANDLE;
     }
 
-    private static void tickBurning(Level level, BlockPos tablePos, BlockState state, SummoningTableBlockEntity thys) {
+    public void tryDesignate(BlockState state) {
+        // yea
+    }
+
+    public BlockState trySummon(BlockState state) {
+        if (this.allCandlesLit() && this.world instanceof ServerWorld serverWorld) {
+            serverWorld.playSound(null, this.getPos(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.BLOCKS);
+            Entity target = FamiliarTricks.findTargetByUuid(this.getCandleTarget(), serverWorld.getServer());
+            if (target != null) {
+                this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
+
+                if (target instanceof ServerPlayerEntity player) {
+                    SummoningRequestData requestData = new SummoningRequestData(
+                            this.world.getRegistryKey(),
+                            this.getPos(),
+                            Optional.of(List.of(
+                                    this.inv.get(1),
+                                    this.inv.get(2),
+                                    this.inv.get(3),
+                                    this.inv.get(4)
+                            ))
+                    );
+
+                    ServerPlayNetworking.send(player, new SillySummoningRequestLuggage(requestData, true));
+                } else {
+                    // todo - let picky critters be picky
+                    serverWorld.scheduleBlockTick(this.getPos(), state.getBlock(), world.random.nextBetweenExclusive(13, 62));
+                }
+
+                return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.SUMMONING);
+            }
+        }
+
+        addFailEffects();
+        return state;
+    }
+
+    private static void tickSummoning(World world, BlockPos pos, BlockState state, SummoningTableBlockEntity thys, boolean targetChanged) {
+        if (thys.summoningTimer <= 0 || targetChanged) {
+            thys.cancelSummoning();
+            SummoningTableBlock.extinguish(null, state, world, pos);
+        } else {
+            thys.summoningTimer--;
+        }
+    }
+
+    public void scheduledAccept() {
+        if (this.world instanceof ServerWorld) { // null check without null check :sleepy:
+            Entity target = FamiliarTricks.findTargetByUuid(this.getCandleTarget(), this.world.getServer());
+            if (target != null) {
+                if (FamiliarAttachments.isWillingFamiliar(target)) {
+                    acceptAndCastSummoning(target);
+                } else {
+                    cancelSummoning();
+                    SummoningTableBlock.extinguish(null, this.getCachedState(), this.world, this.getPos());
+                }
+            }
+        }
+    }
+
+    public void cancelSummoning() {
+        if (this.world instanceof ServerWorld serv) {
+            Entity target = FamiliarTricks.findTargetByUuid(this.getCandleTarget(), serv.getServer());
+            if (target instanceof ServerPlayerEntity player) {
+                SummoningRequestData requestData = new SummoningRequestData(this.world.getRegistryKey(), this.getPos(), Optional.empty());
+                ServerPlayNetworking.send(player, new SillySummoningRequestLuggage(requestData, false));
+            }
+
+            this.summoningTimer = 0;
+        }
+    }
+
+    public void acceptAndCastSummoning(Entity target) {
+        if (this.world == null || this.world.isClient()) {
+            return;
+        }
+
+        if (target.getUuid().equals(this.getCandleTarget()) && this.getCachedState().get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.SUMMONING) {
+            BlockPos destination = this.getPos();
+            target.teleport((ServerWorld) this.world, destination.getX() + 0.5, destination.getY() + 1, destination.getZ() + 0.5, EnumSet.noneOf(PositionFlag.class), target.getYaw(), target.getPitch());
+
+            if (target instanceof PathAwareEntity pathy) {
+                pathy.getNavigation().stop();
+            }
+
+            this.giveOfferings(target);
+
+            world.emitGameEvent(GameEvent.TELEPORT, target.getPos(), GameEvent.Emitter.of(target));
+            world.sendEntityStatus(target, EntityStatuses.ADD_PORTAL_PARTICLES);
+            world.playSound(null, this.getPos(), SoundEvents.ENTITY_PLAYER_TELEPORT, SoundCategory.BLOCKS, 1, 1);
+
+            cancelSummoning();
+            SummoningTableBlock.extinguish(null, this.getCachedState(), this.world, this.getPos());
+        }
+    }
+
+    private void giveOfferings(Entity target) {
+        if (world == null || world.isClient()) {
+            return;
+        }
+
+        for (int i = 1; i < this.inv.size(); i++) {
+            ItemStack offering = this.inv.get(i);
+            if (target instanceof ServerPlayerEntity player) {
+                if (!player.getInventory().insertStack(offering)) {
+                    ItemScatterer.spawn(world, pos.getX(), pos.getY()+1, pos.getZ(), offering);
+                }
+            } else {
+                // todo - feed the critters
+                ItemScatterer.spawn(world, pos.getX(), pos.getY()+1, pos.getZ(), offering);
+            }
+        }
+    }
+
+    private void unlightAll() {
+        // maybe add a config option for this but. not important. not used
+    }
+
+    public BlockState tryBurnName(BlockState state) {
+        //FamiliarMagic.LOGGER.info("In " + (this.world != null && this.world.isClient() ? "client" : "server") + ", starting burn");
+        if (!this.trueName().isEmpty()) {
+            //FamiliarMagic.LOGGER.info("In " + (this.world != null && this.world.isClient() ? "client" : "server") + ", found item in slot");
+            byte[] itemTarget = FamiliarTricks.trueNameToNybbles(this.trueName().getName().getString());
+
+            if (itemTarget != null) {
+                //FamiliarMagic.LOGGER.info("In " + (this.world != null && this.world.isClient() ? "client" : "server") + ", found target! success");
+                this.trueName().set(FamiliarComponents.SINGED_COMPONENT, true);
+                this.burnedTargetFromTrueNameInNybbles = itemTarget;
+                this.burningPhase = 8;
+                return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.BURNING);
+            }
+        }
+
+        addFailEffects();
+        return state;
+    }
+
+    private static void tickBurning(World world, BlockPos tablePos, BlockState state, SummoningTableBlockEntity thys) {
         if (thys.burnedTargetFromTrueNameInNybbles == null) {
             // i reserve the right to explode your base if this happens
             thys.burningPhase = 0;
@@ -434,261 +347,104 @@ public class SummoningTableBlockEntity extends BlockEntity implements IItemHandl
 
         if (thys.burningPhase > 0) {
             thys.burningPhase--;
-            burnPhase(level, tablePos, thys.burnedTargetFromTrueNameInNybbles, thys.burningPhase, CandlePlacement.SMOKE);
+            burnPhase(world, tablePos, thys.burnedTargetFromTrueNameInNybbles, thys.burningPhase, CandlePlacement.SMOKE);
         }
 
         if (thys.burningPhase <= 0) {
-            if (state.getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableState.BURNING) {
-                level.setBlockAndUpdate(tablePos, state.setValue(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE));
+            if (state.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.BURNING) {
+                world.setBlockState(tablePos, state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.INACTIVE));
             }
         }
     }
 
-    public static void superburn(Level level, BlockPos tablePos, UUID target, boolean lit) {
+    public static void superburn(World world, BlockPos tablePos, UUID target, boolean lit) {
         byte[] nybbles = FamiliarTricks.uuidToNybbles(target);
 
         for (int i = 7; i >= 0; i--) {
-            burnPhase(level, tablePos, nybbles, i, lit ? CandlePlacement.LIT : CandlePlacement.UNLIT);
+            burnPhase(world, tablePos, nybbles, i, lit ? CandlePlacement.LIT : CandlePlacement.UNLIT);
         }
     }
 
-    private static void burnPhase(Level level, BlockPos tablePos, byte[] nybbles, int phase, CandlePlacement placement) {
+    private static void burnPhase(World world, BlockPos tablePos, byte[] nybbles, int phase, CandlePlacement placement) {
         int[] targetIndices = PHASE_INDICES[phase];
         for (int targetIndex : targetIndices) {
-            BlockState blockToPlace = switch(placement) {
-                case SMOKE -> FamiliarBlocks.SMOKE_WISP_BLOCK.get().defaultBlockState();
-                case UNLIT -> FamiliarBlocks.ENCHANTED_CANDLE_BLOCK.get().defaultBlockState();
-                case LIT -> FamiliarBlocks.ENCHANTED_CANDLE_BLOCK.get().defaultBlockState().setValue(BlockStateProperties.LIT, true);
-            };
-
             burnColumn(
-                    level,
-                    tablePos.offset(CANDLE_COLUMN_OFFSETS[2 * targetIndex], 0, CANDLE_COLUMN_OFFSETS[2 * targetIndex + 1]),
+                    world,
+                    tablePos.add(CANDLE_COLUMN_OFFSETS[2 * targetIndex], 0, CANDLE_COLUMN_OFFSETS[2 * targetIndex + 1]),
                     nybbles[targetIndex],
-                    blockToPlace
+                    placement.asBlock()
             );
         }
     }
 
-    private static void burnColumn(Level level, BlockPos bottomPos, byte nybbleDigit, BlockState blockToPlace) {
-        // wahaha i was right java does smear the bits (i think), this was a justified &
-        int desiredHeight = ((nybbleDigit >> 2) & 0b11) + 1;
-        int desiredCandles = (nybbleDigit & 0b11) + 1;
+    private static void burnColumn(World world, BlockPos bottomPos, byte nybbleDigit, BlockState blockToPlace) {
+        int desiredHeight = FamiliarTricks.height(nybbleDigit);
+        int desiredCandles = FamiliarTricks.quantity(nybbleDigit);
 
-        BlockPos targetPos = bottomPos.offset(0, desiredHeight, 0);
-        BlockState targetState = level.getBlockState(targetPos);
+        BlockPos targetPos = bottomPos.add(0, desiredHeight, 0);
+        BlockState targetState = world.getBlockState(targetPos);
 
-        if (targetState.canBeReplaced()) {
-            // maybe sound/particle?
-            level.setBlockAndUpdate(targetPos, blockToPlace.setValue(BlockStateProperties.CANDLES, desiredCandles));
-        } else if (targetState.is(FamiliarBlocks.ENCHANTED_CANDLE_BLOCK) && targetState.getValue(EnchantedCandleBlock.CANDLES) == desiredCandles && !targetState.getValue(EnchantedCandleBlock.LIT)) {
-            // maybe happy sound/particle?
-            level.setBlockAndUpdate(targetPos, targetState.setValue(EnchantedCandleBlock.LIT, true));
+        if (targetState.isReplaceable()) {
+            world.setBlockState(targetPos, blockToPlace.with(CandleBlock.CANDLES, desiredCandles));
+        } else if (targetState.isOf(FamiliarBlocks.ENCHANTED_CANDLE) && targetState.get(EnchantedCandleBlock.CANDLES) == desiredCandles && !targetState.get(EnchantedCandleBlock.LIT)) {
+            world.setBlockState(targetPos, targetState.with(EnchantedCandleBlock.LIT, true));
         } else {
             // maybe sad sound/particle? can't make smoke here but would quite like to
         }
     }
 
-
-    // ahead lies the containery part of this damnable thing. Good lird
-
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-
-        if (this.name != null) {
-            tag.putString("CustomName", Component.Serializer.toJson(this.name, registries));
-        }
-
-        if (!this.trueName.isEmpty()) {
-            tag.put("TrueNameItem", this.trueName.save(registries));
-        }
-        tag.put("OfferingItems", this.offerings.serializeNBT(registries));
-
-
-        this.lockKey.addToTag(tag);
-    }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-
-        if (tag.contains("CustomName", 8)) {
-            this.name = parseCustomNameSafe(tag.getString("CustomName"), registries);
-        }
-
-        if (tag.contains("TrueNameItem", Tag.TAG_COMPOUND)) {
-            // ok this isn't really quite right here but. i'll deal with that later when i get to offerings
-            this.trueName = ItemStack.parse(registries, tag.getCompound("TrueNameItem")).orElse(ItemStack.EMPTY);
-        }
-        if (tag.contains("OfferingItems", Tag.TAG_COMPOUND)) {
-            this.offerings.deserializeNBT(registries, tag.getCompound("OfferingItems"));
-        }
-
-        this.lockKey = LockCode.fromTag(tag);
-    }
-
-    @Override
-    protected void applyImplicitComponents(DataComponentInput componentInput) {
-        super.applyImplicitComponents(componentInput);
-        this.name = componentInput.get(DataComponents.CUSTOM_NAME);
-        this.lockKey = componentInput.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);
-
-        List<ItemStack> allItems = componentInput.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).stream().toList();
-        if (!allItems.isEmpty()) {
-            this.trueName = allItems.getFirst();
-        }
-        for (int i = 1; i < allItems.size() && i < 1 + offerings.getSlots(); i++) {
-            offerings.setStackInSlot(i - 1, allItems.get(i));
-        }
-    }
-
-    @Override
-    protected void collectImplicitComponents(DataComponentMap.Builder components) {
-        super.collectImplicitComponents(components);
-        components.set(DataComponents.CUSTOM_NAME, this.name);
-        if (!this.lockKey.equals(LockCode.NO_LOCK)) {
-            components.set(DataComponents.LOCK, this.lockKey);
-        }
-
-        ArrayList<ItemStack> allItems = new ArrayList<>(1 + this.offerings.getSlots());
-        allItems.add(this.trueName);
-        for (int i = 0; i < this.offerings.getSlots(); i++) {
-            allItems.add(this.offerings.getStackInSlot(i));
-        }
-        components.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(allItems));
-    }
-
-    @Override
-    public Component getName() {
-        return name != null ? name : Component.translatable("container.familiar_magic.summon");
-    }
-
-    @Nullable
-    @Override
-    public Component getCustomName() {
-        return this.name;
-    }
-
-    @SuppressWarnings("deprecation") // i mean yeah but also. it's still used in another method so idk
-    @Override
-    public void removeComponentsFromTag(CompoundTag tag) {
-        tag.remove("CustomName");
-        tag.remove("Lock");
-        tag.remove("TrueNameItem");
-        tag.remove("OfferingItems");
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return this.getName();
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        if (BaseContainerBlockEntity.canUnlock(player, this.lockKey, this.getDisplayName())) {
-            return new SummoningTableMenu(containerId, playerInventory, this, this.dataAccess, ContainerLevelAccess.create(player.level(), this.getBlockPos()));
-        } else {
-            return null;
-        }
-    }
-
-    public boolean canChangeItems() {
-        return this.getBlockState().getValue(SummoningTableBlock.SUMMONING_TABLE_STATE) != SummoningTableState.SUMMONING;
-    }
-
-    @Override
-    public int getSlots() {
-        return 5;
-    }
-
-    @Override
-    public ItemStack getStackInSlot(int slot) {
-        if (slot == 0) {
-            return this.trueName;
-        } else if (slot > 0 && slot < 5) {
-            return this.offerings.getStackInSlot(slot - 1);
-        } else {
-            return ItemStack.EMPTY;
-        }
-    }
-
-    // can you feel her guiding voice? our lady luna speaks these methods into my ears, i am but a vessel
-    @Override
-    public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-        ItemStack toReturn = stack;
-
-        if (this.canChangeItems()) {
-            if (slot == 0 && this.trueName.isEmpty() && stack.is(FamiliarItems.TRUE_NAME_ITEM)) {
-                if (!simulate) {
-                    this.trueName = stack.copyWithCount(1);
-                }
-
-                toReturn = stack.copyWithCount(stack.getCount() - 1);
-            } else if (slot > 0 && slot < 5) {
-                toReturn = offerings.insertItem(slot - 1, stack, simulate);
-            }
-
-            if (toReturn.getCount() != stack.getCount() && !simulate) {
-                this.setChanged();
-            }
-        }
-
-        return toReturn;
-    }
-
-    @Override
-    public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        ItemStack toReturn = ItemStack.EMPTY;
-
-        if (this.canChangeItems()) {
-            if (slot == 0) {
-                toReturn = this.trueName.copy();
-                if (!simulate) {
-                    this.trueName = ItemStack.EMPTY;
-                }
-            } else if (slot > 0 && slot < 5) {
-                toReturn = offerings.extractItem(slot - 1, amount, simulate);
-            }
-
-            if (!toReturn.isEmpty() && !simulate) {
-                this.setChanged();
-            }
-        }
-
-        return toReturn;
-    }
-
-    @Override
-    public int getSlotLimit(int slot) {
-        switch (slot) {
-            case 0 -> {
-                return 1;
-            }
-            case 1, 2, 3, 4 -> {
-                return this.offerings.getSlotLimit(slot - 1);
-            }
-            default -> {
-                return 0;
+    public void addFailEffects() {
+        if (this.world != null) {
+            this.world.playSound(null, this.getPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5f, 1);
+            for (int i = 0; i < 5; i++) {
+                double x = this.getPos().getX() + 0.5 + 0.5 * (0.5 - this.world.random.nextDouble());
+                double y = this.getPos().getY() + 0.8375;
+                double z = this.getPos().getZ() + 0.5 + 0.5 * (0.5 - this.world.random.nextDouble());
+                world.addParticle(
+                        ParticleTypes.SMOKE,
+                        x, y, z,
+                        0.0, 0.0, 0.0
+                );
             }
         }
     }
 
     @Override
-    public boolean isItemValid(int slot, ItemStack stack) {
-        return slot == 0 && stack.is(FamiliarItems.TRUE_NAME_ITEM) ||
-                slot > 0 && slot < 5 && offerings.isItemValid(slot - 1, stack);
+    protected Text getContainerName() {
+        return Text.translatable("container.familiar_magic.summoning_table");
     }
 
     @Override
-    public void setStackInSlot(int slot, ItemStack stack) {
-        if (slot == 0) {
-            this.trueName = stack;
-            this.setChanged();
-        } else if (slot > 0 && slot < 5) {
-            this.offerings.setStackInSlot(slot - 1, stack);
-            this.setChanged();
-        }
+    protected DefaultedList<ItemStack> getHeldStacks() {
+        return this.inv;
     }
+
+    @Override
+    protected void setHeldStacks(DefaultedList<ItemStack> inventory) {
+        this.inv = inventory;
+    }
+
+    @Override
+    protected ScreenHandler createScreenHandler(int syncId, PlayerInventory playerInventory) {
+        return new SummoningTableScreenHandler(syncId, playerInventory, this, this.menuData, ScreenHandlerContext.create(this.world, this.getPos()));
+    }
+
+    @Override
+    public int size() {
+        return this.inv.size();
+    }
+
+    @Override
+    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        super.readNbt(nbt, registryLookup);
+        Inventories.readNbt(nbt, this.inv, registryLookup);
+    }
+
+    @Override
+    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        super.writeNbt(nbt, registryLookup);
+        Inventories.writeNbt(nbt, this.inv, registryLookup);
+    }
+
+    // component stuff shouldn't be necessary, good ol lockey et al. do that for us i think
 }

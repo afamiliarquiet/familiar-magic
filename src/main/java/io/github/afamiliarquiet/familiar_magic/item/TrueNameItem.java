@@ -1,42 +1,37 @@
 package io.github.afamiliarquiet.familiar_magic.item;
 
 import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUtils;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsage;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
 public class TrueNameItem extends Item {
-    public TrueNameItem(Properties properties) {
-        super(properties);
+    public TrueNameItem(Settings settings) {
+        super(settings);
     }
 
     @Override
-    public InteractionResult interactLivingEntity(ItemStack nameTag, Player player, LivingEntity target, InteractionHand hand) {
-        SingedComponentRecord record = nameTag.get(FamiliarItems.SINGED_COMPONENT);
+    public ActionResult useOnEntity(ItemStack startStack, PlayerEntity player, LivingEntity target, Hand hand) {
+        Boolean singed = startStack.get(FamiliarComponents.SINGED_COMPONENT);
 
-        if (record != null && !record.singed()) {
-            if (!player.level().isClientSide && target.isAlive()) {
-                ItemStack trueName = FamiliarItems.TRUE_NAME_ITEM.toStack();
-                trueName.set(DataComponents.CUSTOM_NAME, Component.literal(FamiliarTricks.uuidToTrueName(target.getUUID())));
+        if (singed != null && !singed) {
+            if (!player.getWorld().isClient() && target.isAlive()) {
+                ItemStack namedStack = FamiliarItems.TRUE_NAME.getDefaultStack();
+                namedStack.set(DataComponentTypes.CUSTOM_NAME, Text.literal(FamiliarTricks.uuidToTrueName(target.getUuid())));
 
-                ItemStack handStack = ItemUtils.createFilledResult(nameTag.copy(), player, trueName, false);
-                player.setItemInHand(hand, handStack);
+                ItemStack handStack = ItemUsage.exchangeStack(startStack.copy(), player, namedStack, false);
+                player.setStackInHand(hand, handStack);
             }
-
-            return InteractionResult.sidedSuccess(player.level().isClientSide);
+            return ActionResult.success(player.getWorld().isClient());
         } else {
-            return super.interactLivingEntity(nameTag, player, target, hand);
+            return super.useOnEntity(startStack, player, target, hand);
         }
     }
 }

@@ -5,7 +5,7 @@
   "block.familiar_magic.enchanted_candle": "Enchanted Candle",
   "block.familiar_magic.summoning_table":  "Summoning Table",
   "block.familiar_magic.smoke_wisp": "Wisp of Smoke",
-  "container.familiar_magic.summon": "Summon",
+  "container.familiar_magic.summoning_table": "Summoning",
   "gui.familiar_magic.candle_helper.bad_height": "Misplaced Candle",
   "gui.familiar_magic.candle_helper.bad_quantity": "Miscounted Candle",
   "gui.familiar_magic.candle_helper.matched_candle": "Perfect Candle",
@@ -18,10 +18,10 @@
   "commands.familiar_magic.invalidTarget": "Could not find candle pattern for target",
   "commands.familiar_magic.success": "Placed candles for %s at %s %s %s",
   "category.familiar_magic.familiar_magic": "Familiar Magic",
-  "key.familiar_magic.focus": "Focus",
+  "key.familiar_magic.focus_hold": "Focus",
   "key.familiar_magic.focus_toggle": "Toggle Focus",
 
-  "familiar_magic.level_key.minecraft.overworld": "The Overworld",
-  "familiar_magic.level_key.minecraft.the_nether": "The Nether",
-  "familiar_magic.level_key.minecraft.the_end": "The End"
+  "familiar_magic.world_key.minecraft.overworld": "The Overworld",
+  "familiar_magic.world_key.minecraft.the_nether": "The Nether",
+  "familiar_magic.world_key.minecraft.the_end": "The End"
 }

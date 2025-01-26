@@ -1,0 +1,5 @@
+accessWidener v2 named
+accessible field net/minecraft/client/render/entity/model/FrogEntityModel body Lnet/minecraft/client/model/ModelPart;
+accessible field net/minecraft/client/render/entity/model/OcelotEntityModel head Lnet/minecraft/client/model/ModelPart;
+accessible field net/minecraft/client/render/entity/model/ParrotEntityModel head Lnet/minecraft/client/model/ModelPart;
+accessible field net/minecraft/client/render/entity/model/WolfEntityModel head Lnet/minecraft/client/model/ModelPart;

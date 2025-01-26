@@ -1,216 +1,182 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
+import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
-import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableState;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
-import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.pathfinder.PathComputationType;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.common.ItemAbility;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.Items;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.EnumProperty;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
+import net.minecraft.util.ItemScatterer;
+import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+public class SummoningTableBlock extends BlockWithEntity implements Burnable {
+    public static final MapCodec<SummoningTableBlock> CODEC = AbstractBlock.createCodec(SummoningTableBlock::new);
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
-public class SummoningTableBlock extends BaseEntityBlock {
-    public static final MapCodec<SummoningTableBlock> CODEC = simpleCodec(SummoningTableBlock::new);
+    public static final EnumProperty<SummoningTableState> SUMMONING_TABLE_STATE = EnumProperty.of("summoning_table_state", SummoningTableState.class);
 
-    public static final EnumProperty<SummoningTableState> SUMMONING_TABLE_STATE = EnumProperty.create("summoning_table_state", SummoningTableState.class);
-
-    protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
+    protected static final VoxelShape SHAPE = SummoningTableBlock.createCuboidShape(0, 0, 0, 16, 12, 16);
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
         return CODEC;
     }
 
-    public SummoningTableBlock(Properties properties) {
-        super(properties);
-        this.registerDefaultState(
-                this.stateDefinition
-                        .any()
-                        .setValue(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE)
-        );
+    public SummoningTableBlock(Settings settings) {
+        super(settings);
+        this.setDefaultState(this.stateManager.getDefaultState().with(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE));
     }
 
     @Override
-    public @Nullable BlockState getToolModifiedState(BlockState state, UseOnContext context, ItemAbility itemAbility, boolean simulate) {
-        BlockEntity blockerizer = context.getLevel().getBlockEntity(context.getClickedPos());
-        if (itemAbility == ItemAbilities.FIRESTARTER_LIGHT && state.getValue(SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE && blockerizer instanceof SummoningTableBlockEntity summonizer) {
-            // neoforge docs say calling state#setValue without saving it back into state does nothing, so..
-            // hopefully simulate is happy :)
-            // actually this shouldn't directly set lit - probably need to hand off to the blockentity here. but that's later
-
-            if (context.getPlayer() != null && context.getPlayer().getData(FamiliarAttachments.FOCUSED)) {
-                return summonizer.startSummoning(state, simulate);
-            } else {
-                return summonizer.tryBurnName(state, simulate);
-            }
-        } else {
-            return super.getToolModifiedState(state, context, itemAbility, simulate);
-        }
-    }
-
-    @Override
-    protected void onProjectileHit(Level level, BlockState state, BlockHitResult hit, Projectile projectile) {
-        if (!level.isClientSide
-                && projectile.isOnFire()
-                && hit.getDirection() == Direction.UP
-                && state.getValue(SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE
-                && level.getBlockEntity(hit.getBlockPos()) instanceof SummoningTableBlockEntity summonizer
-        ) {
-            level.setBlockAndUpdate(hit.getBlockPos(), summonizer.tryBurnName(state, false));
-        }
-        super.onProjectileHit(level, state, hit, projectile);
-    }
-
-    protected boolean useShapeForLightOcclusion(BlockState state) {
+    protected boolean hasSidedTransparency(BlockState state) {
         return true;
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         return SHAPE;
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
-        return RenderShape.MODEL;
+    protected BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.MODEL;
     }
 
+    @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new SummoningTableBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY.get(), SummoningTableBlockEntity::tick);
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        return validateTicker(type, FamiliarBlocks.SUMMONING_TABLE_BLOCK_ENTITY, SummoningTableBlockEntity::tick);
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        // this should really be called use regardless of item from the way it seems to work
-        if (player.getMainHandItem().canPerformAction(ItemAbilities.FIRESTARTER_LIGHT)) {
-            return InteractionResult.PASS;
+    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+        // deferred to be handled by their mixins
+        if (FamiliarTricks.canIgnite(player.getMainHandStack())) {
+            return ActionResult.PASS;
         }
 
-        if (!level.isClientSide
-                && player instanceof ServerPlayer serverPlayer
-                && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity zeraxos) {
-//            if (serverPlayer.getData(FamiliarAttachments.FOCUSED) && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
-//                // and i'll make an even longer line too!! fear me
-//                tableEntity.tryDesignate(state);
-//            } else {
-                serverPlayer.openMenu(zeraxos);
-//            }
-        }
+        if (!world.isClient()
+                && player instanceof ServerPlayerEntity serverPlayer
+                && world.getBlockEntity(pos) instanceof SummoningTableBlockEntity zeraxos) {
+            if (player.isSneaking() && state.get(SUMMONING_TABLE_STATE) != SummoningTableState.INACTIVE) {
+                if (state.get(SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
+                    zeraxos.cancelSummoning();
+                }
 
-        return InteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        SummoningTableState tableState = state.getValue(SUMMONING_TABLE_STATE);
-
-        // i'm choosing to allow adventure mode players to cancel summoning because that's useful for modfest
-        if (stack.isEmpty() && player.isSecondaryUseActive() && tableState != SummoningTableState.INACTIVE) {
-            if (tableState == SummoningTableState.SUMMONING && level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
-                tableEntity.cancelSummoning();
+                extinguish(player, state, world, pos);
+            } else {
+                serverPlayer.openHandledScreen(zeraxos);
             }
-
-            extinguish(player, state, level, pos);
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
-        } else {
-            return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
         }
+
+        return ActionResult.success(world.isClient());
     }
 
-    public static void extinguish(@Nullable Player player, BlockState state, LevelAccessor level, BlockPos pos) {
-        level.setBlock(pos, state.setValue(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE), UPDATE_ALL_IMMEDIATE);
+    public static void extinguish(@Nullable PlayerEntity player, BlockState state, WorldAccess world, BlockPos pos) {
+        world.setBlockState(pos, state.with(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE), SummoningTableBlock.NOTIFY_ALL_AND_REDRAW);
 
-        level.addParticle(
+        world.addParticle(
                 ParticleTypes.SMOKE,
-                (double) pos.getX() + 0.5,
-                (double) pos.getY() + 0.75,
-                (double) pos.getZ() + 0.5,
-                0.0,
-                0.1F,
-                0.0
+                pos.getX() + 0.5, pos.getY() + 0.75, pos.getZ() + 0.5,
+                0, 0.1f, 0
         );
 
-        // using glass break to copy nether portal break for now. maybe will change later
-        level.playSound(null, pos, SoundEvents.GLASS_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
-        level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+        world.playSound(null, pos, SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.BLOCKS, 1, 1);
+        world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
     }
 
-    // this should be scheduled tick
-    @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (level.getBlockEntity(pos) instanceof SummoningTableBlockEntity tableEntity) {
-            tableEntity.scheduledAccept();
+    public BlockState onIgnition(BlockState state, ItemUsageContext context) {
+        if (state.get(SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE && context.getWorld().getBlockEntity(context.getBlockPos()) instanceof SummoningTableBlockEntity summonizer) {
+            if (context.getPlayer() != null && FamiliarAttachments.isFocused(context.getPlayer())) {
+                FamiliarMagic.LOGGER.info("client: " + context.getWorld().isClient() + ", focused and summoning");
+                return summonizer.trySummon(state);
+            } else {
+                FamiliarMagic.LOGGER.info("client: " + context.getWorld().isClient() + ", unfocused and burning");
+                return summonizer.tryBurnName(state);
+            }
+        } else {
+            return state;
         }
     }
 
     @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        SummoningTableState tableState = state.getValue(SUMMONING_TABLE_STATE);
+    protected void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
+        if (!world.isClient && projectile.isOnFire() && hit.getSide() == Direction.UP) {
+            onIgnition(state, new ItemUsageContext(world, projectile.getOwner() instanceof PlayerEntity player ? player : null, Hand.MAIN_HAND, ItemStack.EMPTY, hit));
+        }
+        super.onProjectileHit(world, state, hit, projectile);
+    }
+
+    @Override
+    protected void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+        if (world.getBlockEntity(pos) instanceof SummoningTableBlockEntity screeber) {
+            screeber.scheduledAccept();
+        }
+    }
+
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        SummoningTableState tableState = state.get(SUMMONING_TABLE_STATE);
         if (tableState == SummoningTableState.SUMMONING) {
             if (random.nextInt(100) == 0) {
                 // truly just ripping this whole thing from respawn anchor. as usual, might change sound later. unlikely
-                level.playLocalSound(pos, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+                world.playSoundAtBlockCenter(pos, SoundEvents.BLOCK_RESPAWN_ANCHOR_AMBIENT, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
             }
 
             double d0 = (double)pos.getX() + 0.5 + (0.5 - random.nextDouble());
             double d1 = (double)pos.getY() + 0.75;
             double d2 = (double)pos.getZ() + 0.5 + (0.5 - random.nextDouble());
             double d3 = (double)random.nextFloat() * 0.04;
-            level.addParticle(ParticleTypes.REVERSE_PORTAL, d0, d1, d2, 0.0, d3, 0.0);
+            world.addParticle(ParticleTypes.REVERSE_PORTAL, d0, d1, d2, 0.0, d3, 0.0);
         } else if (tableState == SummoningTableState.BURNING) {
             if (random.nextInt(31) == 0) {
-                level.playLocalSound(pos, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 1, 1, false);
+                world.playSoundAtBlockCenter(pos, SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.BLOCKS, 1, 1, false);
             }
 
             if (random.nextInt(2) == 0) {
                 double x = pos.getX() + 0.5 + 0.5 * (0.5 - random.nextDouble());
                 double y = pos.getY() + 0.8375;
                 double z = pos.getZ() + 0.5 + 0.5 * (0.5 - random.nextDouble());
-                level.addParticle(
+                world.addParticle(
                         random.nextInt(6) == 0 ? ParticleTypes.FLAME : ParticleTypes.SMOKE,
                         x, y, z,
                         0.0, 0.0, 0.0
@@ -220,27 +186,58 @@ public class SummoningTableBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
+    protected boolean canPathfindThrough(BlockState state, NavigationType type) {
         return false;
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(SUMMONING_TABLE_STATE);
     }
 
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
-        if (!state.is(newState.getBlock())) {
-            // tell the stuff in the inventory to bounce
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof SummoningTableBlockEntity summoningTableEntity) {
-                summoningTableEntity.cancelSummoning();
-                for (int i = 0; i < summoningTableEntity.getSlots(); i++) {
-                    Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), summoningTableEntity.getStackInSlot(i));
-                }
+    protected void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        if (!state.isOf(newState.getBlock())) {
+            if (world.getBlockEntity(pos) instanceof SummoningTableBlockEntity stbe) {
+                stbe.cancelSummoning();
+                ItemScatterer.spawn(world, pos, stbe);
+                //world.updateComparators(pos, this);
             }
-            super.onRemove(state, level, pos, newState, movedByPiston);
+            super.onStateReplaced(state, world, pos, newState, moved);
+        }
+    }
+
+    // one day i might decide to add more redstone friendliness.
+    // not today, nerds. but when that day comes make sure to update onStateReplaced
+//    @Override
+//    protected boolean hasComparatorOutput(BlockState state) {
+//        return super.hasComparatorOutput(state);
+//    }
+//
+//    @Override
+//    protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+//        return super.getComparatorOutput(state, world, pos);
+//    }
+
+    public enum SummoningTableState implements StringIdentifiable {
+        INACTIVE("inactive", 7),
+        BURNING("burning", 10),
+        SUMMONING("summoning", 13);
+
+        private final String name;
+        private final int lightLevel;
+
+        SummoningTableState(String name, int lightLevel) {
+            this.name = name;
+            this.lightLevel = lightLevel;
+        }
+
+        public String asString() {
+            return this.name;
+        }
+
+        public int lightLevel() {
+            return this.lightLevel;
         }
     }
 }

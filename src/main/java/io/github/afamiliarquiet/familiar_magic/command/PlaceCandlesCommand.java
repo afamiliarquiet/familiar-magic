@@ -2,46 +2,44 @@ package io.github.afamiliarquiet.familiar_magic.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.command.argument.BlockPosArgumentType;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 
-import static net.minecraft.commands.Commands.argument;
-import static net.minecraft.commands.Commands.literal;
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 public class PlaceCandlesCommand {
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("placecandles")
-                .requires(commandSourceStack -> commandSourceStack. hasPermission(2))
+                .requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(2))
                 .then(
-                        argument("target", EntityArgument.entity())
+                        argument("target", EntityArgumentType.entity())
                                 .then(
-                                        argument("pos", BlockPosArgument.blockPos())
+                                        argument("pos", BlockPosArgumentType.blockPos())
                                                 .executes(
                                                         context ->
-                                                            placeCandles(
-                                                                    context.getSource(),
-                                                                    EntityArgument.getEntity(context, "target"),
-                                                                    context.getSource().getLevel(),
-                                                                    BlockPosArgument.getBlockPos(context, "pos"),
-                                                                    true
-                                                            )
+                                                                placeCandles(
+                                                                        context.getSource(),
+                                                                        EntityArgumentType.getEntity(context, "target"),
+                                                                        context.getSource().getWorld(),
+                                                                        BlockPosArgumentType.getBlockPos(context, "pos"),
+                                                                        true
+                                                                )
                                                 )
                                                 .then(
                                                         argument("lit", BoolArgumentType.bool())
                                                                 .executes(
                                                                         context -> placeCandles(
                                                                                 context.getSource(),
-                                                                                EntityArgument.getEntity(context, "target"),
-                                                                                context.getSource().getLevel(),
-                                                                                BlockPosArgument.getBlockPos(context, "pos"),
+                                                                                EntityArgumentType.getEntity(context, "target"),
+                                                                                context.getSource().getWorld(),
+                                                                                BlockPosArgumentType.getBlockPos(context, "pos"),
                                                                                 BoolArgumentType.getBool(context, "lit")
                                                                         )
                                                                 )
@@ -51,10 +49,10 @@ public class PlaceCandlesCommand {
         );
     }
 
-    private static int placeCandles(CommandSourceStack source, Entity target, ServerLevel level, BlockPos pos, boolean lit) {
-        SummoningTableBlockEntity.superburn(level, pos, target.getUUID(), lit);
-        source.sendSuccess(
-                () -> Component.translatable(
+    private static int placeCandles(ServerCommandSource source, Entity target, ServerWorld level, BlockPos pos, boolean lit) {
+        SummoningTableBlockEntity.superburn(level, pos, target.getUuid(), lit);
+        source.sendFeedback(
+                () -> Text.translatable(
                         "commands.familiar_magic.success",
                         target.getDisplayName(),
                         pos.getX(),

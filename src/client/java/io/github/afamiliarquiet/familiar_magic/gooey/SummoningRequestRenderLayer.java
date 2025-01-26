@@ -1,0 +1,108 @@
+package io.github.afamiliarquiet.familiar_magic.gooey;
+
+import io.github.afamiliarquiet.familiar_magic.FamiliarKeybinds;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
+import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+
+import java.util.List;
+
+public class SummoningRequestRenderLayer implements HudRenderCallback {
+    private static final Identifier BACKGROUND = FamiliarMagic.id("textures/gui/summoning_request.png");
+    private final int imageHeight = 128;
+    private final int imageWidth = 128;
+    private final int textureHeight = 128;
+    private final int textureWidth = 128;
+    private final int spacing = 13;
+    
+    @Override
+    public void onHudRender(DrawContext context, RenderTickCounter renderTickCounter) {
+        MinecraftClient minecraft = MinecraftClient.getInstance();
+        ClientPlayerEntity player = minecraft.player;
+        SummoningRequestData requestData = FamiliarAttachments.getRequest(player);
+
+        if (player == null || requestData == null || minecraft.options.hudHidden) {
+            return;
+        }
+
+
+        int top = context.getScaledWindowHeight() - (this.imageHeight + this.spacing);
+        int left = context.getScaledWindowWidth() - (this.imageWidth + this.spacing);
+
+        context.drawTexture(BACKGROUND, left, top, 0, 0, imageWidth, imageHeight, textureWidth, textureHeight);
+
+        Text titleComponent = Text.translatable(
+                "gui.familiar_magic.summoning_request.name"
+        );
+        Text blurb = Text.translatable(
+                "gui.familiar_magic.summoning_request.blurb",
+                FamiliarKeybinds.FOCUS_HOLD.getBoundKeyLocalizedText(),
+                minecraft.options.jumpKey.getBoundKeyLocalizedText(),
+                minecraft.options.sneakKey.getBoundKeyLocalizedText()
+        );
+
+        // i have a hunch this may not exist but we shall see! maybe neoforge is nice to me today
+        // ya didnt exist. so i make it my own and it's fine enough, compat with other mod dimensions should be easy enough
+        Text levelComponent = Text.translatable("familiar_magic.world_key." + requestData.tableWorldKey().getValue().toTranslationKey());
+        BlockPos destinationPos = requestData.tablePos();
+        Text positionComponent = Text.translatable(
+                "gui.familiar_magic.summoning_request.position",
+                destinationPos.getX(),
+                destinationPos.getY(),
+                destinationPos.getZ()
+        );
+        List<ItemStack> offerings = requestData.offerings().orElse(List.of()); // *should* always be present but w/e
+
+        this.drawCenteredStringAtHeight(context, minecraft.textRenderer, top, left, titleComponent, 0);
+        context.drawTextWrapped(minecraft.textRenderer, blurb, left + this.spacing, top + 26, this.imageWidth - 2 * this.spacing, 0x382414);
+        this.drawCenteredStringAtHeight(context, minecraft.textRenderer, top, left, levelComponent, 62);
+        this.drawCenteredStringAtHeight(context, minecraft.textRenderer, top, left, positionComponent, 72);
+
+        this.drawItems(context, minecraft.textRenderer, top, left, offerings);
+    }
+    
+    private void drawCenteredStringAtHeight(DrawContext context, TextRenderer font, int top, int left, Text text, int height) {
+        context.drawText(
+                font,
+                text,
+                left + this.imageWidth / 2 - font.getWidth(text) / 2,
+                top + this.spacing + height,
+                0x492f5b,
+                false
+        );
+    }
+    
+    private void drawItems(DrawContext context, TextRenderer font, int top, int left, List<ItemStack> offerings) {
+        if (offerings.size() != 4) {
+            // just to be extra safe
+            return;
+        }
+
+        for (int i = 0; i < 4; i++) {
+            int itemTop = top + 98;
+            int itemLeft = i * 18 + left + 29;
+
+            context.drawItem(
+                    offerings.get(i),
+                    itemLeft,
+                    itemTop
+            );
+            context.drawItemInSlot(
+                    font,
+                    offerings.get(i),
+                    itemLeft,
+                    itemTop
+            );
+        }
+    }
+}

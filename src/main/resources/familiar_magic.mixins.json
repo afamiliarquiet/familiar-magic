@@ -4,22 +4,11 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "FamiliarFoxMixin",
-    "TrueNameTagMixin",
-    "hattery.MobHatEquipMixin",
-    "hattery.WolfHatEquipMixin"
+    "FireChargeIgnitionMixin",
+    "FlintAndSteelIgnitionMixin",
+    "MobHatEquipMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "client": [
-    "hattery.CatHatRendererMixin",
-    "hattery.EndermiteHatRendererMixin",
-    "hattery.FoxHatRendererMixin",
-    "hattery.FrogHatRendererMixin",
-    "hattery.HatBakeryMixin",
-    "hattery.HatRendererMixin",
-    "hattery.ParrotHatRendererMixin",
-    "hattery.SilverfishHatRendererMixin",
-    "hattery.WolfHatRendererMixin"
-  ]
+	}
 }
