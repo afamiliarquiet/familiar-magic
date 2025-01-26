@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.codec.PacketCodecs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +42,13 @@ public class FamiliarAttachments {
             id("willing_familiar"), (builder) -> builder
                     .initializer(() -> false)
                     .persistent(Codec.BOOL)
+    );
+
+    public static final AttachmentType<CurseAttachment> CURSE = AttachmentRegistry.create(
+            id("curse"), (builder) -> builder
+                    .initializer(() -> new CurseAttachment(CurseAttachment.Curse.NOTHING))
+                    .persistent(CurseAttachment.CODEC)
+                    .syncWith(CurseAttachment.PACKET_CODEC, AttachmentSyncPredicate.targetOnly()) // maybe all later
     );
 
     public static void initialize() {
@@ -102,5 +108,17 @@ public class FamiliarAttachments {
 
     public static boolean isWillingFamiliar(@Nullable Entity target) {
         return !FamiliarMagic.CONFIG.useWillingTag || target != null && target.getAttachedOrCreate(WILLING_FAMILIAR);
+    }
+
+    public static @NotNull CurseAttachment getCurse(@NotNull Entity entity) {
+        return entity.getAttachedOrCreate(CURSE);
+    }
+
+    public static void removeCurse(@NotNull Entity entity) {
+        entity.removeAttached(CURSE);
+    }
+
+    public static void setCurse(@NotNull Entity entity, CurseAttachment cursery) {
+        entity.setAttached(CURSE, cursery);
     }
 }

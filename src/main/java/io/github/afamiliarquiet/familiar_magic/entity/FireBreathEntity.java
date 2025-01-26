@@ -192,7 +192,7 @@ public class FireBreathEntity extends ThrownEntity {
     public EntityDimensions getDimensions(EntityPose pose) {
         // bigger... BIGGER (vwoosh)
         float agePercent = this.age / (float) MAX_AGE;
-        float size = this.getScale() * (agePercent * agePercent + 0.05f);
+        float size = this.getScale() * (0.75f * agePercent + 0.05f);
         return EntityDimensions.changing(size, size);
     }
 

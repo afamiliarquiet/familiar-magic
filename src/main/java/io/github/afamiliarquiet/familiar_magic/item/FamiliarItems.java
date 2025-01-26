@@ -30,6 +30,9 @@ public class FamiliarItems {
     public static final RegistryKey<Item> ODD_TRINKET_KEY = key("odd_trinket");
     public static final Item ODD_TRINKET = register(ODD_TRINKET_KEY, new OddTrinketItem(new Item.Settings()));
 
+    public static final RegistryKey<Item> CURIOUS_VIAL_KEY = key("curious_vial");
+    public static final Item CURIOUS_VIAL = register(CURIOUS_VIAL_KEY, new CuriousVialItem(new Item.Settings()));
+
     public static void initialize() {
         // now i know this was a bad thing on neo because of thread stuffs. but is it also bad on fabric? find out..
         DispenserBlock.registerBehavior(TRUE_NAME, new TrueNameDispenserBehavior());
@@ -42,6 +45,10 @@ public class FamiliarItems {
             itemGroup.addAfter(Items.NAME_TAG, TRUE_NAME);
             itemGroup.addAfter(Items.BRUSH, ODD_TRINKET);
         });
+
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK).register(
+                (itemGroup) -> itemGroup.addAfter(Items.HONEY_BOTTLE, CURIOUS_VIAL)
+        );
 
         // wanna see a fummy trick? im gonna possibly initialize familiarblocks here instead kinda sorta
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((itemGroup) -> {
