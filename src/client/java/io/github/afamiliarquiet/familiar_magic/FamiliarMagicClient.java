@@ -1,5 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic;
 
+import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarClientAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
@@ -10,12 +11,15 @@ import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.github.afamiliarquiet.familiar_magic.network.FamiliarClientPacketeering;
 import io.github.afamiliarquiet.familiar_magic.network.SillySummoningRequestLuggage;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.impl.blockrenderlayer.BlockRenderLayerMapImpl;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.random.Random;
@@ -32,6 +36,12 @@ public class FamiliarMagicClient implements ClientModInitializer {
 		FamiliarClientEntitry.initialize();
 		FamiliarKeybinds.initialize();
 		initializeModelPredicates();
+
+		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(), FamiliarBlocks.SPRINKLED_GLOWSTONE_DUST,
+				FamiliarBlocks.STREWN_COAL, FamiliarBlocks.STREWN_DIAMOND, FamiliarBlocks.STREWN_EMERALD,
+				FamiliarBlocks.STREWN_LAPIS, FamiliarBlocks.STREWN_QUARTZ, FamiliarBlocks.STREWN_RAW_COPPER,
+				FamiliarBlocks.STREWN_RAW_GOLD, FamiliarBlocks.STREWN_RAW_IRON
+		);
 
 		ClientTickEvents.END_CLIENT_TICK.register(FamiliarMagicClient::clientTickEnd);
 	}

@@ -1,0 +1,17 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "familiar_magic:block/sprinkled_glowstone_dust",
+    "sprinkled_glowstone_dust": "familiar_magic:block/sprinkled_glowstone_dust"
+  },
+  "elements": [
+    {
+      "from": [ 0, 0, 0.1 ],
+      "to": [ 16, 16, 0.1 ],
+      "faces": {
+        "north": { "uv": [ 16, 0, 0, 16 ], "texture": "#sprinkled_glowstone_dust" },
+        "south": { "uv": [ 0, 0, 16, 16 ], "texture": "#sprinkled_glowstone_dust" }
+      }
+    }
+  ]
+}

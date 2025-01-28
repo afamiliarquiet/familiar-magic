@@ -6,6 +6,7 @@
     "FamiliarFoxMixin",
     "FireChargeIgnitionMixin",
     "FlintAndSteelIgnitionMixin",
+    "ItemPlaceabilityMixin",
     "MobHatEquipMixin",
     "curse.dragon.BlockEatenMixin",
     "curse.dragon.HungryPlayerEntityMixin",

@@ -1,0 +1,7 @@
+{
+  "parent": "familiar_magic:block/template_floor_bliplet",
+  "textures": {
+    "block": "familiar_magic:block/strewn_raw_copper",
+    "particle": "familiar_magic:block/strewn_raw_copper"
+  }
+}
