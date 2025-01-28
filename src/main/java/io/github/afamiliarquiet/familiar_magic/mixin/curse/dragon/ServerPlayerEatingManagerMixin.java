@@ -2,7 +2,6 @@ package io.github.afamiliarquiet.familiar_magic.mixin.curse.dragon;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import io.github.afamiliarquiet.familiar_magic.data.CurseAttachment;
-import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.network.ServerPlayerEntity;

@@ -1,7 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin.client.curse.dragon;
 
 import com.mojang.authlib.GameProfile;
-import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.data.CurseAttachment;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.network.AbstractClientPlayerEntity;

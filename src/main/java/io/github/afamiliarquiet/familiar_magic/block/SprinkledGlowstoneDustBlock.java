@@ -37,13 +37,14 @@ public class SprinkledGlowstoneDustBlock extends MultifaceGrowthBlock {
 
     @Override
     public LichenGrower getGrower() {
-        return null;
+        return this.grower; // i'd like to return null but. better to be safe
     }
 
     class NoGrowChecker extends LichenGrower.LichenGrowChecker {
 
-        public NoGrowChecker(MultifaceGrowthBlock lichen) {
+        public NoGrowChecker(MultifaceGrowthBlock itCouldBeQuotationMarkLikenedQuotationMarkToLichen) {
             super(SprinkledGlowstoneDustBlock.this);
+            this.lichen = itCouldBeQuotationMarkLikenedQuotationMarkToLichen;
         }
 
         @Override

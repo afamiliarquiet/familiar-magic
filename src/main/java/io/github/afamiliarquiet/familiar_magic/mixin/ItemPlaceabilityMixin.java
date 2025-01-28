@@ -1,7 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.mixin;
 
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
-import io.github.afamiliarquiet.familiar_magic.block.SprinkledGlowstoneDustBlock;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;

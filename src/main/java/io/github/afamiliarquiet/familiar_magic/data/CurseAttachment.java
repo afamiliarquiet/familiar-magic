@@ -6,7 +6,6 @@ import io.github.afamiliarquiet.familiar_magic.entity.FireBreathEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.sound.SoundCategory;
