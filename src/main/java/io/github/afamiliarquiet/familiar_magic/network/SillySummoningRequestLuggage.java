@@ -10,7 +10,6 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
@@ -42,7 +41,7 @@ public record SillySummoningRequestLuggage(@NotNull SummoningRequestData request
                     skubert.acceptAndCastSummoning(context.player());
                 } else {
                     // todo - maybe something else here that's more indicative of rejection.. later
-                    skubert.cancelSummoning();
+                    skubert.cancelAll();
                 }
             }
         });

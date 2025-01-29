@@ -8,6 +8,9 @@
     },
     "summoning_table_state=summoning": {
       "model": "familiar_magic:block/summoning_table_summoning"
+    },
+    "summoning_table_state=binding": {
+      "model": "familiar_magic:block/summoning_table_binding"
     }
   }
 }

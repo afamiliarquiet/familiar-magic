@@ -1,7 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
-import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
@@ -95,12 +94,18 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
         if (!world.isClient()
                 && player instanceof ServerPlayerEntity serverPlayer
                 && world.getBlockEntity(pos) instanceof SummoningTableBlockEntity zeraxos) {
-            if (player.isSneaking() && state.get(SUMMONING_TABLE_STATE) != SummoningTableState.INACTIVE) {
-                if (state.get(SUMMONING_TABLE_STATE) == SummoningTableState.SUMMONING) {
-                    zeraxos.cancelSummoning();
+            // todo - i gotta clean this up. what a mess
+            if (player.isSneaking()) {
+                if (state.get(SUMMONING_TABLE_STATE) != SummoningTableState.INACTIVE) {
+                    zeraxos.cancelAll();
+                    extinguish(player, state, world, pos);
+                } else if (FamiliarAttachments.isFocused(player)) {
+                    world.setBlockState(pos, zeraxos.tryBind(state));
+                } else {
+                    serverPlayer.openHandledScreen(zeraxos);
                 }
-
-                extinguish(player, state, world, pos);
+            } else if (state.get(SUMMONING_TABLE_STATE) == SummoningTableState.BINDING && FamiliarAttachments.isFocused(player)) {
+                world.setBlockState(pos, zeraxos.confirmBind(state));
             } else {
                 serverPlayer.openHandledScreen(zeraxos);
             }
@@ -125,10 +130,8 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
     public BlockState onIgnition(BlockState state, ItemUsageContext context) {
         if (state.get(SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE && context.getWorld().getBlockEntity(context.getBlockPos()) instanceof SummoningTableBlockEntity summonizer) {
             if (context.getPlayer() != null && FamiliarAttachments.isFocused(context.getPlayer())) {
-                FamiliarMagic.LOGGER.info("client: " + context.getWorld().isClient() + ", focused and summoning");
                 return summonizer.trySummon(state);
             } else {
-                FamiliarMagic.LOGGER.info("client: " + context.getWorld().isClient() + ", unfocused and burning");
                 return summonizer.tryBurnName(state);
             }
         } else {
@@ -154,7 +157,27 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         SummoningTableState tableState = state.get(SUMMONING_TABLE_STATE);
-        if (tableState == SummoningTableState.SUMMONING) {
+        if (tableState == SummoningTableState.BINDING) {
+            // meow meow time for particle spam?
+            // random border particle, i think
+            int side = random.nextInt(4);
+            float floaty = random.nextFloat();
+            world.addParticle(
+                    ParticleTypes.WITCH,
+                    pos.getX() + ((side % 2 == 0) ? floaty : (side == 1) ? 0 : 1), pos.getY() + 0.75, pos.getZ() + ((side % 2 != 0) ? floaty : (side == 2) ? 0 : 1),
+                    0.0, random.nextFloat() * 0.1, 0
+            );
+
+            // spewy orange and white sparkles :D
+            // yea im doing d0-d2 in different ways for each state dont worry about it imts so fine
+            // actually this part is going in blockentity clientside tick because i want it CONSTANTLY streamin particles.
+//            for (int i = 0; i < 6; i++) {
+//                double d0 = (double)pos.getX() + random.nextDouble() * 0.625 + 0.1875;
+//                double d1 = (double)pos.getY() + random.nextDouble() * 0.75;
+//                double d2 = (double)pos.getZ() + random.nextDouble() * 0.625 + 0.1875;
+//                world.addParticle(random.nextBoolean() ? ParticleTypes.WAX_OFF : ParticleTypes.WAX_ON, d0, d1, d2, 0.0, 31 * random.nextDouble(), 0.0);
+//            }
+        } else if (tableState == SummoningTableState.SUMMONING) {
             if (random.nextInt(100) == 0) {
                 // truly just ripping this whole thing from respawn anchor. as usual, might change sound later. unlikely
                 world.playSoundAtBlockCenter(pos, SoundEvents.BLOCK_RESPAWN_ANCHOR_AMBIENT, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
@@ -197,7 +220,7 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
     protected void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
         if (!state.isOf(newState.getBlock())) {
             if (world.getBlockEntity(pos) instanceof SummoningTableBlockEntity stbe) {
-                stbe.cancelSummoning();
+                stbe.cancelAll();
                 ItemScatterer.spawn(world, pos, stbe);
                 //world.updateComparators(pos, this);
             }
@@ -220,7 +243,8 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
     public enum SummoningTableState implements StringIdentifiable {
         INACTIVE("inactive", 7),
         BURNING("burning", 10),
-        SUMMONING("summoning", 13);
+        SUMMONING("summoning", 13),
+        BINDING("binding", 15); // your soul always shines the brightest
 
         private final String name;
         private final int lightLevel;

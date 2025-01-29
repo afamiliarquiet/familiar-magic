@@ -23,12 +23,9 @@ public record SummoningRequestData(RegistryKey<World> tableWorldKey, BlockPos ta
             SummoningRequestData::new
     );
 
-    // don't see this. is this necessary? find out next time on fabric data attachment api!
-    public static final SummoningRequestData DEFAULT = new SummoningRequestData(World.OVERWORLD, BlockPos.ORIGIN, Optional.empty());
-
     public boolean isSameRequester(@Nullable SummoningRequestData other) {
-        return other != null
-                && this.tableWorldKey.getRegistry().compareTo(other.tableWorldKey.getRegistry()) == 0
+        return other == null
+                || this.tableWorldKey.getRegistry().compareTo(other.tableWorldKey.getRegistry()) == 0
                 && this.tableWorldKey.getValue().compareTo(other.tableWorldKey.getValue()) == 0
                 && this.tablePos.equals(other.tablePos);
     }

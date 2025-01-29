@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static io.github.afamiliarquiet.familiar_magic.FamiliarMagic.id;
 
-@SuppressWarnings({"UnstableApiUsage", "UnusedReturnValue"})
+@SuppressWarnings({"UnusedReturnValue", "UnstableApiUsage"})
 // haha don't worry this is SOOO stable. don't mind the ravine below us lol :clueless:
 public class FamiliarAttachments {
     // scritchy scratching my evil little marks onto things
@@ -24,7 +24,8 @@ public class FamiliarAttachments {
                     //.syncWith(PacketCodecs.BOOL, AttachmentSyncPredicate.targetOnly())
     );
 
-    @SuppressWarnings("Convert2MethodRef") // shush your face intellij i do what i want and you stay out of my way
+    // shush your face intellij i do what i want and you stay out of my way
+    @SuppressWarnings("Convert2MethodRef")
     public static final AttachmentType<SummoningRequestData> SUMMONING_REQUEST = AttachmentRegistry.create(
             id("summoning_request"), (builder) -> builder
                     //.syncWith(SummoningRequestData.PACKET_CODEC, AttachmentSyncPredicate.targetOnly())
@@ -49,6 +50,13 @@ public class FamiliarAttachments {
                     .initializer(() -> new CurseAttachment(CurseAttachment.Curse.NOTHING))
                     .persistent(CurseAttachment.CODEC)
                     .syncWith(CurseAttachment.PACKET_CODEC, AttachmentSyncPredicate.all())
+                    .copyOnDeath() // yes... ha ha ha... YES!
+    );
+
+    public static final AttachmentType<PersonalPattern> PERSONAL_PATTERN = AttachmentRegistry.create(
+            id("personal_pattern"), (builder) -> builder
+                    .persistent(PersonalPattern.CODEC)
+                    .copyOnDeath()
     );
 
     public static void initialize() {
@@ -120,5 +128,17 @@ public class FamiliarAttachments {
 
     public static void setCurse(@NotNull Entity entity, CurseAttachment cursery) {
         entity.setAttached(CURSE, cursery);
+    }
+
+    public static @Nullable PersonalPattern getPersonalPattern(@NotNull Entity entity) {
+        return entity.getAttachedOrElse(PERSONAL_PATTERN, null);
+    }
+
+    public static void removePersonalPattern(@NotNull Entity entity) {
+        entity.removeAttached(PERSONAL_PATTERN);
+    }
+
+    public static void setPersonalPattern(@NotNull Entity entity, PersonalPattern personalPattern) {
+        entity.setAttached(PERSONAL_PATTERN, personalPattern);
     }
 }

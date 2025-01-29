@@ -1,7 +1,8 @@
 {
   "values": [
     "minecraft:redstone_wire",
-    "c:clusters",
+    "#c:clusters",
+    "#c:buds",
     "familiar_magic:strewn_coal",
     "familiar_magic:strewn_diamond",
     "familiar_magic:strewn_emerald",
