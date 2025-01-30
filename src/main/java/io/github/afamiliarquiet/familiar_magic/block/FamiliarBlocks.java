@@ -21,7 +21,7 @@ import net.minecraft.sound.BlockSoundGroup;
 
 public class FamiliarBlocks {
     public static final RegistryKey<Block> SMOKE_WISP_KEY = key("smoke_wisp");
-    public static final Block SMOKE_WISP = register(SMOKE_WISP_KEY,
+    public static final Block SMOKE_WISP = regitem(SMOKE_WISP_KEY,
             new SmokeWispBlock(AbstractBlock.Settings.create()
                     .mapColor(MapColor.GRAY)
                     .replaceable()

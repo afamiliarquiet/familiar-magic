@@ -42,8 +42,9 @@ public class FamiliarItems {
         );
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register((itemGroup) -> {
-            itemGroup.addAfter(Items.NAME_TAG, TRUE_NAME);
+            itemGroup.addAfter(Items.FIRE_CHARGE, FamiliarBlocks.SMOKE_WISP.asItem());
             itemGroup.addAfter(Items.BRUSH, ODD_TRINKET);
+            itemGroup.addAfter(Items.NAME_TAG, TRUE_NAME);
         });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK).register(
