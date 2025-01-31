@@ -12,7 +12,6 @@ import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -56,97 +55,97 @@ public class FamiliarBlocks {
             BlockEntityType.Builder.create(SummoningTableBlockEntity::new, SUMMONING_TABLE).build()
     );
 
-    public static final RegistryKey<Block> SPRINKLED_GLOWSTONE_DUST_KEY = key("sprinkled_glowstone_dust");
-    public static final Block SPRINKLED_GLOWSTONE_DUST = regitem(SPRINKLED_GLOWSTONE_DUST_KEY,
-            new SprinkledGlowstoneDustBlock(AbstractBlock.Settings.create()
-                    .mapColor(MapColor.PALE_YELLOW)
-                    .noCollision()
-                    .breakInstantly()
-                    .sounds(BlockSoundGroup.GLASS)
-                    .luminance(SprinkledGlowstoneDustBlock.lumiumi(9))
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
-
-    public static final RegistryKey<Block> STREWN_COAL_KEY = key("strewn_coal");
-    public static final Block STREWN_COAL = regitem(STREWN_COAL_KEY,
-            new StrewnBlock(Items.COAL, AbstractBlock.Settings.create()
-                    .mapColor(MapColor.BLACK)
-                    .noCollision()
-                    .breakInstantly()
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
-
-    public static final RegistryKey<Block> STREWN_DIAMOND_KEY = key("strewn_diamond");
-    public static final Block STREWN_DIAMOND = regitem(STREWN_DIAMOND_KEY,
-            new StrewnBlock(Items.DIAMOND, AbstractBlock.Settings.create()
-                    .mapColor(MapColor.DIAMOND_BLUE)
-                    .noCollision()
-                    .breakInstantly()
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
-
-    public static final RegistryKey<Block> STREWN_EMERALD_KEY = key("strewn_emerald");
-    public static final Block STREWN_EMERALD = regitem(STREWN_EMERALD_KEY,
-            new StrewnBlock(Items.EMERALD, AbstractBlock.Settings.create()
-                    .mapColor(MapColor.EMERALD_GREEN)
-                    .noCollision()
-                    .breakInstantly()
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
-
-    public static final RegistryKey<Block> STREWN_LAPIS_KEY = key("strewn_lapis");
-    public static final Block STREWN_LAPIS = regitem(STREWN_LAPIS_KEY,
-            new StrewnBlock(Items.LAPIS_LAZULI, AbstractBlock.Settings.create()
-                    .mapColor(MapColor.LAPIS_BLUE)
-                    .noCollision()
-                    .breakInstantly()
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
-
-    public static final RegistryKey<Block> STREWN_QUARTZ_KEY = key("strewn_quartz");
-    public static final Block STREWN_QUARTZ = regitem(STREWN_QUARTZ_KEY,
-            new StrewnBlock(Items.QUARTZ, AbstractBlock.Settings.create()
-                    .mapColor(MapColor.OFF_WHITE)
-                    .noCollision()
-                    .breakInstantly()
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
-
-    public static final RegistryKey<Block> STREWN_RAW_COPPER_KEY = key("strewn_raw_copper");
-    public static final Block STREWN_RAW_COPPER = regitem(STREWN_RAW_COPPER_KEY,
-            new StrewnBlock(Items.RAW_COPPER, AbstractBlock.Settings.create()
-                    .mapColor(MapColor.ORANGE)
-                    .noCollision()
-                    .breakInstantly()
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
-
-    public static final RegistryKey<Block> STREWN_RAW_GOLD_KEY = key("strewn_raw_gold");
-    public static final Block STREWN_RAW_GOLD = regitem(STREWN_RAW_GOLD_KEY,
-            new StrewnBlock(Items.RAW_GOLD, AbstractBlock.Settings.create()
-                    .mapColor(MapColor.GOLD)
-                    .noCollision()
-                    .breakInstantly()
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
-
-    public static final RegistryKey<Block> STREWN_RAW_IRON_KEY = key("strewn_raw_iron");
-    public static final Block STREWN_RAW_IRON = regitem(STREWN_RAW_IRON_KEY,
-            new StrewnBlock(Items.RAW_IRON, AbstractBlock.Settings.create()
-                    .mapColor(MapColor.RAW_IRON_PINK)
-                    .noCollision()
-                    .breakInstantly()
-                    .pistonBehavior(PistonBehavior.DESTROY)
-            )
-    );
+//    public static final RegistryKey<Block> SPRINKLED_GLOWSTONE_DUST_KEY = key("sprinkled_glowstone_dust");
+//    public static final Block SPRINKLED_GLOWSTONE_DUST = regitem(SPRINKLED_GLOWSTONE_DUST_KEY,
+//            new SprinkledGlowstoneDustBlock(AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.PALE_YELLOW)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .sounds(BlockSoundGroup.GLASS)
+//                    .luminance(SprinkledGlowstoneDustBlock.lumiumi(9))
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
+//
+//    public static final RegistryKey<Block> STREWN_COAL_KEY = key("strewn_coal");
+//    public static final Block STREWN_COAL = regitem(STREWN_COAL_KEY,
+//            new StrewnBlock(Items.COAL, AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.BLACK)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
+//
+//    public static final RegistryKey<Block> STREWN_DIAMOND_KEY = key("strewn_diamond");
+//    public static final Block STREWN_DIAMOND = regitem(STREWN_DIAMOND_KEY,
+//            new StrewnBlock(Items.DIAMOND, AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.DIAMOND_BLUE)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
+//
+//    public static final RegistryKey<Block> STREWN_EMERALD_KEY = key("strewn_emerald");
+//    public static final Block STREWN_EMERALD = regitem(STREWN_EMERALD_KEY,
+//            new StrewnBlock(Items.EMERALD, AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.EMERALD_GREEN)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
+//
+//    public static final RegistryKey<Block> STREWN_LAPIS_KEY = key("strewn_lapis");
+//    public static final Block STREWN_LAPIS = regitem(STREWN_LAPIS_KEY,
+//            new StrewnBlock(Items.LAPIS_LAZULI, AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.LAPIS_BLUE)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
+//
+//    public static final RegistryKey<Block> STREWN_QUARTZ_KEY = key("strewn_quartz");
+//    public static final Block STREWN_QUARTZ = regitem(STREWN_QUARTZ_KEY,
+//            new StrewnBlock(Items.QUARTZ, AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.OFF_WHITE)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
+//
+//    public static final RegistryKey<Block> STREWN_RAW_COPPER_KEY = key("strewn_raw_copper");
+//    public static final Block STREWN_RAW_COPPER = regitem(STREWN_RAW_COPPER_KEY,
+//            new StrewnBlock(Items.RAW_COPPER, AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.ORANGE)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
+//
+//    public static final RegistryKey<Block> STREWN_RAW_GOLD_KEY = key("strewn_raw_gold");
+//    public static final Block STREWN_RAW_GOLD = regitem(STREWN_RAW_GOLD_KEY,
+//            new StrewnBlock(Items.RAW_GOLD, AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.GOLD)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
+//
+//    public static final RegistryKey<Block> STREWN_RAW_IRON_KEY = key("strewn_raw_iron");
+//    public static final Block STREWN_RAW_IRON = regitem(STREWN_RAW_IRON_KEY,
+//            new StrewnBlock(Items.RAW_IRON, AbstractBlock.Settings.create()
+//                    .mapColor(MapColor.RAW_IRON_PINK)
+//                    .noCollision()
+//                    .breakInstantly()
+//                    .pistonBehavior(PistonBehavior.DESTROY)
+//            )
+//    );
 
     public static void initialize() {
 

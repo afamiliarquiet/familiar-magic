@@ -53,11 +53,11 @@ public class FamiliarAttachments {
                     .copyOnDeath() // yes... ha ha ha... YES!
     );
 
-    public static final AttachmentType<PersonalPattern> PERSONAL_PATTERN = AttachmentRegistry.create(
-            id("personal_pattern"), (builder) -> builder
-                    .persistent(PersonalPattern.CODEC)
-                    .copyOnDeath()
-    );
+//    public static final AttachmentType<PersonalPattern> PERSONAL_PATTERN = AttachmentRegistry.create(
+//            id("personal_pattern"), (builder) -> builder
+//                    .persistent(PersonalPattern.CODEC)
+//                    .copyOnDeath()
+//    );
 
     public static void initialize() {
 
@@ -130,15 +130,15 @@ public class FamiliarAttachments {
         entity.setAttached(CURSE, cursery);
     }
 
-    public static @Nullable PersonalPattern getPersonalPattern(@NotNull Entity entity) {
-        return entity.getAttachedOrElse(PERSONAL_PATTERN, null);
-    }
-
-    public static void removePersonalPattern(@NotNull Entity entity) {
-        entity.removeAttached(PERSONAL_PATTERN);
-    }
-
-    public static void setPersonalPattern(@NotNull Entity entity, PersonalPattern personalPattern) {
-        entity.setAttached(PERSONAL_PATTERN, personalPattern);
-    }
+//    public static @Nullable PersonalPattern getPersonalPattern(@NotNull Entity entity) {
+//        return entity.getAttachedOrElse(PERSONAL_PATTERN, null);
+//    }
+//
+//    public static void removePersonalPattern(@NotNull Entity entity) {
+//        entity.removeAttached(PERSONAL_PATTERN);
+//    }
+//
+//    public static void setPersonalPattern(@NotNull Entity entity, PersonalPattern personalPattern) {
+//        entity.setAttached(PERSONAL_PATTERN, personalPattern);
+//    }
 }

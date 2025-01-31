@@ -6,7 +6,6 @@ import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
-import io.github.afamiliarquiet.familiar_magic.data.PersonalPattern;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
 import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableScreenHandler;
 import io.github.afamiliarquiet.familiar_magic.network.SillySummoningRequestLuggage;
@@ -16,8 +15,6 @@ import net.minecraft.block.CandleBlock;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
@@ -36,8 +33,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.NotNull;
@@ -90,10 +85,10 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
     // todo - reduce this. can't have all these states at once and it's all timers.. i can feel the debt clock ticking
     private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
     private int summoningTimer = 0;
-    @Nullable
-    private PersonalPattern pendingPattern;
-    @Nullable
-    private UUID bindingTarget = null;
+//    @Nullable
+//    private PersonalPattern pendingPattern;
+//    @Nullable
+//    private UUID bindingTarget = null;
 
     private DefaultedList<ItemStack> inv = DefaultedList.ofSize(5, ItemStack.EMPTY);
 
@@ -154,15 +149,15 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
 
     public static void tick(World world, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
         if (world.isClient()) {
-            if (state.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.BINDING) {
-                Random random = world.getRandom();
-                for (int i = 0; i < 2; i++) {
-                    double d0 = (double) pos.getX() + random.nextDouble() * 0.625 + 0.1875;
-                    double d1 = (double) pos.getY() + random.nextDouble() * 0.75;
-                    double d2 = (double) pos.getZ() + random.nextDouble() * 0.625 + 0.1875;
-                    world.addParticle(random.nextBoolean() ? ParticleTypes.WAX_OFF : ParticleTypes.WAX_ON, d0, d1, d2, 0.0, 31 * random.nextDouble(), 0.0);
-                }
-            }
+//            if (state.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.BINDING) {
+//                Random random = world.getRandom();
+//                for (int i = 0; i < 2; i++) {
+//                    double d0 = (double) pos.getX() + random.nextDouble() * 0.625 + 0.1875;
+//                    double d1 = (double) pos.getY() + random.nextDouble() * 0.75;
+//                    double d2 = (double) pos.getZ() + random.nextDouble() * 0.625 + 0.1875;
+//                    world.addParticle(random.nextBoolean() ? ParticleTypes.WAX_OFF : ParticleTypes.WAX_ON, d0, d1, d2, 0.0, 31 * random.nextDouble(), 0.0);
+//                }
+//            }
             return;
         }
 
@@ -176,9 +171,9 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
                 newTarget = FamiliarTricks.nybblesToUUID(newTargetNybbles);
             }
 
-            if (tableState == SummoningTableBlock.SummoningTableState.BINDING) {
-                tickBinding(world, pos, state, thys);
-            }
+//            if (tableState == SummoningTableBlock.SummoningTableState.BINDING) {
+//                tickBinding(world, pos, state, thys);
+//            }
             if (tableState == SummoningTableBlock.SummoningTableState.SUMMONING) {
                 tickSummoning(world, pos, state, thys, !thys.getCandleTarget().equals(newTarget));
             } else if (tableState == SummoningTableBlock.SummoningTableState.BURNING) {
@@ -234,7 +229,7 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
                 }
             }
 
-            this.pendingPattern = null;
+//            this.pendingPattern = null;
             this.burnedTargetFromTrueNameInNybbles = null;
 
             this.burningPhase = 0;
@@ -242,64 +237,64 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
         }
     }
 
-    public BlockState tryBind(BlockState state) {
-        // so the vague idea is shift+rclick to start, highlight subject, highlight oopps, shift+rclick to confirm or wait 5?s to cancel
-        // means 1. finding an entity on top of summoning table - if player, they must be the one who started the process
-        // 2. scan for all oopps in 13x13 centered on table, assembling some structure of what is where as the scan proceeds
-        // 3. make entity glow
-        // 4. display oopps to player somehow???
-        // 5. store entity and oopps in blockent while waiting for confirmation
-        // 6a. tickdown and cancel, reset entity and oopps
-        // 6b. confirmation! slip the oopps into the target's soul and give them some fun effects :)
-
-        // hard parts: displaying block layout?
-        // data structure for block layout? probably copy shapedrecipe and rawshapedrecipe. maybe consider trying to use both table and 2d array depending on sparseness.. complicated. worry less about efficiency for now and just get something working?
-        // codec for block layout?
-        // i like the idea of having a list of blocks used, and then some pattern like crafting recipes
-
-        // sneak+focus+target on top+rclick empty to start designation, focus+target on top+rclick empty to finish.
-        // should this also be a new blockstate that's cancellable with shift+rclick?
-        if (this.world instanceof ServerWorld sworld) {
-            Entity targetEntity = world.getClosestEntity(LivingEntity.class, TargetPredicate.createNonAttackable(), null, this.getPos().getX(), this.getPos().getY(), this.getPos().getZ(), new Box(this.getPos()).expand(0, 1, 0));
-
-            if (targetEntity != null && targetEntity.getUuid().equals(this.targetFromCandles)) {
-                this.pendingPattern = PersonalPattern.fromTable(sworld, this.getPos());
-                this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
-                this.bindingTarget = this.targetFromCandles;
-                return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.BINDING);
-            }
-        }
-
-        addFailEffects();
-        return state;
-    }
-
-    private static void tickBinding(World world, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
-        if (thys.summoningTimer == 0) {
-            thys.cancelAll();
-            SummoningTableBlock.extinguish(null, state, world, pos);
-        }
-
-        if (thys.summoningTimer > 0) {
-            thys.summoningTimer--;
-        }
-    }
-
-    public BlockState confirmBind(BlockState state) {
-        if (this.world instanceof ServerWorld sworld) {
-            Entity targetEntity = world.getClosestEntity(LivingEntity.class, TargetPredicate.createNonAttackable(), null, this.getPos().getX(), this.getPos().getY(), this.getPos().getZ(), new Box(this.getPos()).expand(0, 1, 0));
-
-            if (targetEntity != null && targetEntity.getUuid().equals(this.bindingTarget)) {
-                FamiliarAttachments.setPersonalPattern(targetEntity, this.pendingPattern);
-                this.pendingPattern = null;
-                this.summoningTimer = 0;
-                this.bindingTarget = null;
-                // todo - more fanciness
-                return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.INACTIVE);
-            }
-        }
-        return state;
-    }
+//    public BlockState tryBind(BlockState state) {
+//        // so the vague idea is shift+rclick to start, highlight subject, highlight oopps, shift+rclick to confirm or wait 5?s to cancel
+//        // means 1. finding an entity on top of summoning table - if player, they must be the one who started the process
+//        // 2. scan for all oopps in 13x13 centered on table, assembling some structure of what is where as the scan proceeds
+//        // 3. make entity glow
+//        // 4. display oopps to player somehow???
+//        // 5. store entity and oopps in blockent while waiting for confirmation
+//        // 6a. tickdown and cancel, reset entity and oopps
+//        // 6b. confirmation! slip the oopps into the target's soul and give them some fun effects :)
+//
+//        // hard parts: displaying block layout?
+//        // data structure for block layout? probably copy shapedrecipe and rawshapedrecipe. maybe consider trying to use both table and 2d array depending on sparseness.. complicated. worry less about efficiency for now and just get something working?
+//        // codec for block layout?
+//        // i like the idea of having a list of blocks used, and then some pattern like crafting recipes
+//
+//        // sneak+focus+target on top+rclick empty to start designation, focus+target on top+rclick empty to finish.
+//        // should this also be a new blockstate that's cancellable with shift+rclick?
+//        if (this.world instanceof ServerWorld sworld) {
+//            Entity targetEntity = world.getClosestEntity(LivingEntity.class, TargetPredicate.createNonAttackable(), null, this.getPos().getX(), this.getPos().getY(), this.getPos().getZ(), new Box(this.getPos()).expand(0, 1, 0));
+//
+//            if (targetEntity != null && targetEntity.getUuid().equals(this.targetFromCandles)) {
+//                this.pendingPattern = PersonalPattern.fromTable(sworld, this.getPos());
+//                this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
+//                this.bindingTarget = this.targetFromCandles;
+//                return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.BINDING);
+//            }
+//        }
+//
+//        addFailEffects();
+//        return state;
+//    }
+//
+//    private static void tickBinding(World world, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
+//        if (thys.summoningTimer == 0) {
+//            thys.cancelAll();
+//            SummoningTableBlock.extinguish(null, state, world, pos);
+//        }
+//
+//        if (thys.summoningTimer > 0) {
+//            thys.summoningTimer--;
+//        }
+//    }
+//
+//    public BlockState confirmBind(BlockState state) {
+//        if (this.world instanceof ServerWorld sworld) {
+//            Entity targetEntity = world.getClosestEntity(LivingEntity.class, TargetPredicate.createNonAttackable(), null, this.getPos().getX(), this.getPos().getY(), this.getPos().getZ(), new Box(this.getPos()).expand(0, 1, 0));
+//
+//            if (targetEntity != null && targetEntity.getUuid().equals(this.bindingTarget)) {
+//                FamiliarAttachments.setPersonalPattern(targetEntity, this.pendingPattern);
+//                this.pendingPattern = null;
+//                this.summoningTimer = 0;
+//                this.bindingTarget = null;
+//                // todo - more fanciness
+//                return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.INACTIVE);
+//            }
+//        }
+//        return state;
+//    }
 
     public BlockState trySummon(BlockState state) {
         if (this.allCandlesLit() && this.world instanceof ServerWorld serverWorld) {
@@ -307,7 +302,7 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
             Entity target = FamiliarTricks.findTargetByUuid(this.getCandleTarget(), serverWorld.getServer());
             // target not null AND either no perpat or perpat matches
             // i have slight concerns about the performance hit of running this whole trySummon method
-            if ((target != null) && (!(FamiliarAttachments.getPersonalPattern(target) instanceof PersonalPattern perpat) || perpat.matches(this.world, this.getPos()))) {
+            if ((target != null) /*&& (!(FamiliarAttachments.getPersonalPattern(target) instanceof PersonalPattern perpat) || perpat.matches(this.world, this.getPos()))*/) {
 
                 this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
 
