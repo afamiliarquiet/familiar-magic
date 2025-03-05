@@ -14,8 +14,13 @@ public class FocusRenderLayer implements HudRenderCallback {
     private float focusIntensity = 0.0f;
     @Override
     public void onHudRender(DrawContext context, RenderTickCounter tickCounter) {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        if (player != null && player.getAttachedOrCreate(FamiliarAttachments.FOCUSED)) {
+        MinecraftClient minecraft = MinecraftClient.getInstance();
+        if (minecraft.options.hudHidden) {
+            return;
+        }
+
+        ClientPlayerEntity player = minecraft.player;
+        if (FamiliarAttachments.isFocused(player)) {
             focusIntensity = MathHelper.lerp(
                     0.5f * tickCounter.getLastFrameDuration(),
                     this.focusIntensity,

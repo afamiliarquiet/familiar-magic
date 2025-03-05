@@ -30,29 +30,29 @@ public record PersonalPattern(List<String> blocks, List<Byte> pattern) {
         bytes.set(13 * xRow + zColumn, value);
     }
 
-//    public static PersonalPattern fromTable(World world, BlockPos pos) {
-//        List<String> blocks = new ArrayList<>();
-//        Byte[] inbetweener = new Byte[169];
-//        Arrays.fill(inbetweener, (byte) 0);
-//        List<Byte> pattern = Arrays.asList(inbetweener); // i think java initializes to 0. prolly.
-//
-//        for (int xRow = 0; xRow < 13; xRow++) {
-//            for (int zColumn = 0; zColumn < 13; zColumn++) {
-//                RegistryEntry<Block> current = world.getBlockState(pos.add(xRow - 6, 0, zColumn - 6)).getRegistryEntry();
-//
-//                if (current.isIn(FamiliarTags.OBJECTS_OF_PERSONAL_POWER)) {
-//                    if (!blocks.contains(current.getIdAsString())) {
-//                        blocks.addLast(current.getIdAsString());
-//                    }
-//                    // this indexOf is probably not gonna be super kind to me if someone makes a pattern with 169 different blocks. optimization comes later though
-//                    // with 169 potential blocks, byte should always be enough. + 1 to avoid the default empty 0.. could arrays.fill but i don't really care right now
-//                    set(pattern, xRow, zColumn, (byte) (blocks.indexOf(current.getIdAsString()) + 1));
-//                }
-//            }
-//        }
-//
-//        return new PersonalPattern(blocks, pattern);
-//    }
+    public static PersonalPattern fromTable(World world, BlockPos pos) {
+        List<String> blocks = new ArrayList<>();
+        Byte[] inbetweener = new Byte[169];
+        Arrays.fill(inbetweener, (byte) 0);
+        List<Byte> pattern = Arrays.asList(inbetweener); // i think java initializes to 0. prolly.
+
+        for (int xRow = 0; xRow < 13; xRow++) {
+            for (int zColumn = 0; zColumn < 13; zColumn++) {
+                RegistryEntry<Block> current = world.getBlockState(pos.add(xRow - 6, 0, zColumn - 6)).getRegistryEntry();
+
+                if (current.isIn(FamiliarTags.FAMILIAR_THINGS)) {
+                    if (!blocks.contains(current.getIdAsString())) {
+                        blocks.addLast(current.getIdAsString());
+                    }
+                    // this indexOf is probably not gonna be super kind to me if someone makes a pattern with 169 different blocks. optimization comes later though
+                    // with 169 potential blocks, byte should always be enough. + 1 to avoid the default empty 0.. could arrays.fill but i don't really care right now
+                    set(pattern, xRow, zColumn, (byte) (blocks.indexOf(current.getIdAsString()) + 1));
+                }
+            }
+        }
+
+        return new PersonalPattern(blocks, pattern);
+    }
 
     public boolean matches(World world, BlockPos pos) {
         for (int xRow = 0; xRow < 13; xRow++) {
