@@ -1,6 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.mojang.serialization.MapCodec;
+import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
@@ -22,7 +23,6 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
@@ -123,7 +123,7 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
                 0, 0.1f, 0
         );
 
-        world.playSound(null, pos, SoundEvents.BLOCK_GLASS_BREAK, SoundCategory.BLOCKS, 1, 1);
+        world.playSound(null, pos, FamiliarSounds.BLOCK_SUMMONING_TABLE_DISMISS, SoundCategory.BLOCKS, 1, 1);
         world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
     }
 
@@ -158,6 +158,10 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         SummoningTableState tableState = state.get(SUMMONING_TABLE_STATE);
         if (tableState == SummoningTableState.BINDING) {
+            if (random.nextInt(2) == 0) {
+                world.playSoundAtBlockCenter(pos, FamiliarSounds.BLOCK_SUMMONING_TABLE_BIND_PENDING, SoundCategory.BLOCKS, 1, 1, false);
+            }
+
             // meow meow time for particle spam?
             // random border particle, i think
             int side = random.nextInt(4);
@@ -180,7 +184,7 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
         } else if (tableState == SummoningTableState.SUMMONING) {
             if (random.nextInt(100) == 0) {
                 // truly just ripping this whole thing from respawn anchor. as usual, might change sound later. unlikely
-                world.playSoundAtBlockCenter(pos, SoundEvents.BLOCK_RESPAWN_ANCHOR_AMBIENT, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
+                world.playSoundAtBlockCenter(pos, FamiliarSounds.BLOCK_SUMMONING_TABLE_SUMMON_PENDING, SoundCategory.BLOCKS, 1.0F, 1.0F, false);
             }
 
             double d0 = (double)pos.getX() + 0.5 + (0.5 - random.nextDouble());
@@ -190,7 +194,7 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
             world.addParticle(ParticleTypes.REVERSE_PORTAL, d0, d1, d2, 0.0, d3, 0.0);
         } else if (tableState == SummoningTableState.BURNING) {
             if (random.nextInt(31) == 0) {
-                world.playSoundAtBlockCenter(pos, SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.BLOCKS, 1, 1, false);
+                world.playSoundAtBlockCenter(pos, FamiliarSounds.BLOCK_SUMMONING_TABLE_BURN, SoundCategory.BLOCKS, 1, 1, false);
             }
 
             if (random.nextInt(2) == 0) {

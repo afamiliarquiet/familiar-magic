@@ -33,12 +33,6 @@ public class FamiliarMagicClient implements ClientModInitializer {
 		FamiliarKeybinds.initialize();
 		initializeModelPredicates();
 
-//		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(), FamiliarBlocks.SPRINKLED_GLOWSTONE_DUST,
-//				FamiliarBlocks.STREWN_COAL, FamiliarBlocks.STREWN_DIAMOND, FamiliarBlocks.STREWN_EMERALD,
-//				FamiliarBlocks.STREWN_LAPIS, FamiliarBlocks.STREWN_QUARTZ, FamiliarBlocks.STREWN_RAW_COPPER,
-//				FamiliarBlocks.STREWN_RAW_GOLD, FamiliarBlocks.STREWN_RAW_IRON
-//		);
-
 		ClientTickEvents.END_CLIENT_TICK.register(FamiliarMagicClient::clientTickEnd);
 	}
 

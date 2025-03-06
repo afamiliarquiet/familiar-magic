@@ -41,6 +41,7 @@ public class FamiliarMagic implements ModInitializer {
 		FamiliarEntities.initialize();
 		FamiliarFriends.initialize();
 		FamiliarBlocks.initialize();
+		FamiliarSounds.initialize();
 		FamiliarItems.initialize();
 		FamiliarTags.initialize();
 	}

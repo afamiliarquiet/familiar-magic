@@ -1,5 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.block.entity;
 
+import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import io.github.afamiliarquiet.familiar_magic.FamiliarTricks;
 import io.github.afamiliarquiet.familiar_magic.block.EnchantedCandleBlock;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
@@ -18,7 +19,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;
@@ -266,6 +270,9 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
                 this.pendingPattern = PersonalPattern.fromTable(sworld, this.getPos());
                 this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
                 this.bindingTarget = this.targetFromCandles;
+
+                sworld.playSound(null, this.getPos(), FamiliarSounds.BLOCK_SUMMONING_TABLE_BIND, SoundCategory.BLOCKS, 0.4f, 0.5f);
+
                 return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.BINDING);
             }
         }
@@ -287,14 +294,22 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
 
     public BlockState confirmBind(BlockState state) {
         if (this.world instanceof ServerWorld sworld) {
-            Entity targetEntity = world.getClosestEntity(LivingEntity.class, TargetPredicate.createNonAttackable(), null, this.getPos().getX(), this.getPos().getY(), this.getPos().getZ(), new Box(this.getPos()).expand(0, 1, 0));
+            LivingEntity targetEntity = world.getClosestEntity(LivingEntity.class, TargetPredicate.createNonAttackable(), null, this.getPos().getX(), this.getPos().getY(), this.getPos().getZ(), new Box(this.getPos()).expand(0, 1, 0));
 
             if (targetEntity != null && targetEntity.getUuid().equals(this.bindingTarget)) {
                 FamiliarAttachments.setPersonalPattern(targetEntity, this.pendingPattern);
                 this.pendingPattern = null;
                 this.summoningTimer = 0;
                 this.bindingTarget = null;
-                // todo - more fanciness
+                // todo - figure out a way to stop people from summoning you and instantly binding some crap to your soul. make it at least take a few seconds
+
+                sworld.playSound(null, this.getPos(), FamiliarSounds.BLOCK_SUMMONING_TABLE_BIND_CONFIRM, SoundCategory.BLOCKS, 0.4f, 0.625f);
+                if (targetEntity instanceof PlayerEntity targetPlayer) {
+                    targetPlayer.playSoundToPlayer(FamiliarSounds.BLOCK_SUMMONING_TABLE_BIND_CONFIRM_PERSONAL, SoundCategory.PLAYERS, 0.8f, 1.0f);
+                }
+                targetEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 260, 0));
+                // todo - particles
+
                 return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.INACTIVE);
             }
         }
@@ -303,7 +318,7 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
 
     public BlockState trySummon(BlockState state) {
         if (this.allCandlesLit() && this.world instanceof ServerWorld serverWorld) {
-            serverWorld.playSound(null, this.getPos(), SoundEvents.BLOCK_ENCHANTMENT_TABLE_USE, SoundCategory.BLOCKS);
+            serverWorld.playSound(null, this.getPos(), FamiliarSounds.BLOCK_SUMMONING_TABLE_SUMMON, SoundCategory.BLOCKS);
             Entity target = FamiliarTricks.findTargetByUuid(this.getCandleTarget(), serverWorld.getServer());
             // target not null AND either no perpat or perpat matches
             // i have slight concerns about the performance hit of running this whole trySummon method
@@ -478,7 +493,7 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
 
     public void addFailEffects() {
         if (this.world != null) {
-            this.world.playSound(null, this.getPos(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5f, 1);
+            this.world.playSound(null, this.getPos(), FamiliarSounds.BLOCK_SUMMONING_TABLE_FIZZLE, SoundCategory.BLOCKS, 0.5f, 1);
             for (int i = 0; i < 5; i++) {
                 double x = this.getPos().getX() + 0.5 + 0.5 * (0.5 - this.world.random.nextDouble());
                 double y = this.getPos().getY() + 0.8375;

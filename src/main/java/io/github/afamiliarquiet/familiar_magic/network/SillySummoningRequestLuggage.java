@@ -1,6 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic.network;
 
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
+import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import io.github.afamiliarquiet.familiar_magic.block.entity.SummoningTableBlockEntity;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
@@ -11,7 +12,6 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,7 +56,7 @@ public record SillySummoningRequestLuggage(@NotNull SummoningRequestData request
         } else {
             // lotsa improvements to be done here. fade in/out around the edge of requests as warning? use nonvanilla sound event?
             FamiliarAttachments.setRequest(player, lugged.request);
-            player.getWorld().playSoundFromEntity(player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundCategory.BLOCKS, 1, 1);
+            player.getWorld().playSoundFromEntity(player, FamiliarSounds.UI_SUMMONING_TABLE_REQUEST_WRITE, SoundCategory.BLOCKS, 1, 1);
         }
     }
 }

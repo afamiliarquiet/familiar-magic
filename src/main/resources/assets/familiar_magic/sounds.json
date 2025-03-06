@@ -1,0 +1,135 @@
+{
+  "block.familiar_magic.summoning_table.bind": {
+    "sounds": [
+      "minecraft:random/orb"
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.bind"
+  },
+  "block.familiar_magic.summoning_table.bind.pending": {
+    "sounds": [
+      {
+        "attenuation_distance": 48,
+        "name": "minecraft:block/amethyst/resonate1"
+      },
+      {
+        "attenuation_distance": 48,
+        "name": "minecraft:block/amethyst/resonate2"
+      },
+      {
+        "attenuation_distance": 48,
+        "name": "minecraft:block/amethyst/resonate3"
+      },
+      {
+        "attenuation_distance": 48,
+        "name": "minecraft:block/amethyst/resonate4"
+      }
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.bind.pending"
+  },
+  "block.familiar_magic.summoning_table.bind.confirm": {
+    "sounds": [
+      "minecraft:random/levelup"
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.bind.confirm"
+  },
+  "block.familiar_magic.summoning_table.bind.confirm.personal": {
+    "sounds": [
+      "minecraft:portal/trigger"
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.bind.confirm.personal"
+  },
+  "block.familiar_magic.summoning_table.burn": {
+    "sounds": [
+      "minecraft:block/campfire/crackle1",
+      "minecraft:block/campfire/crackle2",
+      "minecraft:block/campfire/crackle3",
+      "minecraft:block/campfire/crackle4",
+      "minecraft:block/campfire/crackle5",
+      "minecraft:block/campfire/crackle6"
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.burn"
+  },
+  "block.familiar_magic.summoning_table.summon": {
+    "sounds": [
+      "minecraft:block/enchantment_table/enchant1",
+      "minecraft:block/enchantment_table/enchant2",
+      "minecraft:block/enchantment_table/enchant3"
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.summon"
+  },
+  "block.familiar_magic.summoning_table.summon.pending": {
+    "sounds": [
+      {
+        "attenuation_distance": 7,
+        "name": "minecraft:block/respawn_anchor/ambient1"
+      },
+      {
+        "attenuation_distance": 7,
+        "name": "minecraft:block/respawn_anchor/ambient2"
+      },
+      {
+        "attenuation_distance": 7,
+        "name": "minecraft:block/respawn_anchor/ambient3"
+      }
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.summon.pending"
+  },
+  "block.familiar_magic.summoning_table.fizzle": {
+    "sounds": [
+      "minecraft:random/fizz"
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.fizzle"
+  },
+  "block.familiar_magic.summoning_table.dismiss": {
+    "sounds": [
+      "minecraft:random/glass1",
+      "minecraft:random/glass2",
+      "minecraft:random/glass3"
+    ],
+    "subtitle": "subtitles.block.familiar_magic.summoning_table.dismiss"
+  },
+  "ui.familiar_magic.summoning_table.request.write": {
+    "sounds": [
+      "minecraft:ui/cartography_table/drawmap1",
+      "minecraft:ui/cartography_table/drawmap2",
+      "minecraft:ui/cartography_table/drawmap3"
+    ],
+    "subtitle": "subtitles.ui.familiar_magic.summoning_table.request.write"
+  },
+  "entity.familiar_magic.generic.curse.apply": {
+    "sounds": [
+      {
+        "attenuation_distance": 10,
+        "name": "minecraft:portal/portal"
+      }
+    ],
+    "subtitle": "subtitles.entity.familiar_magic.generic.curse.apply"
+  },
+  "entity.familiar_magic.generic.curse.apply.personal": {
+    "sounds": [
+      "minecraft:block/end_portal/endportal"
+    ],
+    "subtitle": "subtitles.entity.familiar_magic.generic.curse.apply.personal"
+  },
+  "entity.familiar_magic.generic.curse.remove": {
+    "sounds": [
+      {
+        "attenuation_distance": 10,
+        "name": "minecraft:portal/portal"
+      }
+    ],
+    "subtitle": "subtitles.entity.familiar_magic.generic.curse.remove"
+  },
+  "entity.familiar_magic.generic.curse.remove.personal": {
+    "sounds": [
+      "minecraft:block/enderchest/open"
+    ],
+    "subtitle": "subtitles.entity.familiar_magic.generic.curse.remove.personal"
+  },
+  "entity.familiar_magic.generic.curse.dragon.fire_breath": {
+    "sounds": [
+      "minecraft:mob/ghast/fireball4"
+    ],
+    "subtitle": "subtitles.entity.familiar_magic.generic.curse.dragon.fire_breath"
+  }
+}

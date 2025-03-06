@@ -1,5 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.item;
 
+import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import io.github.afamiliarquiet.familiar_magic.data.CurseAttachment;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.advancement.criterion.Criteria;
@@ -9,7 +10,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -20,7 +20,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -57,20 +56,20 @@ public class CuriousVialItem extends Item {
 
     private void dragonPoofRawr(LivingEntity entity) {
         if (entity.getWorld() instanceof ServerWorld world) {
-            Box size = entity.getDimensions(entity.getPose()).getBoxAt(0,0,0);
-
-            world.spawnParticles(ParticleTypes.GUST,
-                    entity.offsetX(0.5), entity.getBodyY(0.5), entity.offsetZ(0.5),
-                    6, size.getLengthX()*0.75, size.getLengthY()*0.5, size.getLengthZ()*0.75, 0);
-
-            world.spawnParticles(ParticleTypes.FLAME,
-                    entity.getX(), entity.getBodyY(0.5), entity.getZ(),
-                    7, size.getLengthX()*0.75, size.getLengthY()*0.5, size.getLengthZ()*0.75, 0);
+//            Box size = entity.getDimensions(entity.getPose()).getBoxAt(0,0,0);
+//
+//            world.spawnParticles(ParticleTypes.GUST,
+//                    entity.offsetX(0.5), entity.getBodyY(0.5), entity.offsetZ(0.5),
+//                    6, size.getLengthX()*0.75, size.getLengthY()*0.5, size.getLengthZ()*0.75, 0);
+//
+//            world.spawnParticles(ParticleTypes.FLAME,
+//                    entity.getX(), entity.getBodyY(0.5), entity.getZ(),
+//                    7, size.getLengthX()*0.75, size.getLengthY()*0.5, size.getLengthZ()*0.75, 0);
 
             if (entity instanceof PlayerEntity player) {
                 Vec3d p = entity.getPos();
-                entity.getWorld().playSound(null, p.x, p.y, p.z, SoundEvents.BLOCK_PORTAL_AMBIENT, SoundCategory.PLAYERS, 0.5f, 1.3f);
-                player.playSoundToPlayer(SoundEvents.BLOCK_END_PORTAL_SPAWN, SoundCategory.PLAYERS, 0.1f, 1.3f);
+                entity.getWorld().playSound(null, p.x, p.y, p.z, FamiliarSounds.CURSE_APPLY, SoundCategory.PLAYERS, 0.5f, 1.3f);
+                player.playSoundToPlayer(FamiliarSounds.CURSE_APPLY_PERSONAL, SoundCategory.PLAYERS, 0.1f, 1.3f);
                 //player.sendMessage(Text.translatable("message.familiar_magic.curse.dragon.applied").withColor(0x4fe7ac), true);
             }
         }

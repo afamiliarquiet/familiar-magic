@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import io.github.afamiliarquiet.familiar_magic.entity.FireBreathEntity;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.EntityDimensions;
@@ -9,7 +10,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -50,29 +50,29 @@ public record CurseAttachment(Curse currentAffliction) {
 
         public List<Text> requestForComment() {
             return switch(this) {
-                default -> noComment();
                 case DRAGON -> draconicComments();
+                default -> noComment();
             };
         }
 
         public void inflict(World world, LivingEntity bearer) {
             switch(this) {
-                default -> noInfliction(world, bearer);
                 case DRAGON -> draconicInfliction(world, bearer);
+                default -> noInfliction(world, bearer);
             }
         }
 
         public int maxUseTime() {
             return switch(this) {
-                default -> Integer.MAX_VALUE; // go for it. hold the odd trinket :)
                 case DRAGON -> 62;
+                default -> Integer.MAX_VALUE; // go for it. hold the odd trinket :)
             };
         }
 
         public int cooldown() {
             return switch(this) {
-                default -> 0;
                 case DRAGON -> 130;
+                default -> 0;
             };
         }
 
@@ -96,16 +96,16 @@ public record CurseAttachment(Curse currentAffliction) {
 
                 FireBreathEntity flameExclamationMark = new FireBreathEntity(bearer, world, scaley);
                 flameExclamationMark.setVelocity(bearer, bearer.getPitch(), bearer.headYaw, 0, 0.5f * scaley, 3.1f);
-                flameExclamationMark.setPosition(flameExclamationMark.getPos().add(bearer.getRotationVector().multiply(0.5 * scaley)).addRandom(bearer.getRandom(), 0.013f * scaley));
+                flameExclamationMark.setPosition(flameExclamationMark.getPos().add(bearer.getRotationVector().multiply(0.75 * scaley)).addRandom(bearer.getRandom(), 0.013f * scaley));
                 world.spawnEntity(flameExclamationMark);
 
                 Vec3d p = bearer.getPos();
-                world.playSound(null, p.x, p.y, p.z, SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS, 0.2f, bearer.getRandom().nextFloat() * 0.13f + 1);
+                world.playSound(null, p.x, p.y, p.z, FamiliarSounds.CURSE_DRAGON_FIRE_BREATH, SoundCategory.PLAYERS, 0.2f, bearer.getRandom().nextFloat() * 0.13f + 1);
             }
         }
 
         public static boolean shouldMaw(LivingEntity entity) {
-            return FamiliarAttachments.getCurse(entity).currentAffliction == DRAGON && entity.getMainHandStack().isEmpty();
+            return FamiliarAttachments.getCurse(entity).currentAffliction == DRAGON && entity.getMainHandStack().isEmpty() && !entity.isInCreativeMode();
         }
     }
 

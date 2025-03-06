@@ -9,6 +9,7 @@
     "MobHatEquipMixin",
     "curse.dragon.BlockEatenMixin",
     "curse.dragon.HungryPlayerEntityMixin",
+    "curse.dragon.LivingEntityCurseBreakingMixin",
     "curse.dragon.ServerPlayerEatingManagerMixin"
   ],
   "injectors": {

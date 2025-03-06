@@ -1,6 +1,6 @@
 {
   "values": [
-    "minecraft:crops",
+    "#minecraft:crops",
     "#minecraft:fire",
     "#minecraft:flowers",
     "#minecraft:flower_pots",
