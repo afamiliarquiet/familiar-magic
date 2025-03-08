@@ -62,7 +62,7 @@ public class FamiliarMagicClient implements ClientModInitializer {
 		}
 
 		SummoningRequestData request = FamiliarAttachments.getRequest(player);
-		if (request != null) {
+		if (request != null && FamiliarClientScreenery.SUMMONING_REQUEST_RENDER_LAYER.isReady()) {
 			GameOptions options = client.options;
 			if (options.sneakKey.isPressed()) {
 				ClientPlayNetworking.send(new SillySummoningRequestLuggage(request, false));

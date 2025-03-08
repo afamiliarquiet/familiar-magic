@@ -1,5 +1,6 @@
 package io.github.afamiliarquiet.familiar_magic.gooey;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.afamiliarquiet.familiar_magic.FamiliarKeybinds;
 import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
@@ -14,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.List;
 
@@ -24,15 +26,35 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
     private final int textureHeight = 128;
     private final int textureWidth = 128;
     private final int spacing = 13;
+
+    private float requestReadiness = 1;
     
     @Override
-    public void onHudRender(DrawContext context, RenderTickCounter renderTickCounter) {
+    public void onHudRender(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient minecraft = MinecraftClient.getInstance();
         ClientPlayerEntity player = minecraft.player;
         SummoningRequestData requestData = FamiliarAttachments.getRequest(player);
 
         if (player == null || requestData == null || minecraft.options.hudHidden) {
             return;
+        }
+
+
+        if (requestReadiness < 1) {
+            // lerp is mathematically poorly suited to this job i know it doesn't matter
+            requestReadiness = MathHelper.lerp(
+                    0.1f * tickCounter.getLastFrameDuration(),
+                    this.requestReadiness,
+                    1f);
+            if (requestReadiness > 0.99) {
+                requestReadiness = 1;
+            } else {
+                // enable the transparency nonsense
+                RenderSystem.disableDepthTest();
+                RenderSystem.depthMask(false);
+                RenderSystem.enableBlend();
+                context.setShaderColor(1.0F, 1.0F, 1.0F, requestReadiness);
+            }
         }
 
 
@@ -69,6 +91,14 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
         this.drawCenteredStringAtHeight(context, minecraft.textRenderer, top, left, positionComponent, 72);
 
         this.drawItems(context, minecraft.textRenderer, top, left, offerings);
+
+        if (requestReadiness < 1) {
+            // disable the transparency nonsense
+            RenderSystem.disableBlend();
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+            context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        }
     }
     
     private void drawCenteredStringAtHeight(DrawContext context, TextRenderer font, int top, int left, Text text, int height) {
@@ -104,5 +134,13 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
                     itemTop
             );
         }
+    }
+
+    public void reset() {
+        this.requestReadiness = 0;
+    }
+
+    public boolean isReady() {
+        return this.requestReadiness > 0.85;
     }
 }

@@ -50,10 +50,14 @@ public record SillySummoningRequestLuggage(@NotNull SummoningRequestData request
     // used as receiver on client, "S2C" part
     // not directly what client wants because of silly silly client/common separation what a silly concept
     public static void doomOfAllClients(SillySummoningRequestLuggage lugged, PlayerEntity player) {
-        if (!lugged.acceptable && lugged.request.isSameRequester(FamiliarAttachments.getRequest(player))) {
-            // only remove if it's no longer acceptable and the request to cancel matches current request
-            FamiliarAttachments.removeRequest(player);
+        if (!lugged.acceptable) {
+            // cancellation mode
+            if (lugged.request.isSameRequester(FamiliarAttachments.getRequest(player))) {
+                // only remove if it's no longer acceptable and the request to cancel matches current request
+                FamiliarAttachments.removeRequest(player);
+            }
         } else {
+            // request mode
             // lotsa improvements to be done here. fade in/out around the edge of requests as warning? use nonvanilla sound event?
             FamiliarAttachments.setRequest(player, lugged.request);
             player.getWorld().playSoundFromEntity(player, FamiliarSounds.UI_SUMMONING_TABLE_REQUEST_WRITE, SoundCategory.BLOCKS, 1, 1);
