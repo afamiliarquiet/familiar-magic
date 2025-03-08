@@ -7,20 +7,27 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CandleBlock;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 
 import java.util.List;
+import java.util.function.ToIntFunction;
 
 public class EnchantedCandleBlock extends CandleBlock {
     public static final MapCodec<CandleBlock> CODEC = AbstractBlock.createCodec(EnchantedCandleBlock::new);
+    public static final ToIntFunction<BlockState> STATE_TO_LUMINANCE = state -> state.get(LIT) ? 2 * state.get(CANDLES) + 4 : state.get(CANDLES) > 2 ? 3 : 2;
 
     private static final List<List<Vec3d>> FLAME_OFFSETS = ImmutableList.of(
             ImmutableList.of(new Vec3d(0.46875, 0.875, 0.46875)),
@@ -90,8 +97,34 @@ public class EnchantedCandleBlock extends CandleBlock {
     }
 
     @Override
+    public boolean tryFillWithFluid(WorldAccess world, BlockPos pos, BlockState state, FluidState fluidState) {
+        if (!(Boolean)state.get(WATERLOGGED) && fluidState.getFluid() == Fluids.WATER) {
+            BlockState blockState = state.with(WATERLOGGED, true);
+
+            world.setBlockState(pos, blockState, Block.NOTIFY_ALL);
+
+            world.scheduleFluidTick(pos, fluidState.getFluid(), fluidState.getFluid().getTickRate(world));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean canBeLit(BlockState state) {
+        return state.isOf(FamiliarBlocks.ENCHANTED_CANDLE) && !(Boolean)state.get(LIT);
+    }
+
+    @Override
+    protected boolean isNotLit(BlockState state) {
+        return !(Boolean)state.get(LIT);
+    }
+
+    @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        super.randomDisplayTick(state, world, pos, random);
+        if (state.get(LIT)) {
+            this.getParticleOffsets(state)
+                    .forEach(offset -> spawnCandleParticles(world, offset.add(pos.getX(), pos.getY(), pos.getZ()), random, state.get(WATERLOGGED)));
+        }
 
         if (random.nextFloat() < (0.031f * state.get(CANDLES))) {
             List<Vec3d> offsets = getEnchantOffsets(state);
@@ -101,5 +134,27 @@ public class EnchantedCandleBlock extends CandleBlock {
                     pos.getX() + chosenOffset.x, pos.getY() + chosenOffset.y, pos.getZ() + chosenOffset.z,
                     0, 0, 0);
         }
+    }
+
+    // copy from abstract candle block because i dont feel like mimxing in. i don't really like copying either though. oh well.
+    private static void spawnCandleParticles(World world, Vec3d vec3d, Random random, boolean watery) {
+        float f = random.nextFloat();
+        if (f < 0.3F) {
+            world.addParticle(ParticleTypes.SMOKE, vec3d.x, vec3d.y, vec3d.z, 0.0, 0.0, 0.0);
+            if (f < 0.17F) {
+                world.playSound(
+                        vec3d.x + 0.5,
+                        vec3d.y + 0.5,
+                        vec3d.z + 0.5,
+                        SoundEvents.BLOCK_CANDLE_AMBIENT,
+                        SoundCategory.BLOCKS,
+                        1.0F + random.nextFloat(),
+                        random.nextFloat() * 0.7F + 0.3F,
+                        false
+                );
+            }
+        }
+
+        world.addParticle(watery ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME, vec3d.x, vec3d.y, vec3d.z, 0.0, 0.0, 0.0);
     }
 }

@@ -35,6 +35,7 @@ public class FamiliarBlocks {
     public static final Block ENCHANTED_CANDLE = regitem(ENCHANTED_CANDLE_KEY,
             new EnchantedCandleBlock(AbstractBlock.Settings.copy(Blocks.CANDLE)
                     .mapColor(MapColor.ORANGE)
+                    .luminance(EnchantedCandleBlock.STATE_TO_LUMINANCE)
             )
     );
 

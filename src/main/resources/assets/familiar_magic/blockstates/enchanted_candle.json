@@ -1,28 +1,52 @@
 {
   "variants": {
-    "candles=1,lit=false": {
+    "candles=1,lit=false,waterlogged=false": {
       "model": "familiar_magic:block/one_enchanted_candle"
     },
-    "candles=1,lit=true": {
+    "candles=1,lit=true,waterlogged=false": {
       "model": "familiar_magic:block/one_lit_enchanted_candle"
     },
-    "candles=2,lit=false": {
+    "candles=2,lit=false,waterlogged=false": {
       "model": "familiar_magic:block/two_enchanted_candles"
     },
-    "candles=2,lit=true": {
+    "candles=2,lit=true,waterlogged=false": {
       "model": "familiar_magic:block/two_lit_enchanted_candles"
     },
-    "candles=3,lit=false": {
+    "candles=3,lit=false,waterlogged=false": {
       "model": "familiar_magic:block/three_enchanted_candles"
     },
-    "candles=3,lit=true": {
+    "candles=3,lit=true,waterlogged=false": {
       "model": "familiar_magic:block/three_lit_enchanted_candles"
     },
-    "candles=4,lit=false": {
+    "candles=4,lit=false,waterlogged=false": {
       "model": "familiar_magic:block/four_enchanted_candles"
     },
-    "candles=4,lit=true": {
+    "candles=4,lit=true,waterlogged=false": {
       "model": "familiar_magic:block/four_lit_enchanted_candles"
+    },
+    "candles=1,lit=false,waterlogged=true": {
+      "model": "familiar_magic:block/one_enchanted_candle_underwater"
+    },
+    "candles=1,lit=true,waterlogged=true": {
+      "model": "familiar_magic:block/one_lit_enchanted_candle_underwater"
+    },
+    "candles=2,lit=false,waterlogged=true": {
+      "model": "familiar_magic:block/two_enchanted_candles_underwater"
+    },
+    "candles=2,lit=true,waterlogged=true": {
+      "model": "familiar_magic:block/two_lit_enchanted_candles_underwater"
+    },
+    "candles=3,lit=false,waterlogged=true": {
+      "model": "familiar_magic:block/three_enchanted_candles_underwater"
+    },
+    "candles=3,lit=true,waterlogged=true": {
+      "model": "familiar_magic:block/three_lit_enchanted_candles_underwater"
+    },
+    "candles=4,lit=false,waterlogged=true": {
+      "model": "familiar_magic:block/four_enchanted_candles_underwater"
+    },
+    "candles=4,lit=true,waterlogged=true": {
+      "model": "familiar_magic:block/four_lit_enchanted_candles_underwater"
     }
   }
 }

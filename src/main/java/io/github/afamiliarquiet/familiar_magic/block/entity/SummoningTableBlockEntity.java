@@ -422,7 +422,7 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
     }
 
     public BlockState tryBurnName(BlockState state) {
-        if (!this.trueName().isEmpty()) {
+        if (!this.trueName().isEmpty() && !state.get(SummoningTableBlock.WATERLOGGED)) {
             byte[] itemTarget = FamiliarTricks.trueNameToNybbles(this.trueName().getName().getString());
 
             if (itemTarget != null) {

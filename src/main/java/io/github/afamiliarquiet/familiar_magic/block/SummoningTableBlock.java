@@ -11,12 +11,16 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.block.Waterloggable;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.particle.ParticleTypes;
@@ -24,7 +28,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
@@ -40,10 +46,11 @@ import net.minecraft.world.WorldAccess;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
-public class SummoningTableBlock extends BlockWithEntity implements Burnable {
+public class SummoningTableBlock extends BlockWithEntity implements Burnable, Waterloggable {
     public static final MapCodec<SummoningTableBlock> CODEC = AbstractBlock.createCodec(SummoningTableBlock::new);
 
     public static final EnumProperty<SummoningTableState> SUMMONING_TABLE_STATE = EnumProperty.of("summoning_table_state", SummoningTableState.class);
+    public static final BooleanProperty WATERLOGGED = Properties.WATERLOGGED;
 
     protected static final VoxelShape SHAPE = SummoningTableBlock.createCuboidShape(0, 0, 0, 16, 12, 16);
 
@@ -54,7 +61,7 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
 
     public SummoningTableBlock(Settings settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE));
+        this.setDefaultState(this.stateManager.getDefaultState().with(SUMMONING_TABLE_STATE, SummoningTableState.INACTIVE).with(WATERLOGGED, false));
     }
 
     @Override
@@ -217,7 +224,52 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable {
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(SUMMONING_TABLE_STATE);
+        builder.add(SUMMONING_TABLE_STATE, WATERLOGGED);
+    }
+
+    @Override
+    public boolean tryFillWithFluid(WorldAccess world, BlockPos pos, BlockState state, FluidState fluidState) {
+        if (!(Boolean)state.get(WATERLOGGED) && fluidState.getFluid() == Fluids.WATER) {
+            BlockState blockState = state.with(WATERLOGGED, true);
+            if (state.get(SUMMONING_TABLE_STATE) == SummoningTableState.BURNING) {
+                // burning is the only state that should get disrupted underwater, because
+                // a. not enchanted
+                // b. smoke can't stick around underwater
+                extinguish(null, blockState, world, pos);
+            } else {
+                world.setBlockState(pos, blockState, Block.NOTIFY_ALL);
+            }
+
+            world.scheduleFluidTick(pos, fluidState.getFluid(), fluidState.getFluid().getTickRate(world));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
+        BlockState preexisting = super.getPlacementState(ctx);
+        if (preexisting == null) {
+            preexisting = this.getDefaultState();
+        }
+        boolean waterfulness = ctx.getWorld().getFluidState(ctx.getBlockPos()).getFluid() == Fluids.WATER;
+
+        return preexisting.with(WATERLOGGED, waterfulness);
+    }
+
+    @Override
+    protected BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+        if (state.get(WATERLOGGED)) {
+            world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
+        }
+
+        return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+    }
+
+    @Override
+    protected FluidState getFluidState(BlockState state) {
+        return state.get(WATERLOGGED) ? Fluids.WATER.getStill(false) : super.getFluidState(state);
     }
 
     @Override

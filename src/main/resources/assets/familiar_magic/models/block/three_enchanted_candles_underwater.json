@@ -1,0 +1,7 @@
+{
+  "parent": "familiar_magic:block/template_three_enchanted_candles",
+  "textures": {
+    "all": "familiar_magic:block/enchanted_candle_underwater",
+    "particle": "familiar_magic:block/enchanted_candle_underwater"
+  }
+}
