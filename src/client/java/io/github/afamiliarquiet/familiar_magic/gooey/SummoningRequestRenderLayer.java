@@ -59,7 +59,7 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
 
 
         int top = context.getScaledWindowHeight() - (this.imageHeight + this.spacing);
-        int left = context.getScaledWindowWidth() - (this.imageWidth + this.spacing);
+        int left = /*context.getScaledWindowWidth() - (this.imageWidth + */this.spacing/*)*/;
 
         context.drawTexture(BACKGROUND, left, top, 0, 0, imageWidth, imageHeight, textureWidth, textureHeight);
 
