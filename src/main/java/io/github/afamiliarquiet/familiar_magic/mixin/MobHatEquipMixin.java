@@ -4,6 +4,7 @@ import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.item.ClothingItem;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -13,6 +14,7 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MobEntity.class)
@@ -43,6 +45,13 @@ public abstract class MobHatEquipMixin extends LivingEntity {
                 }
                 cir.setReturnValue(ActionResult.success(cliently));
             }
+        }
+    }
+
+    @Inject(at = @At("HEAD"), method = "dropLoot")
+    private void dropLoot(DamageSource damageSource, boolean causedByPlayer, CallbackInfo ci) {
+        if (FamiliarAttachments.hasHat(this)) {
+            this.dropStack(FamiliarAttachments.removeHat(this));
         }
     }
 }
