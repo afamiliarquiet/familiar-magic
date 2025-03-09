@@ -6,9 +6,10 @@
     "FocusBlockParticleMixin",
     "HatBakeryMixin",
     "HatRendererMixin",
-    "curse.dragon.OtherPlayerCrumbsMixin",
     "curse.dragon.ClientPlayerEatingManagerMixin",
     "curse.dragon.MinecraftClientSwinglessEatingMixin",
+    "curse.dragon.OtherPlayerCrumbsMixin",
+    "hattable.AxolotlHatRendererMixin",
     "hattable.CatHatRendererMixin",
     "hattable.EndermiteHatRendererMixin",
     "hattable.FoxHatRendererMixin",
@@ -17,6 +18,9 @@
     "hattable.ParrotHatRendererMixin",
     "hattable.SilverfishHatRendererMixin",
     "hattable.SlimeHatRendererMixin",
+    "hattable.SquidHatRendererMixin",
+    "hattable.TadpoleHatRendererMixin",
+    "hattable.TurtleHatRendererMixin",
     "hattable.WolfHatRendererMixin"
   ],
   "injectors": {
