@@ -1,23 +1,31 @@
 {
   "values": [
-    "#minecraft:crops",
     "#minecraft:fire",
+
+    "#minecraft:crops",
+    "minecraft:brown_mushroom",
+    "minecraft:red_mushroom",
+    "minecraft:crimson_fungus",
+    "minecraft:warped_fungus",
     "#minecraft:flowers",
     "#minecraft:flower_pots",
     "#minecraft:coral_plants",
-    "#minecraft:trapdoors",
-    "#minecraft:pressure_plates",
-    "#minecraft:buttons",
-    "minecraft:heavy_core",
     "minecraft:lily_pad",
     "minecraft:kelp",
     "minecraft:sea_pickle",
     "minecraft:seagrass",
     "minecraft:tall_seagrass",
+
+    "#minecraft:trapdoors",
+    "#minecraft:pressure_plates",
+    "#minecraft:buttons",
     "minecraft:redstone_wire",
     "minecraft:tripwire",
+
     "#c:buds",
     "#c:clusters",
+
+    "minecraft:heavy_core",
     "#c:skulls"
   ]
 }
