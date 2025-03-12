@@ -1,6 +1,5 @@
 package io.github.afamiliarquiet.familiar_magic.entity;
 
-import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
@@ -17,11 +16,9 @@ import net.minecraft.entity.projectile.thrown.ThrownEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Util;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -120,12 +117,6 @@ public class FireBreathEntity extends ThrownEntity {
                             0, 0.13, 0);
                 }
             }
-
-            // todo - does this actually do anything... i'll check after i fix sounds. hopefully shortly after
-            Vec3d p = this.getPos();
-            this.getWorld().playSound(null, p.x, p.y, p.z,
-                    FamiliarSounds.CURSE_DRAGON_FIRE_BREATH, SoundCategory.PLAYERS,
-                    0.5f, (this.getRandom().nextFloat() * 0.1f + 0.4f));
         }
 
         if (this.age > MAX_AGE) {
