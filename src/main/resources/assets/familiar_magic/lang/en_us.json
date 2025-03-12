@@ -9,6 +9,15 @@
   "block.familiar_magic.summoning_table":  "Summoning Table",
   "block.familiar_magic.smoke_wisp": "Wisp of Smoke",
 
+  "lore.familiar_magic.true_name": "An item that can be used to take reference of mobs in the world.",
+  "lore.familiar_magic.big_hat": "A highly fashionable and very large hat that reduces damage when worn.",
+  "lore.familiar_magic.megumins_hat": "A very large hat that reduces damage when worn. Has an affinity for EXPLOSIONS!",
+  "lore.familiar_magic.odd_trinket": "An interesting little rock that can be used to channel odd abilities within you.",
+  "lore.familiar_magic.curious_vial": "An item that calls the attention of something draconic to you. Such attention can change you.",
+  "lore.familiar_magic.enchanted_candle": "A special variant of Candles that can be used with a Summoning Table. Also works underwater.",
+  "lore.familiar_magic.summoning_table": "A block that allows players to summon any entity using its True Name.",
+  "lore.familiar_magic.smoke_wisp": "An item that is used to place smoke particles. The more Wisps of Smoke in a block, the more smoke.",
+
   "subtitles.block.familiar_magic.summoning_table.bind": "Summoning Table rings",
   "subtitles.block.familiar_magic.summoning_table.bind.pending": "Summoning Table resonates",
   "subtitles.block.familiar_magic.summoning_table.bind.confirm": "Summoning Table chimes",
