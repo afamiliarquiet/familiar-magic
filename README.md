@@ -24,6 +24,7 @@ you can craft...
   * If you set up a full summoning ritual and have the target sit on top of the Summoning Table, you can place any pattern
     of certain blocks on the ground in a 13x13 area around the Summoning Table, you can add that pattern of blocks as an additional summoning requirement.
     To do this, Focus [keybind] while sneaking and using the Summoning Table with an empty hand, then repeat without sneaking to confirm.
+    * Look around before confirming! You'll see particles above all the blocks that will be bound to your summoning ritual. 
     * Current valid blocks: fire, flowers, mushrooms, water plants, trapdoors, pressure plates, buttons, wires, crystals, and skulls.
       See the full list in the [tag](https://github.com/afamiliarquiet/familiar-magic/blob/main/src/main/resources/data/familiar_magic/tags/block/familiar_things.json).
   * crafted like an enchanting table, with a true name instead of a book and an amethyst shard and copper ingot instead of diamonds

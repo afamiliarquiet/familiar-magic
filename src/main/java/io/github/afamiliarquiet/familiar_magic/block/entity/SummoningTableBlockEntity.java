@@ -7,6 +7,7 @@ import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.block.SummoningTableBlock;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarTags;
 import io.github.afamiliarquiet.familiar_magic.data.PersonalPattern;
 import io.github.afamiliarquiet.familiar_magic.data.SummoningRequestData;
 import io.github.afamiliarquiet.familiar_magic.gooey.SummoningTableScreenHandler;
@@ -41,6 +42,7 @@ import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
@@ -94,8 +96,6 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
     // todo - reduce this. can't have all these states at once and it's all timers.. i can feel the debt clock ticking
     private int burningPhase = 0; // ticks down from 8 -> 0 when burning, 0 represents not burning
     private int summoningTimer = 0;
-    @Nullable
-    private PersonalPattern pendingPattern;
     @Nullable
     private UUID bindingTarget = null;
 
@@ -158,15 +158,7 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
 
     public static void tick(World world, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
         if (world.isClient()) {
-            if (state.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.BINDING) {
-                Random random = world.getRandom();
-                for (int i = 0; i < 2; i++) {
-                    double d0 = (double) pos.getX() + random.nextDouble() * 0.625 + 0.1875;
-                    double d1 = (double) pos.getY() + random.nextDouble() * 0.75;
-                    double d2 = (double) pos.getZ() + random.nextDouble() * 0.625 + 0.1875;
-                    world.addParticle(random.nextBoolean() ? ParticleTypes.WAX_OFF : ParticleTypes.WAX_ON, d0, d1, d2, 0.0, 31 * random.nextDouble(), 0.0);
-                }
-            }
+            clientTick(world, pos, state, thys);
             return;
         }
 
@@ -191,6 +183,40 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
 
             thys.targetFromCandlesInNybbles = newTargetNybbles;
             thys.targetFromCandles = newTarget;
+        }
+    }
+
+    public static void clientTick(World world, BlockPos pos, BlockState state, SummoningTableBlockEntity thys) {
+        if (state.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.BINDING) {
+            Random random = world.getRandom();
+            for (int i = 0; i < 2; i++) {
+                double d0 = (double) pos.getX() + random.nextDouble() * 0.625 + 0.1875;
+                double d1 = (double) pos.getY() + random.nextDouble() * 0.75;
+                double d2 = (double) pos.getZ() + random.nextDouble() * 0.625 + 0.1875;
+                world.addParticle(random.nextBoolean() ? ParticleTypes.WAX_OFF : ParticleTypes.WAX_ON, d0, d1, d2, 0.0, 31 * random.nextDouble(), 0.0);
+            }
+
+            // add particles to any pattern blocks around
+            for (int tries = 0; tries < 13; tries++) {
+                BlockPos partipos = pos.offset(Direction.Axis.X, random.nextBetween(-6, 6)).offset(Direction.Axis.Z, random.nextBetween(-6, 6));
+                if (world.getBlockState(partipos).isIn(FamiliarTags.FAMILIAR_THINGS)) {
+                    world.addParticle(
+                            ParticleTypes.WITCH,
+                            partipos.getX() + random.nextFloat(), partipos.getY() + random.nextFloat(), partipos.getZ() + random.nextFloat(),
+                            0.0, random.nextFloat() * 0.1, 0
+                    );
+                    world.addParticle(
+                            ParticleTypes.WAX_OFF,
+                            partipos.getX() + random.nextFloat(), partipos.getY() + random.nextFloat(), partipos.getZ() + random.nextFloat(),
+                            0.0, random.nextFloat() * 3, 0
+                    );
+                    world.addParticle(
+                            ParticleTypes.WAX_ON,
+                            partipos.getX() + random.nextFloat(), partipos.getY() + random.nextFloat(), partipos.getZ() + random.nextFloat(),
+                            0.0, random.nextFloat() * 3, 0
+                    );
+                }
+            }
         }
     }
 
@@ -238,7 +264,6 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
                 }
             }
 
-//            this.pendingPattern = null;
             this.burnedTargetFromTrueNameInNybbles = null;
 
             this.burningPhase = 0;
@@ -267,10 +292,12 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
             Entity targetEntity = world.getClosestEntity(LivingEntity.class, TargetPredicate.createNonAttackable(), null, this.getPos().getX(), this.getPos().getY(), this.getPos().getZ(), new Box(this.getPos()).expand(0, 1, 0));
 
             if (targetEntity != null && targetEntity.getUuid().equals(this.targetFromCandles)) {
-                this.pendingPattern = PersonalPattern.fromTable(sworld, this.getPos());
                 this.summoningTimer = FamiliarTricks.SUMMONING_TIME_SECONDS;
                 this.bindingTarget = this.targetFromCandles;
 
+                if (targetEntity instanceof LivingEntity liv) {
+                    liv.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 620));
+                }
                 sworld.playSound(null, this.getPos(), FamiliarSounds.BLOCK_SUMMONING_TABLE_BIND, SoundCategory.BLOCKS, 0.4f, 0.5f);
 
                 return state.with(SummoningTableBlock.SUMMONING_TABLE_STATE, SummoningTableBlock.SummoningTableState.BINDING);
@@ -297,8 +324,7 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
             LivingEntity targetEntity = world.getClosestEntity(LivingEntity.class, TargetPredicate.createNonAttackable(), null, this.getPos().getX(), this.getPos().getY(), this.getPos().getZ(), new Box(this.getPos()).expand(0, 1, 0));
 
             if (targetEntity != null && targetEntity.getUuid().equals(this.bindingTarget)) {
-                FamiliarAttachments.setPersonalPattern(targetEntity, this.pendingPattern);
-                this.pendingPattern = null;
+                FamiliarAttachments.setPersonalPattern(targetEntity, PersonalPattern.fromTable(sworld, this.getPos()));
                 this.summoningTimer = 0;
                 this.bindingTarget = null;
                 // todo - figure out a way to stop people from summoning you and instantly binding some crap to your soul. make it at least take a few seconds
