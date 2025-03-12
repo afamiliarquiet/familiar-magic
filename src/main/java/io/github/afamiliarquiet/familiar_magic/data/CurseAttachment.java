@@ -4,13 +4,21 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import io.github.afamiliarquiet.familiar_magic.entity.FireBreathEntity;
+import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -104,8 +112,32 @@ public record CurseAttachment(Curse currentAffliction) {
             }
         }
 
+        // this class structure is so wrong for what i'm doing. i'll change it later when i have a better idea of what i want
         public static boolean shouldMaw(LivingEntity entity) {
-            return FamiliarAttachments.getCurse(entity).currentAffliction == DRAGON && entity.getMainHandStack().isEmpty() && !entity.isInCreativeMode();
+            return FamiliarAttachments.getCurse(entity).currentAffliction == DRAGON && (entity.getMainHandStack().isEmpty() || entity.getMainHandStack().isOf(FamiliarItems.ODD_TRINKET)) && !entity.isInCreativeMode();
+        }
+
+        public static final List<RegistryEntry<StatusEffect>> YUM = List.of(
+                StatusEffects.HASTE, StatusEffects.STRENGTH, StatusEffects.REGENERATION,
+                StatusEffects.LUCK, StatusEffects.ABSORPTION
+        );
+        public static final List<RegistryEntry<StatusEffect>> YUCK = List.of(
+                StatusEffects.DARKNESS, StatusEffects.BLINDNESS, StatusEffects.UNLUCK,
+                StatusEffects.POISON, StatusEffects.WEAKNESS, StatusEffects.HUNGER, StatusEffects.SLOWNESS
+        );
+
+        public static void simulateDraconicDigestion(ServerPlayerEntity player, Block eatenBlock) {
+            // this is still a bit bland, but it's something at least. prob very subject to change
+            // effects are chosen with a very very pseudo sort of random because.. i want it to be consistent but i don't wanna decide
+            // however you kinda can decide for your own blocks if you alter the translation key. you shouldn't. that's an awful idea.
+            if (eatenBlock.getDefaultState().isIn(FamiliarTags.ESPECIALLY_TASTY_FOR_DRAGONS)) {
+                String thinger = eatenBlock.getTranslationKey();
+                player.addStatusEffect(new StatusEffectInstance(YUM.get(thinger.charAt(thinger.length() - 1) % YUM.size()), 20 * player.getRandom().nextBetween(10, 60), MathHelper.floorLog2((int) eatenBlock.getHardness())));
+            }
+            if (eatenBlock.getDefaultState().isIn(FamiliarTags.ESPECIALLY_GROSS_FOR_DRAGONS)) {
+                String thinger = eatenBlock.getTranslationKey();
+                player.addStatusEffect(new StatusEffectInstance(YUCK.get(thinger.charAt(thinger.length() - 1) % YUCK.size()), 20 * player.getRandom().nextBetween(3, 30), MathHelper.floorLog2((int) eatenBlock.getHardness())));
+            }
         }
     }
 

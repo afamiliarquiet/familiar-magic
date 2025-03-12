@@ -32,6 +32,7 @@ public abstract class ServerPlayerEatingManagerMixin {
             // play burp, feed
             this.player.getWorld().playSound(null, this.player.getX(), this.player.getY(), this.player.getZ(), SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.PLAYERS, 0.5f, this.player.getRandom().nextFloat() * 0.1f + 0.9f);
             this.player.getHungerManager().add(MathHelper.ceil(breakyBlock.getHardness()), breakyBlock.getBlastResistance() / 3f);
+            CurseAttachment.Curse.simulateDraconicDigestion(player, breakyBlock);
         }
     }
 

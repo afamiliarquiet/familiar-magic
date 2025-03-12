@@ -12,24 +12,18 @@ public class FamiliarTags {
             FamiliarMagic.id("hattable")
     );
 
-//    public static final TagKey<Block> PRETTY_LIGHTS = TagKey.of(
-//            Registries.BLOCK.getKey(),
-//            FamiliarMagic.id("pretty_lights")
-//    );
-//
-//    public static final TagKey<Block> PRETTY_PLANTS = TagKey.of(
-//            Registries.BLOCK.getKey(),
-//            FamiliarMagic.id("pretty_plants")
-//    );
-//
-//    public static final TagKey<Block> PRETTY_ROCKS = TagKey.of(
-//            Registries.BLOCK.getKey(),
-//            FamiliarMagic.id("pretty_rocks")
-//    );
-//
     public static final TagKey<Block> FAMILIAR_THINGS = TagKey.of(
             Registries.BLOCK.getKey(),
             FamiliarMagic.id("familiar_things")
+    );
+
+    public static final TagKey<Block> ESPECIALLY_TASTY_FOR_DRAGONS = TagKey.of(
+            Registries.BLOCK.getKey(),
+            FamiliarMagic.id("especially_tasty_for_dragons")
+    );
+    public static final TagKey<Block> ESPECIALLY_GROSS_FOR_DRAGONS = TagKey.of(
+            Registries.BLOCK.getKey(),
+            FamiliarMagic.id("especially_gross_for_dragons")
     );
 
     public static void initialize() {
