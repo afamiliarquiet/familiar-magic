@@ -28,7 +28,8 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
     private final int spacing = 13;
 
     private float requestReadiness = 1;
-    
+
+    // i want you to know. i hate transparency and i hate opengl and i hate rendering. but it mostly works..
     @Override
     public void onHudRender(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient minecraft = MinecraftClient.getInstance();
@@ -39,24 +40,14 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
             return;
         }
 
+        context.getMatrices().push();
 
-        if (requestReadiness < 1) {
-            // lerp is mathematically poorly suited to this job i know it doesn't matter
-            requestReadiness = MathHelper.lerp(
-                    0.1f * tickCounter.getLastFrameDuration(),
-                    this.requestReadiness,
-                    1f);
-            if (requestReadiness > 0.99) {
-                requestReadiness = 1;
-            } else {
-                // enable the transparency nonsense
-                RenderSystem.disableDepthTest();
-                RenderSystem.depthMask(false);
-                RenderSystem.enableBlend();
-                context.setShaderColor(1.0F, 1.0F, 1.0F, requestReadiness);
-            }
-        }
+        RenderSystem.disableBlend();
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
+        context.setShaderColor(1.0F, 1.0F, 1.0F, 1);
 
+        context.getMatrices().translate(0, 0, 3100);
 
         int top = context.getScaledWindowHeight() - (this.imageHeight + this.spacing);
         int left = /*context.getScaledWindowWidth() - (this.imageWidth + */this.spacing/*)*/;
@@ -85,6 +76,23 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
         );
         List<ItemStack> offerings = requestData.offerings().orElse(List.of()); // *should* always be present but w/e
 
+        if (requestReadiness < 1) {
+            // lerp is mathematically poorly suited to this job i know it doesn't matter
+            requestReadiness = MathHelper.lerp(
+                    0.075f * tickCounter.getLastFrameDuration(),
+                    this.requestReadiness,
+                    1f);
+            if (requestReadiness > 0.99) {
+                requestReadiness = 1;
+            } else {
+                // enable the transparency nonsense
+                RenderSystem.disableDepthTest();
+                RenderSystem.depthMask(false);
+                RenderSystem.enableBlend();
+                context.setShaderColor(1.0F, 1.0F, 1.0F, requestReadiness);
+            }
+        }
+
         this.drawCenteredStringAtHeight(context, minecraft.textRenderer, top, left, titleComponent, 0);
         context.drawTextWrapped(minecraft.textRenderer, blurb, left + this.spacing, top + 26, this.imageWidth - 2 * this.spacing, 0x382414);
         this.drawCenteredStringAtHeight(context, minecraft.textRenderer, top, left, levelComponent, 62);
@@ -99,6 +107,8 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
             RenderSystem.enableDepthTest();
             context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
+
+        context.getMatrices().pop();
     }
     
     private void drawCenteredStringAtHeight(DrawContext context, TextRenderer font, int top, int left, Text text, int height) {
@@ -141,6 +151,6 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
     }
 
     public boolean isReady() {
-        return this.requestReadiness > 0.85;
+        return this.requestReadiness > 0.62;
     }
 }
