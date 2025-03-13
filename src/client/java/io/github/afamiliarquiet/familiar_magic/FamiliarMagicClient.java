@@ -28,6 +28,7 @@ public class FamiliarMagicClient implements ClientModInitializer {
 		// This entrypoint is suitable for setting up client-specific logic, such as rendering.
 		FamiliarClientPacketeering.initialize();
 		FamiliarClientAttachments.initialize();
+		FamiliarClientParticles.initialize();
 		FamiliarClientScreenery.initialize();
 		FamiliarClientEntitry.initialize();
 		FamiliarKeybinds.initialize();

@@ -36,6 +36,7 @@ public class FamiliarMagic implements ModInitializer {
 		FamiliarPacketeering.initialize();
 		FamiliarAttachments.initialize();
 		FamiliarComponents.initialize();
+		FamiliarParticles.initialize();
 		FamiliarScreenery.initialize();
 		FamiliarCommands.initialize();
 		FamiliarEntities.initialize();

@@ -2,6 +2,7 @@ package io.github.afamiliarquiet.familiar_magic.block;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.MapCodec;
+import io.github.afamiliarquiet.familiar_magic.FamiliarParticles;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -27,7 +28,7 @@ import java.util.function.ToIntFunction;
 
 public class EnchantedCandleBlock extends CandleBlock {
     public static final MapCodec<CandleBlock> CODEC = AbstractBlock.createCodec(EnchantedCandleBlock::new);
-    public static final ToIntFunction<BlockState> STATE_TO_LUMINANCE = state -> state.get(LIT) ? 2 * state.get(CANDLES) + 4 : state.get(CANDLES) > 2 ? 3 : 2;
+    public static final ToIntFunction<BlockState> STATE_TO_LUMINANCE = state -> (state.get(LIT) ? 2 * state.get(CANDLES) + 4 : state.get(CANDLES) > 2 ? 3 : 2) - (state.get(WATERLOGGED) ? 1 : 0);
 
     private static final List<List<Vec3d>> FLAME_OFFSETS = ImmutableList.of(
             ImmutableList.of(new Vec3d(0.46875, 0.875, 0.46875)),
@@ -155,6 +156,6 @@ public class EnchantedCandleBlock extends CandleBlock {
             }
         }
 
-        world.addParticle(watery ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME, vec3d.x, vec3d.y, vec3d.z, 0.0, 0.0, 0.0);
+        world.addParticle(watery ? FamiliarParticles.ENCHANTED_FLAME : ParticleTypes.SMALL_FLAME, vec3d.x, vec3d.y, vec3d.z, 0.0, 0.0, 0.0);
     }
 }
