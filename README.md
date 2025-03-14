@@ -27,7 +27,7 @@ you can craft...
     * Look around before confirming! You'll see particles above all the blocks that will be bound to your summoning ritual. 
     * Current valid blocks: fire, flowers, mushrooms, water plants, trapdoors, pressure plates, buttons, wires, crystals, and skulls.
       See the full list in the [tag](https://github.com/afamiliarquiet/familiar-magic/blob/main/src/main/resources/data/familiar_magic/tags/block/familiar_things.json).
-  * crafted like an enchanting table, with a true name instead of a book and an amethyst shard and copper ingot instead of diamonds
+  * crafted like an enchanting table, with an amethyst shard and copper ingot instead of diamonds (and no book)
 * ### Enchanted Candles! 
   They're bigger than normal candles and floaty, made to be used in summoning rituals. 
   They can also burn underwater, and will change color to match.
