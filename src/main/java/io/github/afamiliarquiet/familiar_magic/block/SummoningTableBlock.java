@@ -205,9 +205,9 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable, Wa
             }
 
             if (random.nextInt(2) == 0) {
-                double x = pos.getX() + 0.5 + 0.5 * (0.5 - random.nextDouble());
+                double x = pos.getX() + 0.5 + 0.25 * (0.5 - random.nextDouble());
                 double y = pos.getY() + 0.8375;
-                double z = pos.getZ() + 0.5 + 0.5 * (0.5 - random.nextDouble());
+                double z = pos.getZ() + 0.5 + 0.25 * (0.5 - random.nextDouble());
                 world.addParticle(
                         random.nextInt(6) == 0 ? ParticleTypes.FLAME : ParticleTypes.SMOKE,
                         x, y, z,

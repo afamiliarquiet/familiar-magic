@@ -190,31 +190,27 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
         if (state.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.BINDING) {
             Random random = world.getRandom();
             for (int i = 0; i < 2; i++) {
-                double d0 = (double) pos.getX() + random.nextDouble() * 0.625 + 0.1875;
-                double d1 = (double) pos.getY() + random.nextDouble() * 0.75;
-                double d2 = (double) pos.getZ() + random.nextDouble() * 0.625 + 0.1875;
-                world.addParticle(random.nextBoolean() ? ParticleTypes.WAX_OFF : ParticleTypes.WAX_ON, d0, d1, d2, 0.0, 31 * random.nextDouble(), 0.0);
+                double skinny = (double) (i == 0 ? pos.getX() : pos.getZ()) + random.nextDouble() * 0.25 + 0.375;
+                double upness = (double) pos.getY() + random.nextDouble() * 0.75;
+                double stretchy = (double) (i == 0 ? pos.getZ() : pos.getX()) + random.nextDouble() * 0.625 + 0.1875;
+                world.addParticle(
+                        random.nextBoolean() ? ParticleTypes.WAX_OFF : ParticleTypes.WAX_ON,
+                        i == 0 ? skinny : stretchy, upness, i == 0 ? stretchy : skinny,
+                        0.0, 31 * random.nextDouble(), 0.0
+                );
             }
 
             // add particles to any pattern blocks around
             for (int tries = 0; tries < 13; tries++) {
                 BlockPos partipos = pos.offset(Direction.Axis.X, random.nextBetween(-6, 6)).offset(Direction.Axis.Z, random.nextBetween(-6, 6));
                 if (world.getBlockState(partipos).isIn(FamiliarTags.FAMILIAR_THINGS)) {
-                    world.addParticle(
-                            ParticleTypes.WITCH,
-                            partipos.getX() + random.nextFloat(), partipos.getY() + random.nextFloat(), partipos.getZ() + random.nextFloat(),
-                            0.0, random.nextFloat() * 0.1, 0
-                    );
-                    world.addParticle(
-                            ParticleTypes.WAX_OFF,
-                            partipos.getX() + random.nextFloat(), partipos.getY() + random.nextFloat(), partipos.getZ() + random.nextFloat(),
-                            0.0, random.nextFloat() * 3, 0
-                    );
-                    world.addParticle(
-                            ParticleTypes.WAX_ON,
-                            partipos.getX() + random.nextFloat(), partipos.getY() + random.nextFloat(), partipos.getZ() + random.nextFloat(),
-                            0.0, random.nextFloat() * 3, 0
-                    );
+                    for (int splat = 0; splat < 3; splat++) {
+                        world.addParticle(
+                                splat == 0 ? ParticleTypes.WITCH : splat == 1 ? ParticleTypes.WAX_OFF : ParticleTypes.WAX_ON,
+                                partipos.getX() + random.nextFloat(), partipos.getY() + (splat == 0 ? 0 : random.nextFloat() * 0.5), partipos.getZ() + random.nextFloat(),
+                                0.0, random.nextFloat() * 1.3, 0
+                        );
+                    }
                 }
             }
         }
