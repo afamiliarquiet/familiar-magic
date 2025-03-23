@@ -27,14 +27,16 @@ public class FoxActivateSummoningTableGoal extends MoveToTargetPosGoal {
 
     @Override
     public void tick() {
+        super.tick();
+
         if (this.hasReached() && FamiliarTricks.canIgnite(this.mob.getMainHandStack())) {
             // time to try to activate i suppose !
-            if (this.mob.getWorld().getBlockEntity(this.targetPos) instanceof SummoningTableBlockEntity steby) {
-                this.mob.getWorld().setBlockState(this.targetPos, steby.trySummon(this.mob.getWorld().getBlockState(this.targetPos)));
+            BlockState targetState = this.mob.getWorld().getBlockState(this.targetPos);
+            if (targetState.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.INACTIVE && this.mob.getWorld().getBlockEntity(this.targetPos) instanceof SummoningTableBlockEntity steby) {
+                this.mob.getWorld().setBlockState(this.targetPos, steby.trySummon(targetState));
             }
+            this.stop();
         }
-
-        super.tick();
     }
 
     @Override
@@ -44,6 +46,7 @@ public class FoxActivateSummoningTableGoal extends MoveToTargetPosGoal {
 
     @Override
     public void start() {
+        this.hasReached();
         if (this.mob instanceof FoxEntity fox) {
             fox.setSitting(false);
         }
