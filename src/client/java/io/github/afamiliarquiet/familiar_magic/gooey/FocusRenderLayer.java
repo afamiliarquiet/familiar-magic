@@ -43,14 +43,14 @@ public class FocusRenderLayer implements HudRenderCallback {
 
     // "eat my access tf", it says
     private void renderFocusOverlay(DrawContext context, float alpha) {
-        RenderSystem.disableDepthTest();
+        RenderSystem.disableDepthTest(); // this should already be disabled
         RenderSystem.depthMask(false);
         RenderSystem.enableBlend();
         context.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
         context.drawTexture(FamiliarMagicClient.FOCUS_OVERLAY, 0, 0, -90, 0.0F, 0.0F, context.getScaledWindowWidth(), context.getScaledWindowHeight(), context.getScaledWindowWidth(), context.getScaledWindowHeight());
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
+//        RenderSystem.enableDepthTest(); // fabric injects after this is disabled... so it should be disabled?
         context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

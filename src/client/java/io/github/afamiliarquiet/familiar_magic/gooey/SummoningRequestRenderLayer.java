@@ -40,14 +40,15 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
             return;
         }
 
-        context.getMatrices().push();
-
-        RenderSystem.disableBlend();
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1);
-
-        context.getMatrices().translate(0, 0, 3100);
+        // this awful incantation is... seemingly horribly unreliable. Guards? BANISH IT
+//        context.getMatrices().push();
+//
+//        RenderSystem.disableBlend();
+//        RenderSystem.depthMask(true);
+//        RenderSystem.enableDepthTest();
+//        context.setShaderColor(1.0F, 1.0F, 1.0F, 1);
+//
+//        context.getMatrices().translate(0, 0, 3100);
 
         int top = context.getScaledWindowHeight() - (this.imageHeight + this.spacing);
         int left = /*context.getScaledWindowWidth() - (this.imageWidth + */this.spacing/*)*/;
@@ -86,8 +87,8 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
                 requestReadiness = 1;
             } else {
                 // enable the transparency nonsense
-                RenderSystem.disableDepthTest();
-                RenderSystem.depthMask(false);
+                RenderSystem.disableDepthTest(); // this should be disabled anyway
+//                RenderSystem.depthMask(false); // but maybe i do want this..?
                 RenderSystem.enableBlend();
                 context.setShaderColor(1.0F, 1.0F, 1.0F, requestReadiness);
             }
@@ -103,12 +104,12 @@ public class SummoningRequestRenderLayer implements HudRenderCallback {
         if (requestReadiness < 1) {
             // disable the transparency nonsense
             RenderSystem.disableBlend();
-            RenderSystem.depthMask(true);
-            RenderSystem.enableDepthTest();
+//            RenderSystem.depthMask(true);
+//            RenderSystem.enableDepthTest(); // fabric injects after this is disabled... so it should be disabled?
             context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
 
-        context.getMatrices().pop();
+//        context.getMatrices().pop();
     }
     
     private void drawCenteredStringAtHeight(DrawContext context, TextRenderer font, int top, int left, Text text, int height) {

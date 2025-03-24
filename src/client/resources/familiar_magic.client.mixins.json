@@ -6,6 +6,7 @@
     "FocusBlockParticleMixin",
     "HatBakeryMixin",
     "HatRendererMixin",
+    "SummoningRequestInGameHudMixin",
     "curse.dragon.ClientPlayerEatingManagerMixin",
     "curse.dragon.MinecraftClientSwinglessEatingMixin",
     "curse.dragon.OtherPlayerCrumbsMixin",
