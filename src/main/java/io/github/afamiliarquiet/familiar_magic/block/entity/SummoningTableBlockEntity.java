@@ -324,6 +324,7 @@ public class SummoningTableBlockEntity extends LockableContainerBlockEntity {
                 this.summoningTimer = 0;
                 this.bindingTarget = null;
                 // todo - figure out a way to stop people from summoning you and instantly binding some crap to your soul. make it at least take a few seconds
+                // if binding target is player and activator isn't that player (needs more context) require target to be crouched?
 
                 sworld.playSound(null, this.getPos(), FamiliarSounds.BLOCK_SUMMONING_TABLE_BIND_CONFIRM, SoundCategory.BLOCKS, 0.4f, 0.625f);
                 if (targetEntity instanceof PlayerEntity targetPlayer) {

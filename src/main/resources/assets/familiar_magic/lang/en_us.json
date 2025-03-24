@@ -9,6 +9,8 @@
   "block.familiar_magic.summoning_table":  "Summoning Table",
   "block.familiar_magic.smoke_wisp": "Wisp of Smoke",
 
+  "entity.familiar_magic.fire_breath": "Fire Breath",
+
   "lore.familiar_magic.true_name": "An item that can be used to take reference of mobs in the world.",
   "lore.familiar_magic.big_hat": "A highly fashionable and very large hat that reduces damage when worn.",
   "lore.familiar_magic.megumins_hat": "A very large hat that reduces damage when worn. Has an affinity for EXPLOSIONS!",

@@ -48,7 +48,7 @@ public class FamiliarItems {
         });
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FOOD_AND_DRINK).register(
-                (itemGroup) -> itemGroup.addAfter(Items.HONEY_BOTTLE, CURIOUS_VIAL)
+                (itemGroup) -> itemGroup.addBefore(Items.OMINOUS_BOTTLE, CURIOUS_VIAL)
         );
 
         // wanna see a fummy trick? im gonna possibly initialize familiarblocks here instead kinda sorta
