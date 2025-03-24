@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
 
 public class FoxActivateSummoningTableGoal extends MoveToTargetPosGoal {
+    protected boolean givenUp = false;
     public FoxActivateSummoningTableGoal(PathAwareEntity mob, double speed, int range) {
         super(mob, speed, range);
     }
@@ -29,13 +30,14 @@ public class FoxActivateSummoningTableGoal extends MoveToTargetPosGoal {
     public void tick() {
         super.tick();
 
-        if (this.hasReached() && FamiliarTricks.canIgnite(this.mob.getMainHandStack())) {
+        if (this.hasReached() && !this.givenUp) {
             // time to try to activate i suppose !
             BlockState targetState = this.mob.getWorld().getBlockState(this.targetPos);
-            if (targetState.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.INACTIVE && this.mob.getWorld().getBlockEntity(this.targetPos) instanceof SummoningTableBlockEntity steby) {
+            if (FamiliarTricks.canIgnite(this.mob.getMainHandStack()) && targetState.get(SummoningTableBlock.SUMMONING_TABLE_STATE) == SummoningTableBlock.SummoningTableState.INACTIVE && this.mob.getWorld().getBlockEntity(this.targetPos) instanceof SummoningTableBlockEntity steby) {
                 this.mob.getWorld().setBlockState(this.targetPos, steby.trySummon(targetState));
             }
-            this.stop();
+            // success or failure, one try will suffice
+            this.givenUp = true;
         }
     }
 
@@ -46,9 +48,15 @@ public class FoxActivateSummoningTableGoal extends MoveToTargetPosGoal {
 
     @Override
     public void start() {
-        this.hasReached();
+        this.givenUp = false;
         if (this.mob instanceof FoxEntity fox) {
             fox.setSitting(false);
         }
+        super.start();
+    }
+
+    @Override
+    public boolean shouldContinue() {
+        return !this.givenUp && super.shouldContinue();
     }
 }
