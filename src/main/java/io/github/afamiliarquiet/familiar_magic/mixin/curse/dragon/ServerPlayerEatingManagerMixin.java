@@ -4,12 +4,14 @@ import com.llamalad7.mixinextras.sugar.Local;
 import io.github.afamiliarquiet.familiar_magic.data.CurseAttachment;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,10 +40,12 @@ public abstract class ServerPlayerEatingManagerMixin {
 
     @Inject(method = "continueMining", at = @At("HEAD"))
     private void continueMunching(BlockState state, BlockPos pos, int failedStartMiningTime, CallbackInfoReturnable<Float> cir) {
-        if (CurseAttachment.Curse.shouldMaw(this.player)) {
-            if (this.tickCounter % 4 == 0) {
-                this.player.getWorld().playSound(null, this.player.getX(), this.player.getY(), this.player.getZ(), SoundEvents.ENTITY_GENERIC_EAT, SoundCategory.PLAYERS, 0.5f + 0.5f * (float) this.player.getRandom().nextInt(2), (this.player.getRandom().nextFloat() - this.player.getRandom().nextFloat()) * 0.2f + 1.0f);
-                this.player.spawnItemParticles(state.getBlock().asItem().getDefaultStack(), 5);
+        // todo - fix sound continuing after switching off of a canbreak item in adventure
+        if (this.tickCounter % 4 == 0 && CurseAttachment.Curse.shouldMaw(this.player)) {
+            this.player.getWorld().playSound(null, this.player.getX(), this.player.getY(), this.player.getZ(), SoundEvents.ENTITY_GENERIC_EAT, SoundCategory.PLAYERS, 0.5f + 0.5f * (float) this.player.getRandom().nextInt(2), (this.player.getRandom().nextFloat() - this.player.getRandom().nextFloat()) * 0.2f + 1.0f);
+            ItemStack eatingParticleStack = state.getBlock().asItem().getDefaultStack();
+            if (!eatingParticleStack.isEmpty()) {
+                this.player.spawnItemParticles(eatingParticleStack, 5);
             }
         }
     }

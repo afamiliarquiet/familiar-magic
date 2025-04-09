@@ -22,6 +22,8 @@ public abstract class HungryPlayerEntityMixin extends LivingEntity {
     @Shadow
     protected HungerManager hungerManager;
 
+    @Shadow public abstract boolean isSpectator();
+
     protected HungryPlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -39,7 +41,7 @@ public abstract class HungryPlayerEntityMixin extends LivingEntity {
     @Inject(at = @At("HEAD"), method = "tick")
     private void tick(CallbackInfo ci) {
         if (this.getWorld().isClient) {
-            if (FamiliarAttachments.getCurse(this).currentAffliction() == CurseAttachment.Curse.DRAGON && random.nextFloat() < 0.013) {
+            if (!this.isSpectator() && FamiliarAttachments.getCurse(this).currentAffliction() == CurseAttachment.Curse.DRAGON && random.nextFloat() < 0.013) {
                 this.getWorld().addParticle(ParticleTypes.FLAME,
                         this.getParticleX(0.5), this.getRandomBodyY(), this.getParticleZ(0.5),
                         (random.nextFloat() - 0.5) * 0.031, random.nextFloat() * 0.031, (random.nextFloat() - 0.5) * 0.031);

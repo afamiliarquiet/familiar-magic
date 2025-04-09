@@ -7,6 +7,7 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.BlockBreakingInfo;
+import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,7 +26,10 @@ public abstract class OtherPlayerCrumbsMixin extends AbstractClientPlayerEntity 
         BlockBreakingInfo info = this.clientWorld.worldRenderer.blockBreakingInfos.get(this.getId());
         if (info != null && CurseAttachment.Curse.shouldMaw(this) && this.getWorld().getTime() % 4 == 0) {
             BlockState eatingState = this.clientWorld.getBlockState(info.getPos());
-            this.spawnItemParticles(eatingState.getBlock().getPickStack(this.clientWorld, info.getPos(), eatingState), 5);
+            ItemStack eatingParticleStack = eatingState.getBlock().getPickStack(this.clientWorld, info.getPos(), eatingState);
+            if (!eatingParticleStack.isEmpty()) {
+                this.spawnItemParticles(eatingParticleStack, 5);
+            }
         }
     }
 }
