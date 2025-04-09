@@ -7,6 +7,7 @@ import net.minecraft.registry.Registry;
 
 public class FamiliarParticles {
     public static final SimpleParticleType ENCHANTED_FLAME = simply("enchanted_flame");
+    public static final SimpleParticleType SMALL_ENCHANTED_FLAME = simply("small_enchanted_flame");
 
     public static void initialize() {
         // hi i decided i want my purple

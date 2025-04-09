@@ -5,6 +5,8 @@ import net.minecraft.client.particle.FlameParticle;
 
 public class FamiliarClientParticles {
     public static void initialize() {
-        ParticleFactoryRegistry.getInstance().register(FamiliarParticles.ENCHANTED_FLAME, FlameParticle.SmallFactory::new);
+        ParticleFactoryRegistry partyTime = ParticleFactoryRegistry.getInstance();
+        partyTime.register(FamiliarParticles.ENCHANTED_FLAME, FlameParticle.Factory::new);
+        partyTime.register(FamiliarParticles.SMALL_ENCHANTED_FLAME, FlameParticle.SmallFactory::new);
     }
 }

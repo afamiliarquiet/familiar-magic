@@ -156,6 +156,6 @@ public class EnchantedCandleBlock extends CandleBlock {
             }
         }
 
-        world.addParticle(watery ? FamiliarParticles.ENCHANTED_FLAME : ParticleTypes.SMALL_FLAME, vec3d.x, vec3d.y, vec3d.z, 0.0, 0.0, 0.0);
+        world.addParticle(watery ? FamiliarParticles.SMALL_ENCHANTED_FLAME : ParticleTypes.SMALL_FLAME, vec3d.x, vec3d.y, vec3d.z, 0.0, 0.0, 0.0);
     }
 }
