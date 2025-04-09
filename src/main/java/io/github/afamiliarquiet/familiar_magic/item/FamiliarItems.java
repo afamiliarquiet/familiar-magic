@@ -28,7 +28,7 @@ public class FamiliarItems {
     ));
 
     public static final RegistryKey<Item> ODD_TRINKET_KEY = key("odd_trinket");
-    public static final Item ODD_TRINKET = register(ODD_TRINKET_KEY, new OddTrinketItem(new Item.Settings()));
+    public static final Item ODD_TRINKET = register(ODD_TRINKET_KEY, new OddTrinketItem(new Item.Settings().maxCount(1)));
 
     public static final RegistryKey<Item> CURIOUS_VIAL_KEY = key("curious_vial");
     public static final Item CURIOUS_VIAL = register(CURIOUS_VIAL_KEY, new CuriousVialItem(new Item.Settings()));
