@@ -1,5 +1,7 @@
 package io.github.afamiliarquiet.familiar_magic;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.yggdrasil.ProfileResult;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarClientAttachments;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
@@ -22,6 +24,17 @@ import net.minecraft.util.math.random.Random;
 
 public class FamiliarMagicClient implements ClientModInitializer {
 	public static final Identifier FOCUS_OVERLAY = FamiliarMagic.id("textures/misc/focus.png");
+	public static final GameProfile it_that_shapes_the_craft;
+
+	static {
+		ProfileResult result = MinecraftClient.getInstance().getSessionService()
+				.fetchProfile(FamiliarMagic.its_sourceful_name, true);
+		if (result != null) {
+			it_that_shapes_the_craft = result.profile();
+		} else {
+			it_that_shapes_the_craft = new GameProfile(FamiliarMagic.its_sourceful_name, "afamiliarquiet");
+		}
+	}
 
 	@Override
 	public void onInitializeClient() {

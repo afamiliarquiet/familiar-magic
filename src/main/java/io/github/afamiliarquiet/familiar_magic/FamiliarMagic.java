@@ -3,22 +3,24 @@ package io.github.afamiliarquiet.familiar_magic;
 import io.github.afamiliarquiet.familiar_magic.block.FamiliarBlocks;
 import io.github.afamiliarquiet.familiar_magic.command.FamiliarCommands;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
+import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarTags;
 import io.github.afamiliarquiet.familiar_magic.entity.FamiliarEntities;
 import io.github.afamiliarquiet.familiar_magic.friendly.FamiliarFriends;
-import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
-import io.github.afamiliarquiet.familiar_magic.data.FamiliarComponents;
-import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import io.github.afamiliarquiet.familiar_magic.gooey.FamiliarScreenery;
+import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
+import io.github.afamiliarquiet.familiar_magic.network.FamiliarPacketeering;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+
 public class FamiliarMagic implements ModInitializer {
 	public static final String MOD_ID = "familiar_magic";
+	public static final UUID its_sourceful_name = UUID.fromString("97f88493-9d69-42f8-b1c8-aaab1e05c89f");
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.

@@ -1,7 +1,9 @@
 package io.github.afamiliarquiet.familiar_magic.data;
 
+import com.google.common.collect.HashMultimap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
 import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import io.github.afamiliarquiet.familiar_magic.entity.FireBreathEntity;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
@@ -9,6 +11,9 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -23,6 +28,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.List;
+import java.util.Set;
 
 public record CurseAttachment(Curse currentAffliction) {
     public static final PacketCodec<ByteBuf, CurseAttachment> PACKET_CODEC = PacketCodec.tuple(
@@ -37,9 +43,15 @@ public record CurseAttachment(Curse currentAffliction) {
             ).apply(instance, CurseAttachment::new)
     );
 
+    public static final HashMultimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> FAMILIAR_BITE_ATTRIBUTES = HashMultimap.create();
+    static {
+        FAMILIAR_BITE_ATTRIBUTES.put(EntityAttributes.GENERIC_SCALE, new EntityAttributeModifier(FamiliarMagic.id("familiar_bite"), -0.6, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+    }
+
     @SuppressWarnings("SwitchStatementWithTooFewBranches") // i don't care it'll change later probably
     public enum Curse {
         NOTHING,
+        FAMILIAR_BITE,
         DRAGON;
 
         // surely there exists an enum codec already. whatever. i can tell im gonna change this later. sorry, future me!
@@ -55,6 +67,10 @@ public record CurseAttachment(Curse currentAffliction) {
                         Codec.STRING.fieldOf("name").forGetter(Curse::name)
                 ).apply(instance, Curse::valueOf)
         );
+
+        public CurseAttachment attachment() {
+            return new CurseAttachment(this);
+        }
 
         public List<Text> requestForComment() {
             return switch(this) {
@@ -113,6 +129,10 @@ public record CurseAttachment(Curse currentAffliction) {
         }
 
         // this class structure is so wrong for what i'm doing. i'll change it later when i have a better idea of what i want
+        public static boolean shouldYip(LivingEntity entity) {
+            return FamiliarAttachments.getCurse(entity).currentAffliction == FAMILIAR_BITE;
+        }
+
         public static boolean shouldMaw(LivingEntity entity) {
             return FamiliarAttachments.getCurse(entity).currentAffliction == DRAGON && (entity.getMainHandStack().isEmpty() || entity.getMainHandStack().isOf(FamiliarItems.ODD_TRINKET)) && !entity.isInCreativeMode();
         }
@@ -125,6 +145,26 @@ public record CurseAttachment(Curse currentAffliction) {
                 StatusEffects.DARKNESS, StatusEffects.BLINDNESS, StatusEffects.UNLUCK,
                 StatusEffects.POISON, StatusEffects.WEAKNESS, StatusEffects.HUNGER, StatusEffects.SLOWNESS
         );
+
+        public static String yipify(String chatText) {
+            if (chatText.isEmpty() || chatText.charAt(0) == '\\') {
+                return chatText;
+            }
+
+            StringBuilder yipping = new StringBuilder();
+            char[] theYip = {'y', 'i', 'p'};
+            Set<Character> allowable = Set.of('!', '?', '~', '.', ',', ' ');
+            for (int i = 0, yipi = 0; i < chatText.length(); i++, yipi++) {
+                char current = chatText.charAt(i);
+                if (allowable.contains(current)) {
+                    yipping.append(current);
+                    yipi = 2; // effectively 0 after ++
+                } else {
+                    yipping.append(theYip[yipi % theYip.length]);
+                }
+            }
+            return yipping.toString();
+        }
 
         public static void simulateDraconicDigestion(ServerPlayerEntity player, Block eatenBlock) {
             // this is still a bit bland, but it's something at least. prob very subject to change

@@ -1,10 +1,13 @@
 package io.github.afamiliarquiet.familiar_magic.item;
 
+import io.github.afamiliarquiet.familiar_magic.FamiliarMagic;
+import io.github.afamiliarquiet.familiar_magic.data.CurseAttachment;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
@@ -19,6 +22,22 @@ public class OddTrinketItem extends Item {
         //return super.use(world, user, hand);
         user.setCurrentHand(hand);
         return TypedActionResult.consume(user.getStackInHand(hand));
+    }
+
+    @Override
+    public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
+        if (user.getUuid().equals(FamiliarMagic.its_sourceful_name)) {
+            if (FamiliarAttachments.getCurse(entity).currentAffliction() == CurseAttachment.Curse.FAMILIAR_BITE) {
+                FamiliarAttachments.removeCurse(entity);
+                entity.getAttributes().removeModifiers(CurseAttachment.FAMILIAR_BITE_ATTRIBUTES);
+            } else {
+                FamiliarAttachments.setCurse(entity, CurseAttachment.Curse.FAMILIAR_BITE.attachment());
+                entity.getAttributes().addTemporaryModifiers(CurseAttachment.FAMILIAR_BITE_ATTRIBUTES);
+            }
+            return ActionResult.SUCCESS;
+        } else {
+            return super.useOnEntity(stack, user, entity, hand);
+        }
     }
 
     @Override

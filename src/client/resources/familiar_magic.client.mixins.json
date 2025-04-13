@@ -7,6 +7,8 @@
     "HatBakeryMixin",
     "HatRendererMixin",
     "SummoningRequestInGameHudMixin",
+    "curse.another_of_many.UhhhWaitASecondThisIsntWorkingPleasePretendThisIsJustANormalFoxRendererThing",
+    "curse.another_of_many.Yip",
     "curse.dragon.ClientPlayerEatingManagerMixin",
     "curse.dragon.MinecraftClientSwinglessEatingMixin",
     "curse.dragon.OtherPlayerCrumbsMixin",
