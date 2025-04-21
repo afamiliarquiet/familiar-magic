@@ -8,6 +8,8 @@
     "FlintAndSteelIgnitionMixin",
     "MobHatEquipMixin",
     "curse.another_of_many.Abandonment",
+    "curse.another_of_many.FoxthingLimbAnimatorMixin",
+    "curse.another_of_many.FoxthingLivingEntityMixin",
     "curse.dragon.BlockEatenMixin",
     "curse.dragon.HungryPlayerEntityMixin",
     "curse.dragon.LivingEntityCurseBreakingMixin",

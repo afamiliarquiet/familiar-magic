@@ -1,6 +1,5 @@
 package io.github.afamiliarquiet.familiar_magic.item;
 
-import io.github.afamiliarquiet.familiar_magic.FamiliarSounds;
 import io.github.afamiliarquiet.familiar_magic.data.CurseAttachment;
 import io.github.afamiliarquiet.familiar_magic.data.FamiliarAttachments;
 import net.minecraft.advancement.criterion.Criteria;
@@ -11,8 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
@@ -42,8 +39,7 @@ public class CuriousVialItem extends Item {
             if (FamiliarAttachments.getCurse(user).currentAffliction() == CurseAttachment.Curse.DRAGON && user instanceof PlayerEntity player) {
                 player.getHungerManager().add(1, 1.3F);
             } else {
-                FamiliarAttachments.setCurse(user, new CurseAttachment(CurseAttachment.Curse.DRAGON));
-                dragonPoofRawr(user);
+                CurseAttachment.Curse.DRAGON.apply(user);
             }
 
             Vec3d p = user.getPos();
@@ -52,27 +48,6 @@ public class CuriousVialItem extends Item {
 
         stack.decrementUnlessCreative(1, user);
         return stack;
-    }
-
-    private void dragonPoofRawr(LivingEntity entity) {
-        if (entity.getWorld() instanceof ServerWorld world) {
-//            Box size = entity.getDimensions(entity.getPose()).getBoxAt(0,0,0);
-//
-//            world.spawnParticles(ParticleTypes.GUST,
-//                    entity.offsetX(0.5), entity.getBodyY(0.5), entity.offsetZ(0.5),
-//                    6, size.getLengthX()*0.75, size.getLengthY()*0.5, size.getLengthZ()*0.75, 0);
-//
-//            world.spawnParticles(ParticleTypes.FLAME,
-//                    entity.getX(), entity.getBodyY(0.5), entity.getZ(),
-//                    7, size.getLengthX()*0.75, size.getLengthY()*0.5, size.getLengthZ()*0.75, 0);
-
-            if (entity instanceof PlayerEntity player) {
-                Vec3d p = entity.getPos();
-                entity.getWorld().playSound(null, p.x, p.y, p.z, FamiliarSounds.CURSE_APPLY, SoundCategory.PLAYERS, 0.5f, 1.3f);
-                player.playSoundToPlayer(FamiliarSounds.CURSE_APPLY_PERSONAL, SoundCategory.PLAYERS, 0.1f, 1.3f);
-                //player.sendMessage(Text.translatable("message.familiar_magic.curse.dragon.applied").withColor(0x4fe7ac), true);
-            }
-        }
     }
 
     @Override

@@ -26,13 +26,12 @@ public class OddTrinketItem extends Item {
 
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-        if (user.getUuid().equals(FamiliarMagic.its_sourceful_name)) {
-            if (FamiliarAttachments.getCurse(entity).currentAffliction() == CurseAttachment.Curse.FAMILIAR_BITE) {
-                FamiliarAttachments.removeCurse(entity);
-                entity.getAttributes().removeModifiers(CurseAttachment.FAMILIAR_BITE_ATTRIBUTES);
+        LivingEntity target = user.isSneaking() ? user : entity;
+        if (user.getUuid().equals(FamiliarMagic.its_sourceful_name) && target instanceof PlayerEntity) { // limited targets just for safety.. this isn't a good idea. this whole stolen homework thing. i'm doing it anyway
+            if (FamiliarAttachments.getCurse(target).currentAffliction() == CurseAttachment.Curse.FAMILIAR_BITE) {
+                CurseAttachment.Curse.FAMILIAR_BITE.strip(target);
             } else {
-                FamiliarAttachments.setCurse(entity, CurseAttachment.Curse.FAMILIAR_BITE.attachment());
-                entity.getAttributes().addTemporaryModifiers(CurseAttachment.FAMILIAR_BITE_ATTRIBUTES);
+                CurseAttachment.Curse.FAMILIAR_BITE.apply(target);
             }
             return ActionResult.SUCCESS;
         } else {

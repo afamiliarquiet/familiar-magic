@@ -118,6 +118,10 @@ public class FamiliarAttachments {
         return !FamiliarMagic.CONFIG.useWillingTag || target != null && target.getAttachedOrCreate(WILLING_FAMILIAR);
     }
 
+    public static boolean hasCurse(@Nullable Entity entity) {
+        return entity != null && entity.hasAttached(CURSE) && getCurse(entity).currentAffliction() != CurseAttachment.Curse.NOTHING;
+    }
+
     public static @NotNull CurseAttachment getCurse(@NotNull Entity entity) {
         return entity.getAttachedOrCreate(CURSE);
     }
@@ -126,8 +130,9 @@ public class FamiliarAttachments {
         entity.removeAttached(CURSE);
     }
 
-    public static void setCurse(@NotNull Entity entity, CurseAttachment cursery) {
+    public static CurseAttachment setCurse(@NotNull Entity entity, CurseAttachment cursery) {
         entity.setAttached(CURSE, cursery);
+        return cursery;
     }
 
     public static @Nullable PersonalPattern getPersonalPattern(@NotNull Entity entity) {

@@ -21,8 +21,9 @@ public class Abandonment {
     private void onContractBroken(CallbackInfo ci) {
         // evil antipersistence. this curse stuff is structured so poorly i'm going to have a lot of debt to pay
         if (FamiliarAttachments.getCurse(this.player).currentAffliction() == CurseAttachment.Curse.FAMILIAR_BITE) {
-            FamiliarAttachments.removeCurse(this.player);
-            this.player.getAttributes().removeModifiers(CurseAttachment.FAMILIAR_BITE_ATTRIBUTES);
+            CurseAttachment.Curse.FAMILIAR_BITE.strip(this.player);
+//            FamiliarAttachments.removeCurse(this.player);
+//            this.player.getAttributes().removeModifiers(CurseAttachment.FAMILIAR_BITE_ATTRIBUTES);
         }
     }
 }

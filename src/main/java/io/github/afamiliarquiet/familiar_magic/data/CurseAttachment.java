@@ -9,7 +9,10 @@ import io.github.afamiliarquiet.familiar_magic.entity.FireBreathEntity;
 import io.github.afamiliarquiet.familiar_magic.item.FamiliarItems;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -17,20 +20,25 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.passive.FoxEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
 
-public record CurseAttachment(Curse currentAffliction) {
+public class CurseAttachment {
     public static final PacketCodec<ByteBuf, CurseAttachment> PACKET_CODEC = PacketCodec.tuple(
             Curse.PACKET_CODEC,
             CurseAttachment::currentAffliction,
@@ -46,6 +54,88 @@ public record CurseAttachment(Curse currentAffliction) {
     public static final HashMultimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> FAMILIAR_BITE_ATTRIBUTES = HashMultimap.create();
     static {
         FAMILIAR_BITE_ATTRIBUTES.put(EntityAttributes.GENERIC_SCALE, new EntityAttributeModifier(FamiliarMagic.id("familiar_bite"), -0.6, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+    }
+
+    // the debt clock's gears are grinding loudly. :ohno:
+    // this debt is incurred by my theft of @enjarai's code
+    // everyone please say "thank you evelyn!"
+    private FoxEntity entity = null;
+    private final Curse currentAffliction;
+
+    public CurseAttachment(Curse currentAffliction) {
+        this.currentAffliction = currentAffliction;
+    }
+
+    public Curse currentAffliction() {
+        return this.currentAffliction;
+    }
+
+    public void updateFox(PlayerEntity player) {
+        entity = new FoxEntity(EntityType.FOX, player.getWorld());
+        entity.setAiDisabled(true);
+        entity.setInvulnerable(true);
+
+        player.calculateDimensions();
+    }
+
+    public FoxEntity asFox(PlayerEntity player) {
+        if (entity == null) {
+            updateFox(player);
+        }
+
+        entity.setYaw(player.getYaw());
+        entity.prevYaw = player.prevYaw;
+        entity.setPitch(player.getPitch());
+        entity.prevPitch = player.prevPitch;
+
+        entity.setPos(player.getX(), player.getY(), player.getZ());
+        entity.prevX = player.prevX;
+        entity.prevY = player.prevY;
+        entity.prevZ = player.prevZ;
+
+        entity.setBodyYaw(player.bodyYaw);
+        entity.prevBodyYaw = player.prevBodyYaw;
+        entity.setHeadYaw(player.headYaw);
+        entity.prevHeadYaw = player.prevHeadYaw;
+
+        entity.hurtTime = player.hurtTime;
+
+        entity.handSwinging = player.handSwinging;
+        entity.handSwingTicks = player.handSwingTicks;
+        entity.handSwingProgress = player.handSwingProgress;
+        entity.lastHandSwingProgress = player.lastHandSwingProgress;
+
+        entity.setStackInHand(Hand.MAIN_HAND, player.getMainHandStack());
+
+        ((FoxthingLimbAnimator) entity.limbAnimator).familiar_magic$copyFrom(player.limbAnimator);
+
+        if (player.getPose() == EntityPose.CROUCHING) {
+            entity.setSitting(true);
+            entity.setPose(EntityPose.STANDING);
+        } else {
+            entity.setSitting(false);
+            entity.setPose(player.getPose());
+        }
+
+        return entity;
+    }
+
+    public @Nullable FoxEntity getFox() {
+        return entity;
+    }
+
+    public void tick(Entity bearer) {
+        if (entity != null) {
+            entity.setPosition(bearer.getPos());
+            if (entity.getRandom().nextInt(1000) < entity.ambientSoundChance++) {
+                entity.ambientSoundChance = -entity.getMinAmbientSoundDelay();
+                entity.playAmbientSound();
+            }
+        } else {
+            if (bearer instanceof PlayerEntity player) {
+                updateFox(player);
+            }
+        }
     }
 
     @SuppressWarnings("SwitchStatementWithTooFewBranches") // i don't care it'll change later probably
@@ -70,6 +160,61 @@ public record CurseAttachment(Curse currentAffliction) {
 
         public CurseAttachment attachment() {
             return new CurseAttachment(this);
+        }
+
+        public void apply(LivingEntity bearer) {
+            strip(bearer);
+            CurseAttachment attachment = FamiliarAttachments.setCurse(bearer, this.attachment());
+
+            switch (this) {
+                case FAMILIAR_BITE -> {
+//                    bearer.getAttributes().addTemporaryModifiers(CurseAttachment.FAMILIAR_BITE_ATTRIBUTES);
+                    if (bearer instanceof PlayerEntity player) {
+                        attachment.updateFox(player);
+                    }
+//                    bearer.calculateDimensions();
+                }
+                case DRAGON -> {
+                    if (bearer.getWorld() instanceof ServerWorld world) {
+//                        Box size = entity.getDimensions(entity.getPose()).getBoxAt(0,0,0);
+//
+//                        world.spawnParticles(ParticleTypes.GUST,
+//                                entity.offsetX(0.5), entity.getBodyY(0.5), entity.offsetZ(0.5),
+//                                6, size.getLengthX()*0.75, size.getLengthY()*0.5, size.getLengthZ()*0.75, 0);
+//
+//                        world.spawnParticles(ParticleTypes.FLAME,
+//                                entity.getX(), entity.getBodyY(0.5), entity.getZ(),
+//                                7, size.getLengthX()*0.75, size.getLengthY()*0.5, size.getLengthZ()*0.75, 0);
+
+                        if (bearer instanceof PlayerEntity player) {
+                            Vec3d p = bearer.getPos();
+                            bearer.getWorld().playSound(null, p.x, p.y, p.z, FamiliarSounds.CURSE_APPLY, SoundCategory.PLAYERS, 0.5f, 1.3f);
+                            player.playSoundToPlayer(FamiliarSounds.CURSE_APPLY_PERSONAL, SoundCategory.PLAYERS, 0.1f, 1.3f);
+                            //player.sendMessage(Text.translatable("message.familiar_magic.curse.dragon.applied").withColor(0x4fe7ac), true);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void strip(LivingEntity bearer) {
+            FamiliarAttachments.removeCurse(bearer);
+            switch (this) {
+                case FAMILIAR_BITE -> {
+//                    entity.getAttributes().removeModifiers(CurseAttachment.FAMILIAR_BITE_ATTRIBUTES);
+//                    bearer.calculateDimensions();
+                }
+                case DRAGON -> {
+                    // :(
+                    bearer.removeStatusEffect(StatusEffects.FIRE_RESISTANCE);
+                    bearer.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 200, 0));
+                    if (bearer instanceof PlayerEntity player) { // new curse. OBJECTIFY
+                        Vec3d p = bearer.getPos();
+                        bearer.getWorld().playSound(null, p.x, p.y, p.z, FamiliarSounds.CURSE_REMOVE, SoundCategory.PLAYERS, 0.5f, 0.7f);
+                        player.playSoundToPlayer(FamiliarSounds.CURSE_REMOVE_PERSONAL, SoundCategory.PLAYERS, 0.7f, 0.7f);
+                    }
+                }
+            }
         }
 
         public List<Text> requestForComment() {
