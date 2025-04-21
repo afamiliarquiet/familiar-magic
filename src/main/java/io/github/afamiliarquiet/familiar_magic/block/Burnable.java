@@ -5,5 +5,7 @@ import net.minecraft.item.ItemUsageContext;
 
 public interface Burnable {
     // i miss getToolModifiedState..
-    public BlockState onIgnition(BlockState state, ItemUsageContext context);
+    BlockState onIgnition(BlockState state, ItemUsageContext context);
+
+    boolean canIgnite(BlockState clickedState);
 }

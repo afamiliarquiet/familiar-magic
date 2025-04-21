@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class FireChargeIgnitionMixin {
     @ModifyExpressionValue(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/CandleBlock;canBeLit(Lnet/minecraft/block/BlockState;)Z"))
     private boolean allowBurnables(boolean original, @Local BlockState clickedState) {
-        return original || EnchantedCandleBlock.canBeLit(clickedState) || clickedState.getBlock() instanceof Burnable;
+        return original || EnchantedCandleBlock.canBeLit(clickedState) || clickedState.getBlock() instanceof Burnable burny && burny.canIgnite(clickedState);
     }
 
     @WrapOperation(method = "useOnBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;with(Lnet/minecraft/state/property/Property;Ljava/lang/Comparable;)Ljava/lang/Object;"))

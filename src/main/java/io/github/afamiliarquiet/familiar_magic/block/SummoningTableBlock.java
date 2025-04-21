@@ -146,6 +146,10 @@ public class SummoningTableBlock extends BlockWithEntity implements Burnable, Wa
         }
     }
 
+    public boolean canIgnite(BlockState state) {
+        return state.get(SUMMONING_TABLE_STATE) == SummoningTableState.INACTIVE;
+    }
+
     @Override
     protected void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
         if (!world.isClient && projectile.isOnFire() && hit.getSide() == Direction.UP) {
